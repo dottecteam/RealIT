@@ -58,6 +58,6 @@ Para garantir a integridade do código, as branches `main` e `develop` estão pr
 ### 2. Pull Request Template
 Ao abrir um PR, o GitHub carregará automaticamente um checklist. O autor deve marcar as opções confirmando que a funcionalidade está completa (Verticalidade) e que o código foi testado.
 
-### 3. Issues & Projects (Ideia)
+### 3. Issues & Projects
 - **Issues:** Cada tarefa do Backlog será uma Issue com um ID único (ex: #04).
 - **Projects:** O progresso será movido no Kanban do projeto para visualização em tempo real.
