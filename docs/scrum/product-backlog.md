@@ -18,7 +18,7 @@
 
 ---
 
-# Épicos
+## Épicos
 
 | ID | Épico |
 |:---|:---|
@@ -35,7 +35,7 @@
 
 ---
 
-# MVP
+## MVP
 
 | Sprint | Épicos Alocados | Foco do MVP |
 | :--- | :--- | :--- |
