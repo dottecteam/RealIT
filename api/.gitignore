@@ -1,0 +1,39 @@
+# Compiled JavaScript and source map files
+*.js
+*.js.map
+# If using ts-node or similar, you might need to adjust the above to not ignore source files in source control
+
+# Node.js dependencies
+node_modules/
+# Keep package-lock.json (or yarn.lock, pnpm-lock.yaml) in source control to lock dependency versions
+!package-lock.json 
+
+# Build output directories
+/dist/
+/build/
+/out/
+# Adjust these based on your tsconfig.json outDir setting
+
+# Environment files
+.env
+.env.local
+.env.*.local
+# Allow an example environment file to be committed to provide a template
+!.env.example
+
+# IDE and OS specific files
+.vscode/ # VS Code configuration, adjust for other IDEs
+.idea/ # IntelliJ IDEA files
+.DS_Store # macOS system files
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Testing and coverage
+/coverage/
+
+# Next.js specific
+.next/
+
+# SvelteKit specific
+.svelte-kit/

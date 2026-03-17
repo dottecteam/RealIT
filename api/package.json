@@ -1,0 +1,34 @@
+{
+  "name": "real-it-api",
+  "version": "0.0.1",
+  "author": ".Tec Team",
+  "description": "Um projeto de API com Node.js e Express, TypeScript e Prisma, para análise de dados de crédito por região.",
+  "homepage": "https://github.com/dottecteam/realit",
+  "license": "MIT",
+  "keywords": [
+    "node",
+    "express",
+    "typescript",
+    "prisma",
+    "api",
+    "credit-analysis",
+    "regional-data"
+  ],
+  "main": "src/server.ts",
+  "type": "module",
+  "scripts": {
+    "dev": "tsx watch src/server.ts",
+    "build": "tsc",
+    "start": "node dist/index.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "dependencies": {
+    "express": "^5.2.1"
+  },
+  "devDependencies": {
+    "@types/express": "^5.0.6",
+    "@types/node": "^25.5.0",
+    "tsx": "^4.21.0",
+    "typescript": "^5.9.3"
+  }
+}
