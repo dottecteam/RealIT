@@ -37,3 +37,5 @@ yarn-error.log*
 
 # SvelteKit specific
 .svelte-kit/
+
+/generated/prisma
