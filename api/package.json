@@ -25,8 +25,12 @@
   "dependencies": {
     "@prisma/adapter-better-sqlite3": "^7.5.0",
     "@prisma/client": "^7.5.0",
+    "@types/bcryptjs": "^2.4.6",
+    "@types/jsonwebtoken": "^9.0.10",
+    "bcryptjs": "^3.0.3",
     "dotenv": "^17.3.1",
-    "express": "^5.2.1"
+    "express": "^5.2.1",
+    "jsonwebtoken": "^9.0.3"
   },
   "devDependencies": {
     "@types/better-sqlite3": "^7.6.13",

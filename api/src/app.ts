@@ -1,9 +1,12 @@
 import express from 'express'
+import 'dotenv/config'
 import { prisma } from './lib/prisma'
+import router from './routes/auth'
 
 export const app = express()
 
 app.use(express.json())
+app.use('/auth', router)
 
 app.get('/health', (_req, res) => {
   res.json({ status: 'ok' })
