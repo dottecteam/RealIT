@@ -4,7 +4,7 @@
 // Get a free hosted Postgres database in seconds: `npx create-db`
 
 generator client {
-  provider = "prisma-client"
+  provider = "prisma-client-js"
   output   = "../generated/prisma"
 }
 
@@ -18,3 +18,29 @@ model User {
   name  String?
   password String
 } 
+
+model Dados {
+  id Int @id @default(autoincrement())
+  data_base String
+  uf String
+  cliente String
+  cnae_ocupacao String
+  porte String
+  carteira_inadiplencia String
+}
+
+model DadosPix {
+  id Int @id @default(autoincrement())
+  ano_mes           Int     // Corresponde ao Data-base AAAAMM
+  municipio_ibge    Int     // Código IBGE do município
+  municipio         String
+  estado_ibge       Int     // Código IBGE do estado
+  estado            String
+  sigla_regiao      String
+  vl_pagador_pf     Float   // Volume financeiro Pagador PF
+  qt_pagador_pf     Int   // Quantidade de transações Pagador PF
+  vl_recebedor_pf   Float   // Volume financeiro Recebedor PF
+  qt_recebedor_pf   Int   // Quantidade de transações Recebedor PF
+  qt_pes_pagador_pf Int   // Quantidade de pagadores PF
+  qt_pes_recebedor_pf Int // Quantidade de recebedores PF
+}
