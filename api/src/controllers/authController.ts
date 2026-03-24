@@ -63,3 +63,13 @@ export async function userData(request: Request, response: Response){
 
     return response.json({user})
 }
+
+
+export async function listarUsuarios(request: Request, response: Response) {
+  try {
+    const dados = await prisma.user.findMany()
+    return response.json(dados)
+  } catch (error) {
+    return response.status(500).json({ error: 'Erro ao buscar usuarios' })
+  }
+}

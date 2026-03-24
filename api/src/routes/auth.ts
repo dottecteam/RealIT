@@ -1,11 +1,13 @@
 import {Router} from 'express'
-import {register, login, userData} from '../controllers/authController'
+import {register, login, userData, listarUsuarios} from '../controllers/authController'
 import {authMiddleWare} from '../middlewares/authMiddleware'
 
-const router = Router()
+const routerUser = Router()
 
-router.post('/registrar', register)
-router.post('/login', login)
-router.get('/me', authMiddleWare, userData)
+routerUser.post('/registrar', register)
+routerUser.post('/login', login)
 
-export default router
+routerUser.get('/me', authMiddleWare, userData)
+routerUser.get('/listar-usuarios', listarUsuarios)
+
+export default routerUser
