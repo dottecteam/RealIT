@@ -1,0 +1,3 @@
+# Types
+
+Interfaces do typescript.
