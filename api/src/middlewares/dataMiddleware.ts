@@ -1,23 +1,18 @@
-import {Request, Response, NextFunction} from 'express'
-import jwt from 'jsonwebtoken'
+import { Request, Response, NextFunction } from 'express'
 
-export function dataMiddleware(request: Request, response: Response, next: NextFunction){
-    const authHeader = request.headers.authorization
+function checarCampos(dados: string[]) {
+  return (request: Request, response: Response, next: NextFunction) => {
+    const faltando = dados.filter(dados => !request.body[dados])
 
-    //Valida se tem algum usuario logado
-    if(!authHeader || !authHeader.startsWith('Bearer ')){
-        return response.status(401).json({error: 'Token não fornecido'})
+    if (faltando.length > 0) {
+      return response.status(400).json({
+        error: 'Campos obrigatórios faltando',
+        campos: faltando
+      })
     }
-    
-    //Transforma o token num array e pega o valor do token
-    const token = authHeader.split(' ')[1]
 
-    try{
-        const decoded = jwt.verify(token, process.env.JWT_SECRET as string) as any
-        (request as any).userId = decoded.userId //Salva o id do usuario logado na request
-        next()
-    }
-    catch{
-        return response.status(401).json({error: 'Token inválido ou expirado'})
-    }
+    next()
+  }
 }
+
+export default checarCampos
