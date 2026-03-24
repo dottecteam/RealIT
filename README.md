@@ -32,52 +32,37 @@ O sistema integra dados de fontes oficiais (como Banco Central e outras APIs pú
 
 ## MVP
 
-O MVP do sistema será entregue em **3 sprints**, com evolução progressiva:
+O desenvolvimento do **Real IT** está estruturado em **3 sprints**, focando na evolução progressiva desde a fundação técnica até a entrega final ao usuário:
 
-### [Sprint 1 — Fundação de Dados](./docs/scrum/sprint-backlog/sprint-1.md)
-- Integração com APIs públicas (ex: Banco Central)
-- Pipeline de processamento e limpeza de dados
-- Armazenamento em banco de dados
-- API backend para consumo dos dados
+| Sprint | Foco do MVP | Entregas Principais (Épicos) |
+| :--- | :--- | :--- |
+| **[Sprint 1](./docs/scrum/sprint-backlog/sprint-1.md)**<br>*(16/03 - 05/04)* | **Fundação e Score** | Estruturação da base técnica: Integração com APIs, Pipeline de dados, Backend e a primeira versão do Índice de Oportunidade (Score). |
+| **[Sprint 2](./docs/scrum/sprint-backlog/sprint-2.md)**<br>*(06/04 - 03/05)* | **Visualização Avançada** | Dashboards interativos: Mapa de calor, ranking regional, sistemas de filtros e navegação entre macro e microrregiões. |
+| **[Sprint 3](./docs/scrum/sprint-backlog/sprint-3.md)**<br>*(04/05 - 31/05)* | **Refinamento e Acesso** | Camada de segurança (Auth), comparação entre regiões, exportação de relatórios (PDF/CSV) e o site institucional do produto. |
 
-### [Sprint 2 — Interface e Visualização](./docs/scrum/sprint-backlog/sprint-2.md)
-- Website institucional (landing, sobre, metodologia)
-- Sistema de autenticação (login)
-- Dashboard inicial com:
-  - Índice de Oportunidade (Score)
-  - Mapa de calor
-  - Ranking regional
-
-### [Sprint 3 — Refinamento e Entrega](./docs/scrum/sprint-backlog/sprint-3.md)
-- Filtros de análise por indicadores
-- Navegação entre macro e microrregiões
-- Exportação de dados (PDF, CSV, XLSX, XML)
-- Comparação entre regiões
-- Documentação do sistema
-
-> **MVP completo:** [Acessar MVP detalhado](./docs/scrum/product-backlog.md)
+> **MVP Detalhado:** [Consultar Backlog Completo](./docs/scrum/product-backlog.md)
 
 ---
 
 ## Backlog do Produto (Resumo)
 
-| ID | Funcionalidade | Prioridade | Sprint |
-|:--:|:---------------|:----------:|:------:|
-| 1 | Integração com APIs públicas (Banco Central e outras) | Alta | 1 |
-| 2 | Processamento e limpeza automática de dados | Alta | 1 |
-| 3 | API para consumo dos dados | Alta | 1 |
-| 4 | Autenticação de usuários | Alta | 2 |
-| 5 | Índice de Oportunidade (Score) | Alta | 2 |
-| 6 | Website institucional | Média | 2 |
-| 7 | Mapa de calor interativo | Média | 2 |
-| 8 | Ranking regional | Média | 2 |
-| 9 | Filtros no dashboard | Alta | 3 |
-| 10 | Navegação macro/microrregiões | Alta | 3 |
-| 11 | Exportação de dados | Média | 3 |
-| 12 | Comparação entre regiões | Baixa | 3 |
-| 13 | Documentação e manuais | Baixa | 3 |
+Abaixo, as principais funcionalidades priorizadas para o sucesso do projeto:
 
-> **Backlog completo:** [Acessar backlog detalhado](./docs/scrum/product-backlog.md)
+| ID | User Story (Desejo do Usuário) | Prioridade | Sprint |
+|:---|:---|:---:|:---:|
+| #1 | Coleta de dados reais (APIs Públicas/BC) | Alta | 1 |
+| #2 | Processamento e limpeza automática mensal | Alta | 1 |
+| #3 | Disponibilização de dados via API Backend | Alta | 1 |
+| #4 | Visualização do Índice de Oportunidade (Score) | Alta | 1 |
+| #5 | Mapa interativo de potencial de mercado | Alta | 2 |
+| #6 | Tabela de ranking regional para investimentos | Alta | 2 |
+| #7 | Filtros de indicadores para cenários | Média | 2 |
+| #8 | Filtro de granularidade (Macro/Micro) | Média | 2 |
+| #9 | Restrição de acesso por Autenticação (Login) | Média | 3 |
+| #10| Comparação detalhada entre duas regiões | Média | 3 |
+| #11| Exportação de dados (PDF, CSV, XLSX, XML) | Baixa | 3 |
+| #12| Website Institucional e Metodologia | Baixa | 3 |
+| #13| Manuais de uso e documentação final | Baixa | 3 |
 
 ---
 
