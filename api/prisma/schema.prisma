@@ -26,6 +26,7 @@ model Dados {
   cnae_ocupacao String
   porte String
   carteira_inadiplencia String
+  carteira_vencida Float?
 }
 
 model DadosPix {
@@ -42,4 +43,34 @@ model DadosPix {
   qt_recebedor_pf   Int   // Quantidade de transações Recebedor PF
   qt_pes_pagador_pf Int   // Quantidade de pagadores PF
   qt_pes_recebedor_pf Int // Quantidade de recebedores PF
+}
+
+model TaxaEscolarizacao {
+  id Int @id @default(autoincrement())
+  nn	String // Unidade da Federação
+  v	Float // Valor
+  d1n	String // Unidade da Federação
+  d3n	Int // Ano
+  d5n	String // Grupo de idade
+}
+
+model CrescimentoPopulacional {
+  id  Int @id @default(autoincrement())
+  d1n String // Unidade da Federação
+  d2n String // Taxa de crescimento geométrico
+  v Float // Valor
+}
+
+model PopulacaoAbsoluta {
+  id  Int @id @default(autoincrement())
+  d1n String // Unidade da Federação
+  d2n String // População residente
+  v Int // Valor
+}
+
+model BonusDemografico {
+  id Int    @id @default(autoincrement())
+  brasilGrandeRegiaoUf String // Localidade
+  total Int // População total
+  xy_anos Int // População total da idade de x a y anos
 }
