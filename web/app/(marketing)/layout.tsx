@@ -1,70 +1,18 @@
-"use client"; // necessário para o menu interativo
-
-import { useState } from "react";
 import Link from "next/link";
+
+// Componentes
+import { Navbar } from "../components/Navbar";
 
 export default function MarketingLayout({
     children,
 }: {
     children: React.ReactNode;
 }) {
-    const [isMenuOpen, setIsMenuOpen] = useState(false);
+
 
     return (
         <div className="flex min-h-screen flex-col bg-background font-sans">
-            {/* --- NAVBAR --- */}
-            <header className="w-full bg-primary text-white shadow-md z-50">
-                <div className="max-w-7xl mx-auto px-6 h-20 flex items-center justify-between">
-                    
-                    {/* LOGO */}
-                    <Link href="/" className="text-2xl font-black tracking-tighter">
-                        REAL <span className="text-secondary">IT</span>
-                    </Link>
-
-                    {/* DESKTOP NAV */}
-                    <nav className="hidden md:flex items-center gap-8 font-medium">
-                        <Link href="/funcionalidades" className="hover:text-secondary transition-colors">Funcionalidades</Link>
-                        <Link href="/sobre" className="hover:text-secondary transition-colors">Sobre nós</Link>
-                        <Link href="/precos" className="hover:text-secondary transition-colors">Preços</Link>
-                    </nav>
-
-                    {/* DESKTOP ACTIONS */}
-                    <div className="hidden md:flex items-center gap-4">
-                        <Link href="/login" className="font-semibold hover:opacity-80 transition-opacity">Entrar</Link>
-                        <Link href="/cadastro" className="bg-secondary text-primary px-6 py-2.5 rounded-full font-bold hover:brightness-110 transition-all active:scale-95 shadow-sm">
-                            Começar agora
-                        </Link>
-                    </div>
-
-                    {/* MOBILE MENU BUTTON */}
-                    <button 
-                        className="md:hidden p-2 text-secondary"
-                        onClick={() => setIsMenuOpen(!isMenuOpen)}
-                    >
-                        <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            {isMenuOpen ? (
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                            ) : (
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16m-7 6h7" />
-                            )}
-                        </svg>
-                    </button>
-                </div>
-
-                {/* MOBILE NAV DROPDOWN */}
-                {isMenuOpen && (
-                    <div className="md:hidden bg-primary-dark border-t border-white/10 p-6 space-y-4 flex flex-col items-center animate-in slide-in-from-top duration-300">
-                        <Link href="/funcionalidades" className="text-lg font-medium">Funcionalidades</Link>
-                        <Link href="/sobre" className="text-lg font-medium">Sobre nós</Link>
-                        <Link href="/precos" className="text-lg font-medium">Preços</Link>
-                        <hr className="w-full border-white/10" />
-                        <Link href="/login" className="font-bold">Entrar</Link>
-                        <Link href="/cadastro" className="bg-secondary text-primary w-full text-center py-3 rounded-full font-bold">
-                            Começar agora
-                        </Link>
-                    </div>
-                )}
-            </header>
+            <Navbar/>
 
             <main className="flex-grow">
                 {children}
