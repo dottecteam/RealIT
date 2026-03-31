@@ -74,3 +74,19 @@ model BonusDemografico {
   total Int // População total
   xy_anos Int // População total da idade de x a y anos
 }
+
+model RiscoCredito {
+  id Int @id @default(autoincrement())
+  inadimplenciaReal Int // Taxa de negativados (CPFs) ativos na UF
+  FragilidadeRenda String // Classe social
+  AgingDivida Float // Tempo médio de atraso das dívidas em aberto
+  VulnerabilidadeSocial String // Escolaridade
+}
+
+model InclusaoDemografica {
+  id Int @id @default(autoincrement())
+  MaturidadePix Float // Volume e valores de transações per capita (P2B)
+  CrescimentoPopulacional Float // Taxa de variação anual da população na UF
+  PopulacaoAbsoluta Int // Total de habitantes (Mercado Endereçável)
+  BonusDemografico Float // Idade média: Regiões jovens indica maior ciclo de vida
+}

@@ -1,12 +1,11 @@
 import {Router} from 'express';
 import {criarDados, criarDadosPIX, criarDadosTaxaEscolarizacao, 
-  criarDadosCresPopulacional, criarDadosPopAbsoluta, criarDadosBonusDemografico,
-  listarDados, listarDadosPIX, listarTaxaEscolarizacao, 
-  listarCrescimentoPopulacional, listarPopAbsoluta, listarBonusDemografico} from '../controllers/dataController';
+  criarDadosCresPopulacional, criarDadosPopAbsoluta, criarDadosBonusDemografico, criarDadosRiscoCredito, criarDadosInclusaoDemografica, listarDados, listarDadosPIX, listarTaxaEscolarizacao, 
+  listarCrescimentoPopulacional, listarPopAbsoluta, listarBonusDemografico, listarRiscoCredito, listarInclusaoDemografica} from '../controllers/dataController';
 
 import { validateData } from '../middlewares/dataMiddleware';
 import {dadosSchema, dadosPixSchema, taxaEscolarizacaoSchema, 
-  crescimentoPopulacionalSchema, populacaoAbsolutaSchema, bonusDemograficoSchema} from '../schemas/validationSchemas';
+  crescimentoPopulacionalSchema, populacaoAbsolutaSchema, bonusDemograficoSchema, riscoCreditoSchema, inclusaoDemograficaSchema} from '../schemas/validationSchemas';
 
 const routerDados = Router();
 
@@ -16,6 +15,8 @@ routerDados.post('/receber-taxa', validateData(taxaEscolarizacaoSchema), criarDa
 routerDados.post('/receber-crescimento', validateData(crescimentoPopulacionalSchema), criarDadosCresPopulacional);
 routerDados.post('/receber-populacao', validateData(populacaoAbsolutaSchema), criarDadosPopAbsoluta);
 routerDados.post('/receber-bonus', validateData(bonusDemograficoSchema), criarDadosBonusDemografico);
+routerDados.post('/receber-risco', validateData(riscoCreditoSchema), criarDadosRiscoCredito);
+routerDados.post('/receber-inclusao', validateData(inclusaoDemograficaSchema), criarDadosInclusaoDemografica);
 
 routerDados.get('/listar-dados', listarDados);
 routerDados.get('/listar-dados-pix', listarDadosPIX);
@@ -23,5 +24,7 @@ routerDados.get('/listar-taxa', listarTaxaEscolarizacao);
 routerDados.get('/listar-crescimento', listarCrescimentoPopulacional);
 routerDados.get('/listar-populacao', listarPopAbsoluta);
 routerDados.get('/listar-bonus', listarBonusDemografico);
+routerDados.get('/listar-risco', listarRiscoCredito);
+routerDados.get('/listar-inclusao', listarInclusaoDemografica);
 
 export default routerDados;

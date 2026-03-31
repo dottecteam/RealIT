@@ -56,3 +56,17 @@ export const bonusDemograficoSchema = z.object({
   total: z.number().int('População total deve ser um número inteiro'),
   xy_anos: z.number().int('População da idade específica deve ser um número inteiro')
 })
+
+export const riscoCreditoSchema = z.object({
+  inadimplenciaReal: z.number().int('Taxa de negativados deve ser um número inteiro'),
+  FragilidadeRenda: z.string().min(1, 'Classe social (FragilidadeRenda) é obrigatória'),
+  AgingDivida: z.number({ message: 'Tempo médio de atraso (AgingDivida) deve ser um número' }),
+  VulnerabilidadeSocial: z.string().min(1, 'Escolaridade (VulnerabilidadeSocial) é obrigatória')
+})
+
+export const inclusaoDemograficaSchema = z.object({
+  MaturidadePix: z.number({ message: 'Maturidade Pix deve ser um número' }),
+  CrescimentoPopulacional: z.number({ message: 'Crescimento populacional deve ser um número' }),
+  PopulacaoAbsoluta: z.number().int('População absoluta deve ser um número inteiro'),
+  BonusDemografico: z.number({ message: 'Bônus demográfico deve ser um número' })
+})

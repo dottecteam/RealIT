@@ -166,6 +166,42 @@ export async function criarDadosBonusDemografico(request: Request, response: Res
     }
 }
 
+export async function criarDadosRiscoCredito(request: Request, response: Response) {
+    const { inadimplenciaReal, FragilidadeRenda, AgingDivida, VulnerabilidadeSocial } = request.body
+    
+    if(!inadimplenciaReal || !FragilidadeRenda || !AgingDivida || !VulnerabilidadeSocial){
+        return response.status(400).json({error: 'Campos obrigatórios faltando'})
+    }
+
+    try {
+        const dado = await prisma.riscoCredito.create({
+            data: { inadimplenciaReal, FragilidadeRenda, AgingDivida, VulnerabilidadeSocial }
+        })
+        return response.status(201).json({ message: 'Risco de Crédito cadastrado com sucesso', dado })
+    } catch (error) {
+        console.error(error)
+        return response.status(500).json({ error: 'Erro ao receber Risco de Crédito' })
+    }
+}
+
+export async function criarDadosInclusaoDemografica(request: Request, response: Response) {
+    const { MaturidadePix, CrescimentoPopulacional, PopulacaoAbsoluta, BonusDemografico } = request.body
+    
+    if(!MaturidadePix || !CrescimentoPopulacional || !PopulacaoAbsoluta || !BonusDemografico) {
+        return response.status(400).json({error: 'Campos obrigatórios faltando'})
+    }
+
+    try {
+        const dado = await prisma.inclusaoDemografica.create({
+            data: { MaturidadePix, CrescimentoPopulacional, PopulacaoAbsoluta, BonusDemografico }
+        })
+        return response.status(201).json({ message: 'Inclusão Demográfica cadastrada com sucesso', dado })
+    } catch (error) {
+        console.error(error)
+        return response.status(500).json({ error: 'Erro ao receber Inclusão Demográfica' })
+    }
+}
+
 export async function listarDados(request: Request, response: Response) {
   try {
     const dados = await prisma.dados.findMany()
@@ -217,5 +253,23 @@ export async function listarBonusDemografico(request: Request, response: Respons
     return response.json(bonus)
   } catch (error) {
     return response.status(500).json({ error: 'Erro ao buscar Bônus Demográfico' })
+  }
+}
+
+export async function listarRiscoCredito(request: Request, response: Response) {
+  try {
+    const dados = await prisma.riscoCredito.findMany()
+    return response.json(dados)
+  } catch (error) {
+    return response.status(500).json({ error: 'Erro ao buscar Risco de Crédito' })
+  }
+}
+
+export async function listarInclusaoDemografica(request: Request, response: Response) {
+  try {
+    const dados = await prisma.inclusaoDemografica.findMany()
+    return response.json(dados)
+  } catch (error) {
+    return response.status(500).json({ error: 'Erro ao buscar Inclusão Demográfica' })
   }
 }
