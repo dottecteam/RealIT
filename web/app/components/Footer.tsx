@@ -1,8 +1,7 @@
 import { Facebook, Instagram, Linkedin } from "lucide-react";
 import { Logo } from "./Logo";
-import { Sociallink } from "./Sociallink"; // Ajuste o caminho conforme sua estrutura
+import { Sociallink } from "./Sociallink";
 
-// Array com os dados das redes sociais
 const SOCIAL_LINKS = [
     {
         id: "facebook",
@@ -36,7 +35,6 @@ export function Footer() {
                     </p>
                 </div>
 
-                {/* Renderização dinâmica com map */}
                 <div className="flex gap-4">
                     {SOCIAL_LINKS.map((social) => (
                         <Sociallink
