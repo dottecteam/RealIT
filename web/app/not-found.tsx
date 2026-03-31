@@ -9,7 +9,7 @@ export default function NotFound() {
                 Ops! O conteúdo que você está procurando não existe ou foi movido.
             </p>
             <Link
-                href="/"
+                href="/home"
                 className="mt-6 px-6 py-3 bg-primary text-white rounded-full font-medium hover:opacity-90 transition-opacity"
             >
                 Voltar para o Início

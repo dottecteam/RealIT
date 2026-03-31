@@ -17,7 +17,7 @@ export function Navlink({
                 "--hover-color": hoverColor || "var(--secondary)"
             } as React.CSSProperties}
         >
-            <span className={!hoverColor ? "hover:text-secondary" : ""}>
+            <span className={!hoverColor ? "flex gap-2 hover:text-secondary" : ""}>
                 {children}
             </span>
         </Link>

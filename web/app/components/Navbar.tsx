@@ -17,7 +17,7 @@ import { Navlink } from "./Navlink";
 export function Navbar() {
     const [isMenuOpen, setIsMenuOpen] = useState(false);
 
-    const routes = [
+    const ROUTES = [
         { label: "Funcionalidades", route: "/funcionalidades" },
         { label: "Sobre", route: "/sobre" },
         { label: "Contato", route: "/contato" }
@@ -32,7 +32,7 @@ export function Navbar() {
 
                 {/* DESKTOP NAV */}
                 <nav className="hidden md:flex items-center gap-8 font-medium text-sm lg:text-base">
-                    {routes.map((item) => (
+                    {ROUTES.map((item) => (
                         <Navlink key={item.route} link={item.route}>
                             {item.label}
                         </Navlink>
@@ -63,7 +63,7 @@ export function Navbar() {
             {/* MOBILE NAV DROPDOWN */}
             {isMenuOpen && (
                 <div className="md:hidden bg-primary-dark border-t border-white/10 p-6 space-y-4 flex flex-col animate-in slide-in-from-top duration-300">
-                    {routes.map((item) => (
+                    {ROUTES.map((item) => (
                         <Navlink key={item.route} link={item.route} className="text-lg justify-center">
                             {item.label}
                         </Navlink>
