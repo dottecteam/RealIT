@@ -57,6 +57,8 @@ Link: https://www.bcb.gov.br/pda/desig/metodologia_versao2.pdf
     * \> 100.000
 
 * **carteira_vencida**
+* <mark>**carteira_ativa**</mark>
+* <mark>**vencido_acima_de_90_dias**</mark>
 
 ---
 
@@ -208,41 +210,45 @@ Antes de inserir os dados no banco, o script de processamento deve padronizar e 
 Detalha a metodologia de cálculo para a identificação de mercados potenciais no Brasil. Essas são regiões com baixo risco de inadimplência, mas que ainda possuem baixa inclusão financeira e alto potencial de crescimento demográfico.
 
 ## 1. Eixo I – Risco de Crédito (RC)
-* **Objetivo:** Medir a segurança da concessão. Escala progressiva (1.0 a 5.0). <br>
+* **Objetivo:** Medir a segurança da concessão. Escala progressiva (1.0 a 5.0). Escala geográfica: Estados<br>
   **Regra:** Quanto maior a nota, maior o risco/perigo da operação.
 
-| Parâmetro (z) | Descrição técnica | Peso (W) |
-| :--- | :--- | :--- |
-| **Inadimplência Real** | Taxa de negativados (CPFs) ativos na UF. | 35% |
-| **Fragilidade de Renda** | Classe social | 35% |
-| **Aging da Dívida** | Tempo médio de atraso das dívidas em aberto | 20% |
-| **Vulnerabilidade Social** | Escolaridade | 10% |
+| Parâmetro (z) | Descrição técnica | Métrica* | Peso (W) |
+| :--- | :--- | :--- | :--- |
+| **Inadimplência Real** | Taxa de negativados (CPFs) ativos na UF. | X<sub>UF</sub> = Σ carteira_inadimplencia / Σ carteira_ativa | 35% |
+| **Fragilidade de Renda** | Classe social | X<sub>UF</sub> = Σ carteira_ativa (PF até 3SM) / Σ carteira_ativa total (PF) | 35% |
+| **Aging da Dívida** | Tempo médio de atraso das dívidas em aberto > 90 dias | X<sub>UF</sub> = Σ vencido_acima_de_90_dias / carteira_vencida | 20% |
+| **Vulnerabilidade Social** | Escolaridade | X<sub>UF</sub> = 100 - Taxa da faixa etária "25 anos ou mais" | 10% |
+
+*Deve ser aplicada a normalização (z) para todas as métricas, sendo o máx e min definido com base nas UFs
 
 * Na base de dados os parâmetros z podem ser obtidos das seguintes fontes: 
 
 | Parâmetro (z) | Variáveis a considerar | Database |
 | :--- | :--- | :--- |
-| **Inadimplência Real** | Carteira_inadimplencia, uf | SCR.data |
-| **Fragilidade de Renda** | Porte | SCR.data |
-| **Aging da Dívida** | Carteira_vencida | SCR.data |
+| **Inadimplência Real** | Carteira_inadimplencia, uf, <mark>carteira_ativa</mark> | SCR.data |
+| **Fragilidade de Renda** | <mark>carteira_ativa</mark> | SCR.data |
+| **Aging da Dívida** | Carteira_vencida, <mark>vencido_acima_de_90_dias</mark> | SCR.data |
 | **Vulnerabilidade Social** | NN, V, D1N, D3N, D5N | IBGE |
 
 ## 2. Eixo II – Inclusão e Expansão Demográfica (IE)
 * **Objetivo:** Medir saturação e potencial futuro. Escala progressiva (1.0 a 5.0). <br>
   **Regra:** Quanto maior a nota, mais saturado e populoso é o mercado.
 
-| Parâmetro (z) | Descrição técnica | Peso (W) |
-| :--- | :--- | :--- |
-| **Maturidade Pix** | Volume e valores de transações per capita (P2B). | 25% |
-| **Crescimento Populacional** | Taxa de variação anual da população na UF | 20% |
-| **População Absoluta** | Total de habitantes (Mercado Endereçável) | 20% |
-| **Bônus Demográfico** | Idade média: Regiões jovens indica maior ciclo de vida | 15% |
+| Parâmetro (z) | Descrição técnica | Métrica* | Peso (W) |
+| :--- | :--- | :--- | :--- |
+| **Maturidade Pix** | Volume e valores de transações per capita | X<sub>1</sub> = Σ QT_PagadorPF / Σ QT_PES_PagadorPF <br> X<sub>2</sub> = Σ VL_PagadorPF / Σ QT_PES_PagadorPF <br><br> Z<sub>UF</sub> = (z<sub>1</sub> * 0.6) + (z<sub>2</sub> * 0.4) | 35% |
+| **Crescimento Populacional** | Taxa de variação anual da população na UF | X<sub>UF</sub> = Taxa de Crescimento Geométrico | 25% |
+| **População Absoluta** | Total de habitantes (Mercado Endereçável) | X<sub>UF</sub> = População residente | 25% |
+| **Bônus Demográfico** | Idade média: Regiões jovens indicam maior ciclo de vida | IdadeMedia<sub>UF</sub> = Σ (população de x a y anos) * ((x+y)/2) / Σ total <br><br> X<sub>UF</sub> = IdadeMedia<sub>máx</sub> - IdadeMedia<sub>UF</sub> | 15% |
+
+*Deve ser aplicada a normalização (z) para todas as métricas, sendo o máx e min definido com base nas UFs
 
 * Na base de dados os parâmetros z podem ser obtidos das seguintes fontes:
 
 | Parâmetro (z) | Variáveis a considerar | Database |
 | :--- | :--- | :--- |
-| **Maturidade Pix** | AnoMes, Municipio_Ibge, Municipio, Estado_Ibge, Estado, Regiao, VL_PagadorPF, QT_PagadorPF, VL_RecebedorPF, QT_RecebedorPF, QT_PES_PagadorPF, QT_PES_RecebedorPF | Estatísticas Pix |
+| **Maturidade Pix** | AnoMes, Municipio_Ibge, Municipio, Estado_Ibge, Estado, Regiao, VL_PagadorPF, QT_PagadorPF, QT_PES_PagadorPF | Estatísticas Pix |
 | **Crescimento populacional** | D1N, D2N "Taxa de crescimento geométrico", V | IBGE – Censo 2022 |
 | **População Absoluta** | D1N, D2N "População residente", V | IBGE – Censo 2022 |
 | **Bônus Demográfico** | Brasil, total, x a y anos | IBGE – Censo 2022 |
