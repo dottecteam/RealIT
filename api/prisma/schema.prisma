@@ -25,8 +25,10 @@ model Dados {
   cliente String
   cnae_ocupacao String
   porte String
-  carteira_inadiplencia String
-  carteira_vencida Float?
+  carteira_inadiplencia Float
+  carteira_vencida Float @default(0)
+  carteira_ativa Float @default(0)
+  carteira_acima_de_90_dias Float @default(0)
 }
 
 model DadosPix {
@@ -39,10 +41,7 @@ model DadosPix {
   sigla_regiao      String
   vl_pagador_pf     Float   // Volume financeiro Pagador PF
   qt_pagador_pf     Int   // Quantidade de transações Pagador PF
-  vl_recebedor_pf   Float   // Volume financeiro Recebedor PF
-  qt_recebedor_pf   Int   // Quantidade de transações Recebedor PF
   qt_pes_pagador_pf Int   // Quantidade de pagadores PF
-  qt_pes_recebedor_pf Int // Quantidade de recebedores PF
 }
 
 model TaxaEscolarizacao {
@@ -72,15 +71,15 @@ model BonusDemografico {
   id Int    @id @default(autoincrement())
   brasilGrandeRegiaoUf String // Localidade
   total Int // População total
-  xy_anos Int // População total da idade de x a y anos
+  xy_anos String // População total da idade de x a y anos
 }
 
 model RiscoCredito {
   id Int @id @default(autoincrement())
-  inadimplenciaReal Int // Taxa de negativados (CPFs) ativos na UF
-  FragilidadeRenda String // Classe social
+  inadimplenciaReal Float // Taxa de negativados (CPFs) ativos na UF
+  FragilidadeRenda Float // Classe social
   AgingDivida Float // Tempo médio de atraso das dívidas em aberto
-  VulnerabilidadeSocial String // Escolaridade
+  VulnerabilidadeSocial Float // Escolaridade
 }
 
 model InclusaoDemografica {
