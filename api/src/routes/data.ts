@@ -5,7 +5,7 @@ import {criarDados, criarDadosPIX, criarDadosTaxaEscolarizacao,
 
 import { validateData } from '../middlewares/dataMiddleware';
 import {dadosSchema, dadosPixSchema, taxaEscolarizacaoSchema, 
-  crescimentoPopulacionalSchema, populacaoAbsolutaSchema, bonusDemograficoSchema, riscoCreditoSchema, inclusaoDemograficaSchema} from '../schemas/validationSchemas';
+  crescimentoPopulacionalSchema, populacaoAbsolutaSchema, bonusDemograficoSchema, inclusaoDemograficaSchema} from '../schemas/validationSchemas';
 
 const routerDados = Router();
 
@@ -15,7 +15,7 @@ routerDados.post('/receber-taxa', validateData(taxaEscolarizacaoSchema), criarDa
 routerDados.post('/receber-crescimento', validateData(crescimentoPopulacionalSchema), criarDadosCresPopulacional);
 routerDados.post('/receber-populacao', validateData(populacaoAbsolutaSchema), criarDadosPopAbsoluta);
 routerDados.post('/receber-bonus', validateData(bonusDemograficoSchema), criarDadosBonusDemografico);
-routerDados.post('/receber-risco', validateData(riscoCreditoSchema), criarDadosRiscoCredito);
+routerDados.post('/receber-risco', criarDadosRiscoCredito);
 routerDados.post('/receber-inclusao', validateData(inclusaoDemograficaSchema), criarDadosInclusaoDemografica);
 
 routerDados.get('/listar-dados', listarDados);

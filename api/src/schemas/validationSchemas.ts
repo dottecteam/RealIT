@@ -12,7 +12,7 @@ export const dadosSchema = z.object({
   cliente: z.string().min(1, 'Cliente é obrigatório'),
   cnae_ocupacao: z.string().min(1, 'CNAE é obrigatório'),
   porte: z.string().min(1, 'Porte é obrigatório'),
-  carteira_inadiplencia: z.string().min(1, 'Carteira inadimplência é obrigatória'),
+  carteira_inadiplencia: z.number(),
   carteira_vencida: z.number().optional()
 })
 
@@ -57,12 +57,7 @@ export const bonusDemograficoSchema = z.object({
   xy_anos: z.number().int('População da idade específica deve ser um número inteiro')
 })
 
-export const riscoCreditoSchema = z.object({
-  inadimplenciaReal: z.number().int('Taxa de negativados deve ser um número inteiro'),
-  FragilidadeRenda: z.string().min(1, 'Classe social (FragilidadeRenda) é obrigatória'),
-  AgingDivida: z.number({ message: 'Tempo médio de atraso (AgingDivida) deve ser um número' }),
-  VulnerabilidadeSocial: z.string().min(1, 'Escolaridade (VulnerabilidadeSocial) é obrigatória')
-})
+  
 
 export const inclusaoDemograficaSchema = z.object({
   MaturidadePix: z.number({ message: 'Maturidade Pix deve ser um número' }),

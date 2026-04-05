@@ -2,7 +2,7 @@ import e, {Request, Response} from 'express'
 import {prisma} from '../lib/prisma'
 
 export async function criarDados(request: Request, response: Response) {
-    const {data_base, uf, cliente, cnae_ocupacao, porte, carteira_inadiplencia, carteira_vencida} = request.body
+    const {data_base, uf, cliente, cnae_ocupacao, porte, carteira_inadiplencia, carteira_vencida, carteira_ativa, carteira_acima_de_90_dias} = request.body
 
     if(!data_base || !uf || !cliente){
         return response.status(400).json({error: 'Campos obrigatórios faltando'})
@@ -17,7 +17,9 @@ export async function criarDados(request: Request, response: Response) {
                 cnae_ocupacao, 
                 porte, 
                 carteira_inadiplencia,
-                carteira_vencida
+                carteira_vencida,
+                carteira_ativa,
+                carteira_acima_de_90_dias
             }
         })
 
@@ -31,7 +33,7 @@ export async function criarDados(request: Request, response: Response) {
 }
 
 export async function criarDadosPIX(request: Request, response: Response) {
-    const {ano_mes, municipio_ibge, municipio, estado_ibge, estado, sigla_regiao, vl_pagador_pf, qt_pagador_pf, vl_recebedor_pf, qt_recebedor_pf, qt_pes_pagador_pf, qt_pes_recebedor_pf } = request.body
+    const {ano_mes, municipio_ibge, municipio, estado_ibge, estado, sigla_regiao, vl_pagador_pf, qt_pagador_pf, qt_pes_pagador_pf } = request.body
 
     if(!ano_mes || !sigla_regiao || !municipio_ibge){
         return response.status(400).json({error: 'Campos obrigatórios faltando'})
@@ -48,10 +50,7 @@ export async function criarDadosPIX(request: Request, response: Response) {
                 sigla_regiao, 
                 vl_pagador_pf, 
                 qt_pagador_pf, 
-                vl_recebedor_pf, 
-                qt_recebedor_pf, 
-                qt_pes_pagador_pf, 
-                qt_pes_recebedor_pf 
+                qt_pes_pagador_pf
             }
         })
 
@@ -207,6 +206,7 @@ export async function listarDados(request: Request, response: Response) {
     const dados = await prisma.dados.findMany()
     return response.json(dados)
   } catch (error) {
+     console.error("ERRO LISTAR DADOS:", error)
     return response.status(500).json({ error: 'Erro ao buscar dados' })
   }
 }
