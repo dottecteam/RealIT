@@ -1,4 +1,4 @@
-# Indicadores — Score de Crédito e Expansão Territorial(Potencialmente Úteis)
+# Indicadores — Score de Crédito e Expansão Territorial (Potencialmente Úteis)
 
 ## Eixo I — Risco de Crédito (RC)
 
