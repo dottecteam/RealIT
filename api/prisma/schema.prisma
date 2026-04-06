@@ -1,0 +1,55 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Get a free hosted Postgres database in seconds: `npx create-db`
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+}
+
+model User { 
+  id    Int     @id @default(autoincrement()) 
+  email String  @unique
+  name  String?
+  password String
+} 
+
+model ScoreUf {
+  id                    Int    @id @default(autoincrement())
+  uf                    String @unique
+
+  // Eixo I
+  score_inadimplencia   Float?
+  score_fragilidade     Float?
+  score_aging_divida    Float?
+  score_escolarizacao   Float?
+  score_eixo_i          Float?
+
+  // Eixo II
+  score_maturidade      Float?
+  score_crescimento     Float?
+  score_populacao       Float?
+  score_eixo_ii         Float?
+}
+
+model MediaRegiao {
+  id                    Int    @id @default(autoincrement())
+  regiao                String @unique
+
+  // Eixo I
+  media_inadimplencia   Float?
+  media_fragilidade     Float?
+  media_aging_divida    Float?
+  media_escolarizacao   Float?
+  media_score_eixo_i    Float?
+
+  // Eixo II
+  media_maturidade      Float?
+  media_crescimento     Float?
+  media_populacao       Float?
+  media_score_eixo_ii   Float?
+}
