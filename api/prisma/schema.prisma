@@ -18,74 +18,38 @@ model User {
   password String
 } 
 
-model Dados {
-  id Int @id @default(autoincrement())
-  data_base String
-  uf String
-  cliente String
-  cnae_ocupacao String
-  porte String
-  carteira_inadiplencia Float
-  carteira_vencida Float @default(0)
-  carteira_ativa Float @default(0)
-  carteira_acima_de_90_dias Float @default(0)
+model ScoreUf {
+  id                    Int    @id @default(autoincrement())
+  uf                    String @unique
+
+  // Eixo I
+  score_inadimplencia   Float?
+  score_fragilidade     Float?
+  score_aging_divida    Float?
+  score_escolarizacao   Float?
+  score_eixo_i          Float?
+
+  // Eixo II
+  score_maturidade      Float?
+  score_crescimento     Float?
+  score_populacao       Float?
+  score_eixo_ii         Float?
 }
 
-model DadosPix {
-  id Int @id @default(autoincrement())
-  ano_mes           Int     // Corresponde ao Data-base AAAAMM
-  municipio_ibge    Int     // Código IBGE do município
-  municipio         String
-  estado_ibge       Int     // Código IBGE do estado
-  estado            String
-  sigla_regiao      String
-  vl_pagador_pf     Float   // Volume financeiro Pagador PF
-  qt_pagador_pf     Int   // Quantidade de transações Pagador PF
-  qt_pes_pagador_pf Int   // Quantidade de pagadores PF
-}
+model MediaRegiao {
+  id                    Int    @id @default(autoincrement())
+  regiao                String @unique
 
-model TaxaEscolarizacao {
-  id Int @id @default(autoincrement())
-  nn	String // Unidade da Federação
-  v	Float // Valor
-  d1n	String // Unidade da Federação
-  d3n	Int // Ano
-  d5n	String // Grupo de idade
-}
+  // Eixo I
+  media_inadimplencia   Float?
+  media_fragilidade     Float?
+  media_aging_divida    Float?
+  media_escolarizacao   Float?
+  media_score_eixo_i    Float?
 
-model CrescimentoPopulacional {
-  id  Int @id @default(autoincrement())
-  d1n String // Unidade da Federação
-  d2n String // Taxa de crescimento geométrico
-  v Float // Valor
-}
-
-model PopulacaoAbsoluta {
-  id  Int @id @default(autoincrement())
-  d1n String // Unidade da Federação
-  d2n String // População residente
-  v Int // Valor
-}
-
-model BonusDemografico {
-  id Int    @id @default(autoincrement())
-  brasilGrandeRegiaoUf String // Localidade
-  total Int // População total
-  xy_anos String // População total da idade de x a y anos
-}
-
-model RiscoCredito {
-  id Int @id @default(autoincrement())
-  inadimplenciaReal Float // Taxa de negativados (CPFs) ativos na UF
-  FragilidadeRenda Float // Classe social
-  AgingDivida Float // Tempo médio de atraso das dívidas em aberto
-  VulnerabilidadeSocial Float // Escolaridade
-}
-
-model InclusaoDemografica {
-  id Int @id @default(autoincrement())
-  MaturidadePix Float // Volume e valores de transações per capita (P2B)
-  CrescimentoPopulacional Float // Taxa de variação anual da população na UF
-  PopulacaoAbsoluta Int // Total de habitantes (Mercado Endereçável)
-  BonusDemografico Float // Idade média: Regiões jovens indica maior ciclo de vida
+  // Eixo II
+  media_maturidade      Float?
+  media_crescimento     Float?
+  media_populacao       Float?
+  media_score_eixo_ii   Float?
 }
