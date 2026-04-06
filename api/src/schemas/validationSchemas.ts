@@ -7,7 +7,7 @@ export const userSchema = z.object({
 })
 
 export const scoreUf = z.object({
-  uf: z.number(),
+  uf: z.string(),
   score_inadimplencia: z.number(), 
   score_fragilidade: z.number(), 
   score_aging_divida: z.number(), 
@@ -20,7 +20,7 @@ export const scoreUf = z.object({
 })
 
 export const mediaRegiao = z.object({
-  regiao: z.number(), 
+  regiao: z.string(), 
   media_inadimplencia: z.number(), 
   media_fragilidade: z.number(), 
   media_aging_divida: z.number(), 
@@ -32,3 +32,5 @@ export const mediaRegiao = z.object({
   media_score_eixo_ii: z.number()
 })
 
+export const scoreUfArray = z.array(scoreUf)
+export const mediaRegiaoArray = z.array(mediaRegiao)

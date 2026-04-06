@@ -1,7 +1,7 @@
 import {Router} from 'express';
 import { criarDadosScore, criarDadosMediaRegiao, listarDados } from '../controllers/scoreController';
 import { validateData } from '../middlewares/dataMiddleware';
-import { scoreUf, mediaRegiao} from '../schemas/validationSchemas';
+import { scoreUfArray, mediaRegiaoArray } from '../schemas/validationSchemas';
 
 const routerDados = Router();
 
@@ -24,14 +24,13 @@ const routerDados = Router();
 // routerDados.get('/listar-inclusao', listarInclusaoDemografica);
 
 
-//Dados Score
-routerDados.post('/receber-scoreUf', validateData(scoreUf), criarDadosScore)
+// Dados Score
+routerDados.post('/receber-scoreUf', validateData(scoreUfArray), criarDadosScore)
 
-//Dados MediaRegiao
-routerDados.post('/receber-mediaRegiao', validateData(mediaRegiao), criarDadosMediaRegiao)
+// Dados MediaRegiao
+routerDados.post('/receber-mediaRegiao', validateData(mediaRegiaoArray), criarDadosMediaRegiao)
 
-//Listar dados gerais
-
+// Listar dados gerais
 routerDados.get('/listar-dados', listarDados)
 
 
