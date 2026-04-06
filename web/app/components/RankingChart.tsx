@@ -68,7 +68,7 @@ export function RankingChart({ pontuacoes }: RankingChartProps) {
         Brasil - Rank
       </h3>
 
-      <div className="w-full h-[350px]">
+      <div className="w-full h-87.5">
         <ReactApexChart
           options={chartData.options}
           series={chartData.series}
