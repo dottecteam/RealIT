@@ -11,45 +11,76 @@ datasource db {
   provider = "sqlite"
 }
 
+enum Role {
+  USER
+  ADMIN
+}
+
 model User { 
   id    Int     @id @default(autoincrement()) 
   email String  @unique
   name  String?
   password String
+  createdAt DateTime @default(now())
+  role Role
 } 
 
-model ScoreUf {
-  id                    Int    @id @default(autoincrement())
-  uf                    String @unique
-
-  // Eixo I
-  score_inadimplencia   Float?
-  score_fragilidade     Float?
-  score_aging_divida    Float?
-  score_escolarizacao   Float?
-  score_eixo_i          Float?
-
-  // Eixo II
-  score_maturidade      Float?
-  score_crescimento     Float?
-  score_populacao       Float?
-  score_eixo_ii         Float?
+model RiscoCredito{
+  id Int @id @default(autoincrement())
+  mesAno String
+  uf String
+  regiao String
+  inadiplenciaReal Float 
+  fragilidadeRenda Float
+  agingDivida Float
+  vulnerabilidadeSocial Float
 }
 
-model MediaRegiao {
-  id                    Int    @id @default(autoincrement())
-  regiao                String @unique
+model inclusaoExpansao{
+  id Int @id @default(autoincrement())
+  mesAno String
+  uf String
+  regiao String
+  maturidadePix Float 
+  crescimentoPopulacional Float
+  populacaoAbsoluta Float
+  bonusDemografico Float
+}
 
-  // Eixo I
-  media_inadimplencia   Float?
-  media_fragilidade     Float?
-  media_aging_divida    Float?
-  media_escolarizacao   Float?
-  media_score_eixo_i    Float?
+model FiltroScore{
+  id Int @id @default(autoincrement())
+  idUsuario Int
+  mesInicial Int
+  mesFinal Int
+  inadiplenciaRealPeso Float 
+  fragilidadeRendaPeso Float
+  agingDividaPeso Float
+  vulnerabilidadeSocialPeso Float
+  maturidadePixPeso Float 
+  crescimentoPopulacionalPeso Float
+  populacaoAbsolutaPeso Float
+  bonusDemograficoPeso Float
+}
 
-  // Eixo II
-  media_maturidade      Float?
-  media_crescimento     Float?
-  media_populacao       Float?
-  media_score_eixo_ii   Float?
+model EstruturaSrcPix{
+  id Int @id @default(autoincrement())
+  ano_mes String
+  regiao String
+  uf String
+  tipo String
+  classe String
+  metrica String
+  origem String
+  valor Float
+}
+
+model EstruturaIBGE{
+  id Int @id @default(autoincrement())
+  ano String
+  regiao String
+  uf String
+  taxa_escolarizacao Float
+  populacao_residente Int
+  taxa_crescimento Float
+  variacao_populacao Int
 }
