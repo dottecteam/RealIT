@@ -23,7 +23,8 @@ model User {
   name      String?
   password  String
   createdAt DateTime   @default(now())
-  status    UserStatus @default(ACTIVE) // Substitui o Role pelo Status solicitado
+  updatedAt DateTime   @updatedAt
+  status    UserStatus @default(ACTIVE)
   sessions  Session[]
 }
 
@@ -34,13 +35,15 @@ model Session {
   deviceInfo   String?
   createdAt    DateTime @default(now())
   expiresAt    DateTime
+  logoutAt     DateTime?
+  isActive     Boolean  @default(true)
   user         User     @relation(fields: [userId], references: [id])
   logs         Log[]
 }
 
 model Log {
   id        Int      @id @default(autoincrement())
-  operation String   // Ex: "CREATE_SCORE", "UPDATE_USER"
+  operation String   
   sessionId String
   createdAt DateTime @default(now())
   session   Session  @relation(fields: [sessionId], references: [id])
