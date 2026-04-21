@@ -34,3 +34,30 @@ export async function seedAdmin(req: Request, res: Response) {
         return res.status(500).json({ error: 'Erro ao criar seed.' });
     }
 }
+
+export async function getUsers(req: Request, res: Response) {
+    const users = await prisma.user.findMany({
+        orderBy: { createdAt: 'desc' }
+    });
+    return res.json(users);
+}
+
+export async function getSessions(req: Request, res: Response) {
+    const sessions = await prisma.session.findMany({
+        include: { user: { select: { email: true } } },
+        orderBy: { createdAt: 'desc' }
+    });
+    return res.json(sessions);
+}
+
+export async function getLogs(req: Request, res: Response) {
+    const logs = await prisma.log.findMany({
+        include: { 
+            session: { 
+                include: { user: { select: { email: true } } } 
+            } 
+        },
+        orderBy: { createdAt: 'desc' }
+    });
+    return res.json(logs);
+}
