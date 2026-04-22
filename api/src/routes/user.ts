@@ -1,11 +1,15 @@
-import {Router} from 'express'
-import {register, userData, listarUsuarios} from '../controllers/userController'
-import {authMiddleWare} from '../middlewares/authMiddleware'
+import { Router } from 'express'
+import { register, listAll, getProfile, update, softDelete } from '../controllers/userController'
+import { sessionMiddleware } from '../middlewares/sessionMiddleware'
+import { adminOnly } from '../middlewares/roleMiddleware'
 
-const routerUser = Router()
+const router = Router()
 
-routerUser.post('/registrar', register)
-routerUser.get('/me', authMiddleWare, userData)
-routerUser.get('/listar-usuarios', listarUsuarios)
+router.get('/me', sessionMiddleware, getProfile)
 
-export default routerUser
+router.get('/', sessionMiddleware, adminOnly, listAll)
+router.post('/', sessionMiddleware, adminOnly, register)
+router.put('/:id', sessionMiddleware, adminOnly, update)
+router.patch('/:id/inactivate', sessionMiddleware, adminOnly, softDelete)
+
+export default router

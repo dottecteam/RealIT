@@ -12,7 +12,7 @@ import routerDev from './routes/dev';
 export const app = express()
 
 app.use(express.json())
-app.use('/user', routerUser)
+app.use('/users', routerUser)
 app.use('/auth', routerAuth)
 app.use('/dados', routerDados)
 
