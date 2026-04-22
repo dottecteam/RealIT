@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import mapaBrasil from "mapa-brasil";
 import { mockDadosScoreCompleto } from "../mocks/score";
+import { IBGE_TO_REGION, STATE_TO_IBGE, STATE_TO_UF, IBGE_TO_UF } from "../mocks/ufRegionData";
 
 const REGIONS_COLORS = {
   norte: "#68E699",
@@ -12,39 +13,24 @@ const REGIONS_COLORS = {
   sul: "#4EDAD3",
 };
 
-const IBGE_TO_REGION: Record<number, string> = {
-  11: "Norte", 12: "Norte", 13: "Norte", 14: "Norte", 15: "Norte", 16: "Norte", 17: "Norte",
-  21: "Nordeste", 22: "Nordeste", 23: "Nordeste", 24: "Nordeste", 25: "Nordeste", 26: "Nordeste", 27: "Nordeste", 28: "Nordeste", 29: "Nordeste",
-  31: "Sudeste", 32: "Sudeste", 33: "Sudeste", 35: "Sudeste",
-  41: "Sul", 42: "Sul", 43: "Sul",
-  50: "Centro-Oeste", 51: "Centro-Oeste", 52: "Centro-Oeste", 53: "Centro-Oeste",
+
+const CATEGORIA_CORES: Record<string, string> = {
+  diamante: "#fad144",      
+  maduro: "#f58c1b",        
+  fomento: "#f02817",       
+  saturado: "#941336",      
+  intermediario: "#bbbbbb"
 };
 
-const STATE_TO_IBGE: Record<string, number> = {
-  "RONDÔNIA": 11, "ACRE": 12, "AMAZONAS": 13, "RORAIMA": 14,
-  "PARÁ": 15, "AMAPÁ": 16, "TOCANTINS": 17,
-  "MARANHÃO": 21, "PIAUÍ": 22, "CEARÁ": 23, "RIO GRANDE DO NORTE": 24,
-  "PARAÍBA": 25, "PERNAMBUCO": 26, "ALAGOAS": 27, "SERGIPE": 28, "BAHIA": 29,
-  "MINAS GERAIS": 31, "ESPÍRITO SANTO": 32, "RIO DE JANEIRO": 33, "SÃO PAULO": 35,
-  "PARANÁ": 41, "SANTA CATARINA": 42, "RIO GRANDE DO SUL": 43,
-  "MATO GROSSO DO SUL": 50, "MATO GROSSO": 51, "GOIÁS": 52, "DISTRITO FEDERAL": 53,
-};
 
-const STATE_TO_UF: Record<string, string> = {
-  "RONDÔNIA": "RO", "ACRE": "AC", "AMAZONAS": "AM", "RORAIMA": "RR",
-  "PARÁ": "PA", "AMAPÁ": "AP", "TOCANTINS": "TO",
-  "MARANHÃO": "MA", "PIAUÍ": "PI", "CEARÁ": "CE", "RIO GRANDE DO NORTE": "RN",
-  "PARAÍBA": "PB", "PERNAMBUCO": "PE", "ALAGOAS": "AL", "SERGIPE": "SE", "BAHIA": "BA",
-  "MINAS GERAIS": "MG", "ESPÍRITO SANTO": "ES", "RIO DE JANEIRO": "RJ", "SÃO PAULO": "SP",
-  "PARANÁ": "PR", "SANTA CATARINA": "SC", "RIO GRANDE DO SUL": "RS",
-  "MATO GROSSO DO SUL": "MS", "MATO GROSSO": "MT", "GOIÁS": "GO", "DISTRITO FEDERAL": "DF",
-};
 
 export function BrasilMap() {
   const hiddenRef = useRef<HTMLDivElement>(null);
   const [svgContent, setSvgContent] = useState<string>("");
   const [regiaoAtiva, setRegiaoAtiva] = useState<string | null>(null);
   const [tooltip, setTooltip] = useState({ visible: false, x: 0, y: 0, text: "", });
+  const [heatmap, setHeatmap] = useState(false);
+  const svgBaseRef = useRef<string>("");
 
   useEffect(() => {
     const timer = setTimeout(() => {
@@ -84,17 +70,94 @@ export function BrasilMap() {
 
         clone.setAttribute("preserveAspectRatio", "xMinYMid meet");
 
+        svgBaseRef.current = clone.outerHTML;
         setSvgContent(clone.outerHTML);
-      }, 200);
+        }, 200);
+
     }, 100);
 
-    return () => clearTimeout(timer);
-  }, []);
+        return () => clearTimeout(timer);
+    }, []);
 
+
+    function applyHeatmap(svgString: string, isHeatmapActive: boolean): string {
+        if (!svgString) return "";
+
+        const parser = new DOMParser();
+        const doc = parser.parseFromString(svgString, "image/svg+xml");
+        const paths = doc.querySelectorAll("path");
+
+        paths.forEach((path) => {
+        const titleElement = path.querySelector("title");
+        const title = titleElement?.textContent?.trim().toUpperCase();
+
+        if (!title) return;
+
+        const uf = Object.entries(STATE_TO_UF).find(([estado]) =>
+            title.includes(estado)
+        )?.[1];
+
+        if (!uf) return;
+
+        const dados = mockDadosScoreCompleto.dadosScore.find(item => item.uf === uf);
+        const codIbge = Object.entries(IBGE_TO_UF).find(([, u]) => u === uf)?.[0];
+
+        if (isHeatmapActive){
+            if (dados){
+                const categoria = getCategoria(dados.score_eixo_i, dados.score_eixo_ii);
+                const color = CATEGORIA_CORES[categoria];
+                
+                path.style.fill = color;
+            path.setAttribute("fill", color);
+            } 
+            else{
+                path.style.fill = "#d1d5db"; 
+                path.setAttribute("fill", "#d1d5db");
+            }
+        } 
+        else{
+            if (codIbge){
+                const regiao = IBGE_TO_REGION[Number(codIbge)];
+                const corRegiao: Record<string, string> = {
+                    "Norte": REGIONS_COLORS.norte,
+                    "Nordeste": REGIONS_COLORS.nordeste,
+                    "Sudeste": REGIONS_COLORS.sudeste,
+                    "Sul": REGIONS_COLORS.sul,
+                    "Centro-Oeste": REGIONS_COLORS.centroOeste,
+                };
+                const cor = corRegiao[regiao];
+                
+                if (cor) {
+                    path.style.fill = cor;
+                    path.setAttribute("fill", cor);
+                }
+            }
+        }
+    });
+
+        const svg = doc.querySelector("svg");
+        return svg ? svg.outerHTML : svgString;
+    }
+
+    useEffect(() => {
+        if (!svgBaseRef.current) return;
+        setSvgContent(applyHeatmap(svgBaseRef.current, heatmap));
+    }, [heatmap]);
+
+
+    //Parte do hover
     function getScoreByUF(uf: string) {
         return mockDadosScoreCompleto.dadosScore.find(
             item => item.uf === uf
         );
+    }
+
+    function getUFByTitle(title: string) {
+        const entry = Object.entries(STATE_TO_UF).find(([estado]) =>
+            title.includes(estado)
+        );
+
+        return entry?.[1];
     }
 
 
@@ -121,7 +184,7 @@ export function BrasilMap() {
             const title = target.querySelector("title")?.textContent?.trim().toUpperCase();
 
             if (title) {
-            const uf = STATE_TO_UF[title];
+            const uf = getUFByTitle(title);
 
             if (uf) {
                 const dados = getScoreByUF(uf);
@@ -137,6 +200,7 @@ export function BrasilMap() {
                         Eixo II: ${dados.score_eixo_ii}
                         Inadimplência: ${dados.score_inadimplencia}
                         Crescimento: ${dados.score_crescimento}
+                        Categoria: ${getCategoria(dados.score_eixo_i, dados.score_eixo_ii).toUpperCase()}
                     `,
                 });
                 return;
@@ -163,6 +227,16 @@ export function BrasilMap() {
         setTooltip(prev => ({ ...prev, visible: false }));
     }
 
+
+    //Parte do mapa de calor
+    function getCategoria(scoreI: number, scoreII: number) {
+        if (scoreI >= 3 && scoreII >= 2) return "saturado";
+        if (scoreI >= 3 && scoreII < 2) return "maduro";
+        if (scoreI < 2.5 && scoreII >= 2) return "fomento";
+        if (scoreI < 2.5 && scoreII < 2) return "diamante";
+        return "intermediario";
+    }
+
     return (
         <div className="w-full flex flex-col items-center justify-center p-4">
         <div className="h-8 mb-4 z-10 text-center">
@@ -174,6 +248,15 @@ export function BrasilMap() {
             <h3 className="text-xl text-gray-400">Clique em um estado no mapa</h3>
             )}
         </div>
+
+        <label className="flex items-center gap-2 mb-2">
+            <input
+                type="checkbox"
+                checked={heatmap}
+                onChange={() => setHeatmap(prev => !prev)}
+            />
+            Modo mapa de calor
+        </label>
 
         <style>{`
             .mapa-interativo path {
@@ -204,6 +287,26 @@ export function BrasilMap() {
             dangerouslySetInnerHTML={{ __html: svgContent }}
         />
 
+        {heatmap && (
+            <div className="mt-4 text-sm space-y-1">
+                <div className="flex items-center gap-2">
+                <div className="w-4 h-4 bg-[#fad144]" /> Diamante Bruto
+                </div>
+                <div className="flex items-center gap-2">
+                <div className="w-4 h-4 bg-[#f58c1b]" /> Mercado Maduro
+                </div>
+                <div className="flex items-center gap-2">
+                <div className="w-4 h-4 bg-[#f02817]" /> Fomento Social
+                </div>
+                <div className="flex items-center gap-2">
+                <div className="w-4 h-4 bg-[#941336]" /> Saturação
+                </div>
+                <div className="flex items-center gap-2">
+                <div className="w-4 h-4 bg-[#bbbbbb]" /> Intermediário
+                </div>
+            </div>
+        )}
+
         {tooltip.visible && (
             <div
                 style={{
@@ -220,7 +323,7 @@ export function BrasilMap() {
                     <div key={i}>{line}</div>
                 ))}
             </div>
-            )}
+        )}
             
         </div>
     );
