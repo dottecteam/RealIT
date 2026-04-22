@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import mapaBrasil from "mapa-brasil";
+import { mockDadosScoreCompleto } from "../mocks/score";
 
 const REGIONS_COLORS = {
   norte: "#68E699",
@@ -29,6 +30,15 @@ const STATE_TO_IBGE: Record<string, number> = {
   "MATO GROSSO DO SUL": 50, "MATO GROSSO": 51, "GOIÁS": 52, "DISTRITO FEDERAL": 53,
 };
 
+const STATE_TO_UF: Record<string, string> = {
+  "RONDÔNIA": "RO", "ACRE": "AC", "AMAZONAS": "AM", "RORAIMA": "RR",
+  "PARÁ": "PA", "AMAPÁ": "AP", "TOCANTINS": "TO",
+  "MARANHÃO": "MA", "PIAUÍ": "PI", "CEARÁ": "CE", "RIO GRANDE DO NORTE": "RN",
+  "PARAÍBA": "PB", "PERNAMBUCO": "PE", "ALAGOAS": "AL", "SERGIPE": "SE", "BAHIA": "BA",
+  "MINAS GERAIS": "MG", "ESPÍRITO SANTO": "ES", "RIO DE JANEIRO": "RJ", "SÃO PAULO": "SP",
+  "PARANÁ": "PR", "SANTA CATARINA": "SC", "RIO GRANDE DO SUL": "RS",
+  "MATO GROSSO DO SUL": "MS", "MATO GROSSO": "MT", "GOIÁS": "GO", "DISTRITO FEDERAL": "DF",
+};
 
 export function BrasilMap() {
   const hiddenRef = useRef<HTMLDivElement>(null);
@@ -81,6 +91,12 @@ export function BrasilMap() {
     return () => clearTimeout(timer);
   }, []);
 
+    function getScoreByUF(uf: string) {
+        return mockDadosScoreCompleto.dadosScore.find(
+            item => item.uf === uf
+        );
+    }
+
 
     function handlePathClick(e: React.MouseEvent<HTMLDivElement>) {
         const target = e.target as SVGPathElement;
@@ -102,21 +118,46 @@ export function BrasilMap() {
         const target = e.target as SVGPathElement;
 
         if (target.tagName === "path") {
-            const title = target.querySelector("title")?.textContent;
+            const title = target.querySelector("title")?.textContent?.trim().toUpperCase();
 
             if (title) {
+            const uf = STATE_TO_UF[title];
+
+            if (uf) {
+                const dados = getScoreByUF(uf);
+
+                if (dados) {
+                setTooltip({
+                    visible: true,
+                    x: e.clientX,
+                    y: e.clientY,
+                    text: `
+                        ${title} (${uf})
+                        Eixo I: ${dados.score_eixo_i}
+                        Eixo II: ${dados.score_eixo_ii}
+                        Inadimplência: ${dados.score_inadimplencia}
+                        Crescimento: ${dados.score_crescimento}
+                    `,
+                });
+                return;
+                }
+            }
+
+            // fallback
             setTooltip({
                 visible: true,
                 x: e.clientX,
                 y: e.clientY,
                 text: title,
             });
+
             return;
             }
         }
 
         setTooltip(prev => ({ ...prev, visible: false }));
     }
+    
 
     function handleMouseLeave() {
         setTooltip(prev => ({ ...prev, visible: false }));
@@ -175,7 +216,9 @@ export function BrasilMap() {
                 }}
                 className="text-white text-xs px-2 py-1 rounded shadow-lg"
             >
-                {tooltip.text}
+                {tooltip.text.split("\n").map((line, i) => (
+                    <div key={i}>{line}</div>
+                ))}
             </div>
             )}
             
