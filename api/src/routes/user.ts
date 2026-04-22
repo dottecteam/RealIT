@@ -1,5 +1,5 @@
 import { Router } from 'express'
-import { register, listAll, getProfile, update, softDelete } from '../controllers/userController'
+import { register, listAll, getById, getProfile, update, softDelete } from '../controllers/userController'
 import { sessionMiddleware } from '../middlewares/sessionMiddleware'
 import { adminOnly } from '../middlewares/roleMiddleware'
 
@@ -9,6 +9,7 @@ router.get('/me', sessionMiddleware, getProfile)
 
 router.get('/', sessionMiddleware, adminOnly, listAll)
 router.post('/', sessionMiddleware, adminOnly, register)
+router.get('/:id', sessionMiddleware, adminOnly, getById);
 router.put('/:id', sessionMiddleware, adminOnly, update)
 router.patch('/:id/inactivate', sessionMiddleware, adminOnly, softDelete)
 

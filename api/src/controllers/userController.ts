@@ -56,6 +56,32 @@ export async function getProfile(request: Request, response: Response) {
     }
 }
 
+export async function getById(request: Request, response: Response) {
+    const { id } = request.params;
+
+    try {
+        const user = await prisma.user.findUnique({
+            where: { id: Number(id) },
+            select: {
+                id: true,
+                name: true,
+                email: true,
+                status: true,
+                createdAt: true,
+                updatedAt: true
+            }
+        });
+
+        if (!user) {
+            return response.status(404).json({ error: 'Usuário não encontrado' });
+        }
+
+        return response.json(user);
+    } catch (error) {
+        return response.status(500).json({ error: 'Erro ao buscar usuário' });
+    }
+}
+
 export async function update(request: Request, response: Response) {
     const { id } = request.params
     const { name, email, status } = request.body
