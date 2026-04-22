@@ -15,13 +15,17 @@ const REGIONS_COLORS = {
 
 
 const CATEGORIA_CORES: Record<string, string> = {
-  diamante: "#fad144",      
-  maduro: "#f58c1b",        
-  fomento: "#f02817",       
-  saturado: "#941336",      
-  intermediario: "#bbbbbb"
+    diamante: "#fad144",
+    emergente: "#f2e394",
+    maduro: "#f2b46b",
+    expansao: "#f2b46b",
+    organico: "#f2a541",
+    defesa: "#f28c28",
+    fomento: "#f02817",
+    retencao: "#c21807",
+    saturacao: "#941336",
+    intermediario: "#bbbbbb"
 };
-
 
 
 export function BrasilMap() {
@@ -68,7 +72,7 @@ export function BrasilMap() {
         clone.setAttribute("height", "100%");
         clone.setAttribute("viewBox", "0 0 700 800");
 
-        clone.setAttribute("preserveAspectRatio", "xMinYMid meet");
+        clone.setAttribute("preserveAspectRatio", "xMidYMid meet");
 
         svgBaseRef.current = clone.outerHTML;
         setSvgContent(clone.outerHTML);
@@ -190,20 +194,53 @@ export function BrasilMap() {
                 const dados = getScoreByUF(uf);
 
                 if (dados) {
-                setTooltip({
-                    visible: true,
-                    x: e.clientX,
-                    y: e.clientY,
-                    text: `
-                        ${title} (${uf})
-                        Eixo I: ${dados.score_eixo_i}
-                        Eixo II: ${dados.score_eixo_ii}
-                        Inadimplência: ${dados.score_inadimplencia}
-                        Crescimento: ${dados.score_crescimento}
-                        Categoria: ${getCategoria(dados.score_eixo_i, dados.score_eixo_ii).toUpperCase()}
-                    `,
-                });
-                return;
+                    let categoria = getCategoria(dados.score_eixo_i, dados.score_eixo_ii)
+                    let categoriaTexto = "";
+
+                    switch(categoria){
+                        case "diamante":
+                            categoriaTexto = "Diamante Bruto";
+                            break;
+                        case "emergente":
+                            categoriaTexto = "Potencial Emergente";
+                            break;
+                        case "maduro":
+                            categoriaTexto = "Mercado Maduro";
+                            break;
+                        case "expansao":
+                            categoriaTexto = "Expansão Cautelosa";
+                            break;
+                        case "organico":
+                            categoriaTexto = "Crescimento Orgânico";
+                            break;
+                        case "defesa":
+                            categoriaTexto = "Defesa de Mercado";
+                            break;
+                        case "fomento":
+                            categoriaTexto = "Fomento Social";
+                            break;
+                        case "retencao": 
+                            categoriaTexto = "Retenção Restrita";
+                            break;
+                        case "saturacao":
+                            categoriaTexto = "Saturação";
+                            break;
+                    }
+                    
+                    setTooltip({
+                        visible: true,
+                        x: e.clientX,
+                        y: e.clientY,
+                        text: `
+                            ${title} (${uf})
+                            Eixo I: ${dados.score_eixo_i}
+                            Eixo II: ${dados.score_eixo_ii}
+                            Inadimplência: ${dados.score_inadimplencia}
+                            Crescimento: ${dados.score_crescimento}
+                            Categoria: ${categoriaTexto}
+                        `,
+                    });
+                    return;
                 }
             }
 
@@ -230,101 +267,161 @@ export function BrasilMap() {
 
     //Parte do mapa de calor
     function getCategoria(scoreI: number, scoreII: number) {
-        if (scoreI >= 3 && scoreII >= 2) return "saturado";
-        if (scoreI >= 3 && scoreII < 2) return "maduro";
-        if (scoreI < 2.5 && scoreII >= 2) return "fomento";
-        if (scoreI < 2.5 && scoreII < 2) return "diamante";
+        //diamante bruto
+        if ((scoreI <= 2) && (scoreII <= 2)) return "diamante";
+
+        //potencial emergente
+        if ((scoreI <= 2) && (scoreII >= 2 && scoreII <= 4)) return "emergente";
+
+        //mercado maduro
+         if ((scoreI <= 2) && (scoreII >= 4 && scoreII <= 5)) return "maduro";
+
+        //expansao cautelosa
+         if ((scoreI >= 2 && scoreI <= 4) && (scoreII <= 2)) return "expansao";
+
+        //crescimento organico
+         if ((scoreI >= 2 && scoreI <= 4) && (scoreII >= 2 && scoreII <= 4)) return "organico";
+
+        //defesa de mercado
+         if ((scoreI >= 2 && scoreI <= 4) && (scoreII >= 4 && scoreII <= 5)) return "emergente";
+
+        //fomento social
+        if ((scoreI >= 4 && scoreI <= 5) && (scoreII <= 2)) return "fomento";
+
+        //retencao restrita
+         if ((scoreI >= 4 && scoreI <= 5) && (scoreII >= 2 && scoreII <= 4)) return "retencao";
+
+        //saturacao
+         if ((scoreI >= 4 && scoreI <= 5) && (scoreII >= 4 && scoreII <= 5)) return "saturacao";
+
         return "intermediario";
     }
 
     return (
-        <div className="w-full flex flex-col items-center justify-center p-4">
-        <div className="h-8 mb-4 z-10 text-center">
-            {regiaoAtiva ? (
-            <h3 className="text-xl font-bold text-[#202AD0]">
-                Região Selecionada: <span className="text-gray-700">{regiaoAtiva}</span>
-            </h3>
-            ) : (
-            <h3 className="text-xl text-gray-400">Clique em um estado no mapa</h3>
-            )}
-        </div>
+        <div className="w-full flex flex-col p-4 bg-white rounded-[40px] shadow-[0_8px_30px_rgba(0,0,0,0.04)]">
+            <div className="h-8 mb-4 z-10 text-center">
+                {regiaoAtiva ? (
+                <h3 className="text-xl font-bold text-[#202AD0]">
+                    Região Selecionada: <span className="text-gray-700">{regiaoAtiva}</span>
+                </h3>
+                ) : (
+                <h3 className="text-xl text-gray-400">Clique em um estado no mapa</h3>
+                )}
+            </div>
 
-        <label className="flex items-center gap-2 mb-2">
-            <input
-                type="checkbox"
-                checked={heatmap}
-                onChange={() => setHeatmap(prev => !prev)}
-            />
-            Modo mapa de calor
-        </label>
+            <label className="flex items-center gap-2 mb-4">
+                <input
+                    type="checkbox"
+                    checked={heatmap}
+                    onChange={() => setHeatmap(prev => !prev)}
+                />
+                Modo mapa de calor
+            </label>
 
-        <style>{`
-            .mapa-interativo path {
-            transition: opacity 0.2s ease, filter 0.2s ease;
-            cursor: pointer;
-            opacity: 0.8;
-            }
+            <style>{`
+                .mapa-interativo path {
+                transition: opacity 0.2s ease, filter 0.2s ease;
+                cursor: pointer;
+                opacity: 0.8;
+                }
 
-            .mapa-interativo svg:has(path:hover) path {
-                opacity: 0.5;
-            }
+                .mapa-interativo svg:has(path:hover) path {
+                    opacity: 0.5;
+                }
 
-            .mapa-interativo svg path:hover {
-                opacity: 1 !important;
-                stroke: #000;
-                stroke-width: 1.5;
-            }
+                .mapa-interativo svg path:hover {
+                    opacity: 1 !important;
+                    stroke: #000;
+                    stroke-width: 1.5;
+                }
+            `}
+            </style>
 
-        `}</style>
+            <div ref={hiddenRef} style={{ display: "none" }} />
 
-        <div ref={hiddenRef} style={{ display: "none" }} />
 
-        <div
-            className="mapa-interativo w-full aspect-[16/9] drop-shadow-2xl select-none"
-            onClick={handlePathClick}
-            onMouseMove={handleMouseMove}
-            onMouseLeave={handleMouseLeave}
-            dangerouslySetInnerHTML={{ __html: svgContent }}
-        />
-
-        {heatmap && (
-            <div className="mt-4 text-sm space-y-1">
-                <div className="flex items-center gap-2">
-                <div className="w-4 h-4 bg-[#fad144]" /> Diamante Bruto
-                </div>
-                <div className="flex items-center gap-2">
-                <div className="w-4 h-4 bg-[#f58c1b]" /> Mercado Maduro
-                </div>
-                <div className="flex items-center gap-2">
-                <div className="w-4 h-4 bg-[#f02817]" /> Fomento Social
-                </div>
-                <div className="flex items-center gap-2">
-                <div className="w-4 h-4 bg-[#941336]" /> Saturação
-                </div>
-                <div className="flex items-center gap-2">
-                <div className="w-4 h-4 bg-[#bbbbbb]" /> Intermediário
+            <div className="w-full flex justify-center items-center">
+                <div className="w-full max-w-[900px]">
+                    <div
+                        className="mapa-interativo w-full aspect-[4/3] drop-shadow-2xl select-none"
+                        onClick={handlePathClick}
+                        onMouseMove={handleMouseMove}
+                        onMouseLeave={handleMouseLeave}
+                        dangerouslySetInnerHTML={{ __html: svgContent }}
+                    />
                 </div>
             </div>
-        )}
 
-        {tooltip.visible && (
-            <div
-                style={{
-                position: "fixed",
-                top: tooltip.y + 10,
-                left: tooltip.x + 10,
-                pointerEvents: "none",
-                backgroundColor: "#202ad0",
-                zIndex: 50,
-                }}
-                className="text-white text-xs px-2 py-1 rounded shadow-lg"
-            >
-                {tooltip.text.split("\n").map((line, i) => (
-                    <div key={i}>{line}</div>
-                ))}
+            <div className="w-full mt-4 flex flex-wrap gap-4 text-sm justify-center">
+                {heatmap ? (
+                    <>
+                        <div className="flex items-center gap-2">
+                        <div className="w-4 h-4 bg-[#fad144]" /> Diamante Bruto
+                        </div>
+                        <div className="flex items-center gap-2">
+                        <div className="w-4 h-4 bg-[#f2e394]" /> Potencial Emergente
+                        </div>
+                        <div className="flex items-center gap-2">
+                        <div className="w-4 h-4 bg-[#f2b46b]" /> Mercado Maduro
+                        </div>
+                        <div className="flex items-center gap-2">
+                        <div className="w-4 h-4 bg-[#f2b46b]" /> Expansão Cautelosa
+                        </div>
+                        <div className="flex items-center gap-2">
+                        <div className="w-4 h-4 bg-[#f2a541]" /> Crescimento Orgânico
+                        </div>
+                        <div className="flex items-center gap-2">
+                        <div className="w-4 h-4 bg-[#f28c28]" /> Defesa de Mercado
+                        </div>
+                        <div className="flex items-center gap-2">
+                        <div className="w-4 h-4 bg-[#f02817]" /> Fomento Social
+                        </div>
+                        <div className="flex items-center gap-2">
+                        <div className="w-4 h-4 bg-[#c21807]" /> Retenção Restrita
+                        </div>
+                        <div className="flex items-center gap-2">
+                        <div className="w-4 h-4 bg-[#941336]" /> Saturação
+                        </div>
+                    </>
+                    ) : (
+                    <>
+                        <div className="flex items-center gap-2">
+                        <div className="w-4 h-4 bg-[#68E699]" /> Norte
+                        </div>
+                        <div className="flex items-center gap-2">
+                        <div className="w-4 h-4 bg-[#FF9A98]" /> Nordeste
+                        </div>
+                        <div className="flex items-center gap-2">
+                        <div className="w-4 h-4 bg-[#FFE372]" /> Centro-Oeste
+                        </div>
+                        <div className="flex items-center gap-2">
+                        <div className="w-4 h-4 bg-[#202AD0]" /> Sudeste
+                        </div>
+                        <div className="flex items-center gap-2">
+                        <div className="w-4 h-4 bg-[#4EDAD3]" /> Sul
+                        </div>
+                    </>
+                )}
+
+                {tooltip.visible && (
+                    <div
+                        style={{
+                            position: "fixed",
+                            top: tooltip.y + 10,
+                            left: tooltip.x + 10,
+                            pointerEvents: "none",
+                            backgroundColor: "#202ad0",
+                            zIndex: 50,
+                        }}
+                        className="text-white text-xs px-2 py-1 rounded shadow-lg"
+                    >
+                        {tooltip.text.split("\n").map((line, i) => (
+                            <div key={i}>{line}</div>
+                        ))}
+                    </div>
+                )}
             </div>
-        )}
-            
+
         </div>
     );
 }
