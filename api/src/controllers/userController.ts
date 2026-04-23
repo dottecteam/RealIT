@@ -84,25 +84,32 @@ export async function getById(request: Request, response: Response) {
 
 export async function update(request: Request, response: Response) {
     const { id } = request.params
-    const { name, email, status } = request.body
+    const data = request.body
     const sessionId = (request as any).sessionId
+
+    if (Object.keys(data).length === 0) {
+        return response.status(400).json({ error: 'Nenhum dado fornecido para atualização' })
+    }
 
     try {
         const user = await prisma.user.update({
             where: { id: Number(id) },
-            data: { name, email, status }
+            data: data
         })
 
         await logOperation(sessionId, 'UPDATE_USER')
 
-        if (status === 'INACTIVE') {
+        if (data.status === 'INACTIVE') {
             await prisma.session.updateMany({
                 where: { userId: user.id, isActive: true },
                 data: { isActive: false, logoutAt: new Date() }
             })
         }
 
-        return response.json({ message: 'Usuário atualizado', user: { id: user.id, status: user.status } })
+        return response.json({
+            message: 'Usuário atualizado',
+            user: { id: user.id, status: user.status }
+        })
     } catch (error) {
         return response.status(500).json({ error: 'Erro ao atualizar usuário' })
     }
