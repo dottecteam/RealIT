@@ -1,11 +1,5 @@
 import { z } from 'zod'
 
-export const userSchema = z.object({
-  email: z.email('E-mail inválido'),
-  name: z.string().optional(),
-  password: z.string().min(6, 'A senha deve ter no mínimo 6 caracteres')
-})
-
 export const scoreUf = z.object({
   uf: z.string(),
   score_inadimplencia: z.number(), 

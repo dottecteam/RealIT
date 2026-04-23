@@ -11,19 +11,44 @@ datasource db {
   provider = "sqlite"
 }
 
-enum Role {
-  USER
+enum UserStatus {
+  DEV
   ADMIN
+  ACTIVE
+  INACTIVE
 }
 
-model User { 
-  id    Int     @id @default(autoincrement()) 
-  email String  @unique
-  name  String?
-  password String
+model User {
+  id        Int        @id @default(autoincrement())
+  email     String     @unique
+  name      String?
+  password  String
+  createdAt DateTime   @default(now())
+  updatedAt DateTime   @updatedAt
+  status    UserStatus @default(ACTIVE)
+  sessions  Session[]
+}
+
+model Session {
+  id           String   @id @default(uuid())
+  userId       Int
+  token        String   @unique
+  deviceInfo   String?
+  createdAt    DateTime @default(now())
+  expiresAt    DateTime
+  logoutAt     DateTime?
+  isActive     Boolean  @default(true)
+  user         User     @relation(fields: [userId], references: [id])
+  logs         Log[]
+}
+
+model Log {
+  id        Int      @id @default(autoincrement())
+  operation String   
+  sessionId String
   createdAt DateTime @default(now())
-  role Role
-} 
+  session   Session  @relation(fields: [sessionId], references: [id])
+}
 
 model RiscoCredito{
   id Int @id @default(autoincrement())

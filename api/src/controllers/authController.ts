@@ -1,75 +1,93 @@
-import {Request, Response} from 'express'
-import bcrypt from 'bcryptjs'
 import jwt from 'jsonwebtoken'
-import {prisma} from '../lib/prisma'
+import { Request, Response } from 'express'
+import bcrypt from 'bcryptjs'
+import { prisma } from '../lib/prisma'
+import { logOperation } from '../utils/logger'
 
-export async function register(request: Request, response: Response){
-    const { name, email, password } = request.body
+export async function login(request: Request, response: Response) {
+    const { email, password } = request.body
+    const deviceInfo = request.headers['user-agent'] || 'Unknown Device'
 
-    if(!name || !email || !password){
-        return response.status(400).json({error: 'Todos os campos são obrigatórios'})
+    if (!email || !password) {
+        return response.status(400).json({ error: 'Todos os campos são obrigatórios' })
     }
 
-    const existing = await prisma.user.findUnique({where: {email}})
-    if(existing){
-        return response.status(409).json({error: 'Email já cadastrado'})
+    const user = await prisma.user.findUnique({ where: { email } })
+    
+    // Verificação de usuário e status
+    if (!user || user.status === 'INACTIVE') {
+        return response.status(401).json({ error: 'Credenciais inválidas' })
     }
 
-    const hashedPassword = await bcrypt.hash(password, 10)
-
-    const user = await prisma.user.create({
-        data: {name, email, password: hashedPassword}
-    })
-
-    return response.status(201).json({message: 'Usuario criado com sucesso', user: {id: user.id, name: user.name, email: user.email}})
-}
-
-
-
-export async function login(request: Request, response: Response){
-    const {email, password} = request.body
-
-    if(!email || !password){
-        return response.status(400).json({error: 'Todos os campos são obrigratórios'})
-    }
-
-    const user = await prisma.user.findUnique({where: {email}})
-    if(!user){
-        return response.status(401).json({error: 'Usuário não encontrado'})
-    }
-
-    //Criptografa a senha, compara com a senha cadastrada e valida se ela existe
     const verifyPassword = await bcrypt.compare(password, user.password)
-    if(!verifyPassword){
-        return response.status(401).json({error: 'Usuário não encontrado'})
+    if (!verifyPassword) {
+        return response.status(401).json({ error: 'Credenciais inválidas' })
     }
 
-    //Gera um token com base nas informacoes do usuario e poe a validade de um dia
+    // Gera o token JWT
     const token = jwt.sign(
-        {userId: user.id, email: user.email},
+        { userId: user.id, email: user.email },
         process.env.JWT_SECRET as string,
-        {expiresIn: '1d'}
+        { expiresIn: '1d' }
     )
 
-    return response.json({message: 'Login realizado com sucesso', token, user: {id: user.id, name: user.name, email: user.email}})
+    // Calcula a expiração (1 dia a partir de agora)
+    const expiresAt = new Date()
+    expiresAt.setDate(expiresAt.getDate() + 1)
+
+    try {
+        // Cria a sessão no banco de dados
+        const session = await prisma.session.create({
+            data: {
+                userId: user.id,
+                token,
+                deviceInfo,
+                expiresAt,
+                isActive: true
+            }
+        })
+
+        // Registra o log de login
+        await logOperation(session.id, 'USER_LOGIN')
+
+        return response.json({
+            message: 'Login realizado com sucesso',
+            token,
+            user: {
+                id: user.id,
+                name: user.name,
+                email: user.email,
+                status: user.status
+            }
+        })
+    } catch (error) {
+        return response.status(500).json({ error: 'Erro ao criar sessão de acesso' })
+    }
 }
 
+export async function logout(request: Request, response: Response) {
+    // O sessionId vem do middleware de sessão
+    const sessionId = (request as any).sessionId
 
-export async function userData(request: Request, response: Response){
-    //Pega o id do usuario enviado pelo middleware e retorna os dados
-    const userId = (request as any).userId
+    if (!sessionId) {
+        return response.status(400).json({ error: 'Sessão não identificada' })
+    }
 
-    const user = await prisma.user.findUnique({where: {id: userId}, select: {id: true, name: true, email: true}})
+    try {
+        // Registra o log de logout antes de fechar a sessão (para manter o vínculo)
+        await logOperation(sessionId, 'USER_LOGOUT')
 
-    return response.json({user})
-}
+        // Invalida a sessão no banco
+        await prisma.session.update({
+            where: { id: sessionId },
+            data: {
+                isActive: false,
+                logoutAt: new Date()
+            }
+        })
 
-
-export async function listarUsuarios(request: Request, response: Response) {
-  try {
-    const dados = await prisma.user.findMany()
-    return response.json(dados)
-  } catch (error) {
-    return response.status(500).json({ error: 'Erro ao buscar usuarios' })
-  }
+        return response.json({ message: 'Logout realizado com sucesso' })
+    } catch (error) {
+        return response.status(500).json({ error: 'Erro ao encerrar sessão' })
+    }
 }

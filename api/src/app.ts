@@ -1,40 +1,24 @@
 import express from 'express'
 import 'dotenv/config'
-import { prisma } from './lib/prisma'
 
 //Rotas 
-import routerUser from './routes/auth'
+import routerUser from './routes/user'
+import routerAuth from './routes/auth'
 import routerDados from './routes/data'
+
+// Rotas de desenvolvimento (limpar banco, criar admin, etc)
+import routerDev from './routes/dev';
 
 export const app = express()
 
 app.use(express.json())
-app.use('/auth', routerUser)
+app.use('/users', routerUser)
+app.use('/auth', routerAuth)
 app.use('/dados', routerDados)
+
+// Lembrete: Excluir essas rotas de desenvolvimento antes de ir para produção
+app.use('/dev', routerDev)
 
 app.get('/health', (_req, res) => {
   res.json({ status: 'ok' })
 })
-
-
-// // ---- ROTAS DE EXEMPLO ----
-// // Utilizei para testar a instância do Prisma
-
-
-// // POST /users
-// app.post('/users', async (req, res) => {
-//   const { email, name } = req.body
-
-//   const user = await prisma.user.create({
-//     data: { email, name }
-//   })
-
-//   res.status(201).json(user)
-// })
-
-// // GET /users
-// app.get('/users', async (_req, res) => {
-//   const users = await prisma.user.findMany()
-
-//   res.json(users)
-// })

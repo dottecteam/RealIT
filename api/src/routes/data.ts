@@ -1,7 +1,7 @@
 import {Router} from 'express';
 import { criarDadosScore, criarDadosMediaRegiao, listarDados } from '../controllers/scoreController';
 import { validateData } from '../middlewares/dataMiddleware';
-import { scoreUfArray, mediaRegiaoArray } from '../schemas/validationSchemas';
+import { scoreUfArray, mediaRegiaoArray } from '../schemas/dataSchemas';
 
 const routerDados = Router();
 
