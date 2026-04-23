@@ -35,6 +35,29 @@ export async function seedAdmin(req: Request, res: Response) {
     }
 }
 
+export async function seedDev(req: Request, res: Response) {
+    try {
+        const hashedPassword = await bcrypt.hash('dev123', 10);
+        
+        const user = await prisma.user.upsert({
+            where: { email: 'DEV@teste.com' },
+            update: {},
+            create: {
+                email: 'dev@teste.com',
+                name: 'Desenvolvedor de Teste',
+                password: hashedPassword,
+                status: 'DEV'
+            }
+        });
+
+        return res.status(201).json({ message: 'Usuário admin criado.', user: { email: user.email } });
+    } catch (error) {
+        return res.status(500).json({ error: 'Erro ao criar seed.' });
+    }
+}
+
+
+
 export async function getUsers(req: Request, res: Response) {
     const users = await prisma.user.findMany({
         orderBy: { createdAt: 'desc' }
@@ -61,3 +84,4 @@ export async function getLogs(req: Request, res: Response) {
     });
     return res.json(logs);
 }
+

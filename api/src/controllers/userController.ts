@@ -151,3 +151,57 @@ export async function hardDelete(request: Request, response: Response) {
         return response.status(500).json({ error: 'Erro ao excluir usuário' })
     }
 }
+
+export async function getByEmail(request: Request, response: Response) {
+    const { email } = request.params;
+
+    try {
+        const user = await prisma.user.findUnique({
+            where: { email: email },
+            select: {
+                id: true,
+                name: true,
+                email: true,
+                status: true,
+                createdAt: true
+            }
+        });
+
+        if (!user) {
+            return response.status(404).json({ error: 'Usuário não encontrado' });
+        }
+
+        return response.json(user);
+    } catch (error) {
+        return response.status(500).json({ error: 'Erro ao buscar usuário por e-mail' });
+    }
+}
+
+export async function getByName(request: Request, response: Response) {
+    const { name } = request.query;
+
+    if (!name) {
+        return response.status(400).json({ error: 'O parâmetro nome é obrigatório' });
+    }
+
+    try {
+        const users = await prisma.user.findMany({
+            where: {
+                name: {
+                    contains: String(name),
+                    // mode: 'insensitive' // Descomente se usar PostgreSQL para busca independente de maiúsculas
+                }
+            },
+            select: {
+                id: true,
+                name: true,
+                email: true,
+                status: true
+            }
+        });
+
+        return response.json(users);
+    } catch (error) {
+        return response.status(500).json({ error: 'Erro ao buscar usuários pelo nome' });
+    }
+}

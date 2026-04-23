@@ -12,6 +12,7 @@ datasource db {
 }
 
 enum UserStatus {
+  DEV
   ADMIN
   ACTIVE
   INACTIVE
