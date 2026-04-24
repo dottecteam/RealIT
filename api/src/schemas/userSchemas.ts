@@ -13,7 +13,9 @@ export const createUserSchema = z.object({
       .min(8, "A senha deve ter no mínimo 8 caracteres")
       .regex(/^[a-zA-Z0-9]+$/, "A senha não deve conter caracteres especiais"),
       
-    status: z.enum(['ADMIN', 'ACTIVE', 'INACTIVE']).optional()
+    status: z.enum(['ACTIVE', 'INACTIVE']).optional(),
+
+    role: z.enum(['ADMIN', 'DEV', 'USER']).optional()
   })
 });
 

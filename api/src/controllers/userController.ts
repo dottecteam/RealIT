@@ -4,7 +4,7 @@ import { prisma } from '../lib/prisma'
 import { logOperation } from '../utils/logger'
 
 export async function register(request: Request, response: Response) {
-    const { name, email, password, status } = request.body
+    const { name, email, password, status, role } = request.body
     const sessionId = (request as any).sessionId
 
     try {
@@ -18,7 +18,8 @@ export async function register(request: Request, response: Response) {
                 name,
                 email,
                 password: hashedPassword,
-                status: status || 'ACTIVE'
+                status: status || 'ACTIVE',
+                role: role || 'USER'
             }
         })
 
@@ -34,7 +35,7 @@ export async function register(request: Request, response: Response) {
 export async function listAll(request: Request, response: Response) {
     try {
         const users = await prisma.user.findMany({
-            select: { id: true, name: true, email: true, status: true, createdAt: true }
+            select: { id: true, name: true, email: true, role:true, status: true, createdAt: true, updatedAt: true }
         })
         return response.json(users)
     } catch (error) {
@@ -48,7 +49,7 @@ export async function getProfile(request: Request, response: Response) {
     try {
         const user = await prisma.user.findUnique({
             where: { id: userId },
-            select: { id: true, name: true, email: true, status: true }
+            select: { id: true, name: true, email: true, role:true, status: true }
         })
         return response.json(user)
     } catch (error) {
@@ -66,6 +67,7 @@ export async function getById(request: Request, response: Response) {
                 id: true,
                 name: true,
                 email: true,
+                role: true,
                 status: true,
                 createdAt: true,
                 updatedAt: true
@@ -84,13 +86,14 @@ export async function getById(request: Request, response: Response) {
 
 export async function update(request: Request, response: Response) {
     const { id } = request.params
-    const { name, email, password, status } = request.body
+    const { name, email, password, status, role } = request.body
     const sessionId = (request as any).sessionId
 
     const updateData: any = {}
     if (name) updateData.name = name
     if (email) updateData.email = email
     if (status) updateData.status = status
+    if (role) updateData.role = role
 
     if (password) {
         const hashedPassword = await bcrypt.hash(password, 10)
@@ -137,7 +140,7 @@ export async function softDelete(request: Request, response: Response) {
 
 
         await prisma.session.updateMany({
-            where: { userId: Number(id) },
+            where: { userId: Number(id), isActive: true },
             data: { isActive: false, logoutAt: new Date() }
         })
 
@@ -172,6 +175,7 @@ export async function getByEmail(request: Request, response: Response) {
                 id: true,
                 name: true,
                 email: true,
+                role: true,
                 status: true,
                 createdAt: true
             }
@@ -206,7 +210,8 @@ export async function getByName(request: Request, response: Response) {
                 id: true,
                 name: true,
                 email: true,
-                status: true
+                status: true,
+                role: true
             }
         });
 

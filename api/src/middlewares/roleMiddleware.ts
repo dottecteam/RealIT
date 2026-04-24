@@ -10,7 +10,7 @@ export async function adminOnly(req: Request, res: Response, next: NextFunction)
 
   const user = await prisma.user.findUnique({ where: { id: userId } });
 
-  if (!['ADMIN', 'DEV'].includes(user?.status)) {
+  if (!['ADMIN', 'DEV'].includes(user?.role)) {
     return res.status(403).json({ error: 'Acesso negado. Requer privilégios de administrador.' });
   }
 
@@ -22,7 +22,7 @@ export async function devOnly(req: Request, res: Response, next: NextFunction) {
 
   const user = await prisma.user.findUnique({ where: { id: userId } });
 
-  if (user?.status !== 'DEV') {
+  if (user?.role !== 'DEV') {
     return res.status(403).json({ error: 'Acesso restrito. Somente desenvolvedores podem acessar esta ferramenta.' });
   }
 

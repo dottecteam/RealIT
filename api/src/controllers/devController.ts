@@ -25,7 +25,8 @@ export async function seedAdmin(req: Request, res: Response) {
                 email: 'admin@teste.com',
                 name: 'Administrador de Teste',
                 password: hashedPassword,
-                status: 'ADMIN'
+                status: 'ACTIVE',
+                role: 'ADMIN'
             }
         });
 
@@ -46,7 +47,8 @@ export async function seedDev(req: Request, res: Response) {
                 email: 'dev@teste.com',
                 name: 'Desenvolvedor de Teste',
                 password: hashedPassword,
-                status: 'DEV'
+                status: 'ACTIVE',
+                role: 'DEV'
             }
         });
 
