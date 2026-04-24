@@ -1,15 +1,13 @@
 import { Router } from 'express';
-import { resetDatabase, seedAdmin, getUsers, getSessions, getLogs } from '../controllers/devController';
+import { resetDatabase, seedAdmin, seedDev } from '../controllers/devController';
+import { devOnly } from '../middlewares/roleMiddleware';
+import { sessionMiddleware } from '../middlewares/sessionMiddleware';
 
 const routerDev = Router();
 
 // Operações de Escrita/Reset
-routerDev.delete('/reset', resetDatabase);
-routerDev.post('/seed-admin', seedAdmin);
-
-// Operações de Leitura para Debug
-routerDev.get('/users', getUsers);
-routerDev.get('/sessions', getSessions);
-routerDev.get('/logs', getLogs);
+routerDev.delete('/reset-database', sessionMiddleware, devOnly, resetDatabase);
+routerDev.post('/seed-admin', sessionMiddleware, devOnly ,seedAdmin);
+routerDev.post('/seed-dev', sessionMiddleware, devOnly, seedDev);
 
 export default routerDev;

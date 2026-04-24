@@ -11,11 +11,15 @@ datasource db {
   provider = "sqlite"
 }
 
-enum UserStatus {
-  DEV
-  ADMIN
+enum Status {
   ACTIVE
   INACTIVE
+}
+
+enum Role {
+  DEV
+  ADMIN
+  USER
 }
 
 model User {
@@ -25,7 +29,8 @@ model User {
   password  String
   createdAt DateTime   @default(now())
   updatedAt DateTime   @updatedAt
-  status    UserStatus @default(ACTIVE)
+  status    Status @default(ACTIVE)
+  role      Role   @default(USER)
   sessions  Session[]
 }
 

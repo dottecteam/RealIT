@@ -25,7 +25,8 @@ export async function seedAdmin(req: Request, res: Response) {
                 email: 'admin@teste.com',
                 name: 'Administrador de Teste',
                 password: hashedPassword,
-                status: 'ADMIN'
+                status: 'ACTIVE',
+                role: 'ADMIN'
             }
         });
 
@@ -46,7 +47,8 @@ export async function seedDev(req: Request, res: Response) {
                 email: 'dev@teste.com',
                 name: 'Desenvolvedor de Teste',
                 password: hashedPassword,
-                status: 'DEV'
+                status: 'ACTIVE',
+                role: 'DEV'
             }
         });
 
@@ -58,30 +60,5 @@ export async function seedDev(req: Request, res: Response) {
 
 
 
-export async function getUsers(req: Request, res: Response) {
-    const users = await prisma.user.findMany({
-        orderBy: { createdAt: 'desc' }
-    });
-    return res.json(users);
-}
 
-export async function getSessions(req: Request, res: Response) {
-    const sessions = await prisma.session.findMany({
-        include: { user: { select: { email: true } } },
-        orderBy: { createdAt: 'desc' }
-    });
-    return res.json(sessions);
-}
-
-export async function getLogs(req: Request, res: Response) {
-    const logs = await prisma.log.findMany({
-        include: { 
-            session: { 
-                include: { user: { select: { email: true } } } 
-            } 
-        },
-        orderBy: { createdAt: 'desc' }
-    });
-    return res.json(logs);
-}
 
