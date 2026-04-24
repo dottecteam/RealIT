@@ -19,7 +19,7 @@ export const createUserSchema = z.object({
       
     status: z.enum(['ACTIVE', 'INACTIVE']).optional(),
 
-    role: z.enum(['ADMIN', 'DEV', 'USER']).optional()
+    role: z.enum(['ADMIN', 'USER']).optional()
   })
 });
 
@@ -47,5 +47,11 @@ export const searchUserSchema = z.object({
 export const getByEmailSchema = z.object({
   params: z.object({
     email: z.email("Formato de e-mail inválido")
+  })
+});
+
+export const getByRoleSchema = z.object({
+  params: z.object({
+    role: z.enum(['ADMIN', 'USER'], "A role deve ser 'ADMIN' ou 'USER'")
   })
 });

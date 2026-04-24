@@ -1,22 +1,27 @@
 import { Router } from 'express';
-import { register, listAll, getById, getByEmail, getByName, getProfile, update, softDelete } from '../controllers/userController';
+import {register, update , inactivate, activate } from '../controllers/userWriteController';
+import { listAll, getById, getByEmail, getByName, getProfile, getByRole, getUserSessions, getUserLogs } from '../controllers/userReadController';
 import { sessionMiddleware } from '../middlewares/sessionMiddleware';
-import { adminOnly } from '../middlewares/roleMiddleware';
+import { adminOnly, devOnly } from '../middlewares/roleMiddleware';
 import { validateData } from '../middlewares/dataMiddleware';
 import { createAccountLimiter } from '../middlewares/rateLimiter';
-import { createUserSchema, updateUserSchema, searchUserSchema, getByEmailSchema, getByIdSchema } from '../schemas/userSchemas';
+import { createUserSchema, updateUserSchema, searchUserSchema, getByEmailSchema, getByIdSchema, getByRoleSchema } from '../schemas/userSchemas';
 
 const router = Router();
 
 router.get('/me', sessionMiddleware, getProfile);
-
 router.get('/', sessionMiddleware, adminOnly, listAll)
-router.get('/id/:id', sessionMiddleware, adminOnly, validateData(getByIdSchema), getById);
 router.get('/search', sessionMiddleware, adminOnly, validateData(searchUserSchema), getByName);
-router.get('/email/:email', sessionMiddleware, adminOnly, validateData(getByEmailSchema), getByEmail);
+router.get('/get/id/:id', sessionMiddleware, adminOnly, validateData(getByIdSchema), getById);
+router.get('/get/email/:email', sessionMiddleware, adminOnly, validateData(getByEmailSchema), getByEmail);
+router.get('/get/role/:role', sessionMiddleware, adminOnly, validateData(getByRoleSchema), getByRole);
 
-router.post('/', sessionMiddleware, adminOnly, createAccountLimiter, validateData(createUserSchema), register);
-router.put('/:id', sessionMiddleware, adminOnly, validateData(updateUserSchema), update);
-router.patch('/:id/inactivate', sessionMiddleware, adminOnly, validateData(getByIdSchema), softDelete);
+router.get('/sessions/:id', sessionMiddleware, devOnly, validateData(getByIdSchema), getUserSessions);
+router.get('/logs/:id', sessionMiddleware, devOnly, validateData(getByIdSchema), getUserLogs);
+
+router.post('/create', sessionMiddleware, adminOnly, createAccountLimiter, validateData(createUserSchema), register);
+router.put('/edit/:id', sessionMiddleware, adminOnly, validateData(updateUserSchema), update);
+router.patch('/inactivate/:id', sessionMiddleware, adminOnly, validateData(getByIdSchema), inactivate);
+router.patch('/activate/:id', sessionMiddleware, adminOnly, validateData(getByIdSchema), activate);
 
 export default router;
