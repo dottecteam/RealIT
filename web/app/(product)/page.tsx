@@ -1,6 +1,7 @@
 import { RankingChart } from "../components/RankingChart";
 import { BrasilMap } from "../components/BrasilMap";
 import { mockDadosMediaRegiao } from "../mocks/score";
+import FilterBar from "../components/FilterBar";
 
 export default function Dashboard() {
   const dadosEixoI = mockDadosMediaRegiao.map(item => item.media_score_eixo_i);
@@ -17,8 +18,13 @@ export default function Dashboard() {
         </div>
 
         <div className="lg:col-span-2 w-full">
+          <div className="flex justify-end">
+            <FilterBar />
+          </div>
+          <br />
+          
           <div className="flex flex-col xl:flex-row gap-8 w-full justify-center items-stretch">  
-
+           
             <div>
               <h2 className="text-center text-zinc-500 font-bold mb-2 uppercase text-xs tracking-wider">
                 Eixo I
