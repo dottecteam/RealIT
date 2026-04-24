@@ -1,31 +1,42 @@
-import {Request, Response, NextFunction} from 'express'
-import {prisma} from '../lib/prisma'
+import { Request, Response, NextFunction } from 'express'
+import jwt from 'jsonwebtoken'
+import { prisma } from '../lib/prisma'
 
 export async function sessionMiddleware(req: Request, res: Response, next: NextFunction) {
   const token = req.headers.authorization?.split(' ')[1];
   
   if (!token) return res.status(401).json({ error: 'Token não fornecido' });
 
-  const session = await prisma.session.findFirst({
-    where: { 
-      token,
-      isActive: true,
-      logoutAt: null 
-    },
-    include: { user: true }
-  });
+  try {
+    const decoded = jwt.verify(token, process.env.JWT_SECRET as string) as { userId: number };
 
-  if (!session || session.expiresAt < new Date()) {
-    return res.status(401).json({ error: 'Sessão inválida, expirada ou encerrada' });
+    const session = await prisma.session.findFirst({
+      where: { 
+        token,
+        isActive: true,
+        logoutAt: null 
+      },
+      include: { user: true }
+    });
+
+    if (!session) {
+      return res.status(401).json({ error: 'Sessão encerrada ou inexistente' });
+    }
+
+    if (session.user.status === 'INACTIVE') {
+      return res.status(403).json({ error: 'Usuário desativado' });
+    }
+
+    (req as any).sessionId = session.id;
+    (req as any).userId = decoded.userId;
+    
+    next();
+  } catch (error) {
+    await prisma.session.updateMany({
+      where: { token, isActive: true },
+      data: { isActive: false }
+    });
+
+    return res.status(401).json({ error: 'Token inválido ou expirado' });
   }
-
-  if (session.user.status === 'INACTIVE') {
-    return res.status(403).json({ error: 'Usuário desativado' });
-  }
-
-  // Injeta na requisição para uso nos controllers
-  (req as any).sessionId = session.id;
-  (req as any).userId = session.userId;
-  
-  next();
 }
