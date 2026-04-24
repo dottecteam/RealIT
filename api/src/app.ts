@@ -1,22 +1,32 @@
 import express from 'express'
 import 'dotenv/config'
+import { rateLimit } from 'express-rate-limit'
+import helmet from 'helmet'
 
-//Rotas 
+// Rotas 
 import routerUser from './routes/user'
 import routerAuth from './routes/auth'
 import routerDados from './routes/data'
-
-// Rotas de desenvolvimento (limpar banco, criar admin, etc)
 import routerDev from './routes/dev';
 
 export const app = express()
 
+app.use(helmet())
+
 app.use(express.json())
+
+const globalLimiter = rateLimit({
+  windowMs: 20 * 60 * 1000, 
+  limit: 100, 
+  message: { error: 'Muitas requisições vindas deste IP, tente novamente mais tarde.' },
+  standardHeaders: 'draft-7',
+  legacyHeaders: false,
+})
+app.use(globalLimiter)
+
 app.use('/users', routerUser)
 app.use('/auth', routerAuth)
 app.use('/dados', routerDados)
-
-// Lembrete: Excluir essas rotas de desenvolvimento antes de ir para produção
 app.use('/dev', routerDev)
 
 app.get('/health', (_req, res) => {

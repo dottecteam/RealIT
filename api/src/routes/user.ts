@@ -3,19 +3,20 @@ import { register, listAll, getById, getByEmail, getByName, getProfile, update, 
 import { sessionMiddleware } from '../middlewares/sessionMiddleware';
 import { adminOnly } from '../middlewares/roleMiddleware';
 import { validateData } from '../middlewares/dataMiddleware';
+import { createAccountLimiter } from '../middlewares/rateLimiter';
 import { createUserSchema, updateUserSchema, searchUserSchema, getByEmailSchema, getByIdSchema } from '../schemas/userSchemas';
 
-const router = Router()
+const router = Router();
 
-router.get('/me', sessionMiddleware, getProfile)
+router.get('/me', sessionMiddleware, getProfile);
 
 router.get('/', sessionMiddleware, adminOnly, listAll)
 router.get('/id/:id', sessionMiddleware, adminOnly, validateData(getByIdSchema), getById);
 router.get('/search', sessionMiddleware, adminOnly, validateData(searchUserSchema), getByName);
 router.get('/email/:email', sessionMiddleware, adminOnly, validateData(getByEmailSchema), getByEmail);
 
-router.post('/', sessionMiddleware, adminOnly, validateData(createUserSchema), register)
-router.put('/:id', sessionMiddleware, adminOnly, validateData(updateUserSchema), update)
-router.patch('/:id/inactivate', sessionMiddleware, adminOnly, validateData(getByIdSchema), softDelete)
+router.post('/', sessionMiddleware, adminOnly, createAccountLimiter, validateData(createUserSchema), register);
+router.put('/:id', sessionMiddleware, adminOnly, validateData(updateUserSchema), update);
+router.patch('/:id/inactivate', sessionMiddleware, adminOnly, validateData(getByIdSchema), softDelete);
 
-export default router
+export default router;
