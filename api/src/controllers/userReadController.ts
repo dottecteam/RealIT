@@ -65,7 +65,8 @@ export async function getByEmail(request: Request, response: Response) {
                 email: true,
                 role: true,
                 status: true,
-                createdAt: true
+                createdAt: true,
+                updatedAt: true
             }
         });
 
@@ -113,7 +114,7 @@ export async function getByRole(request: Request, response: Response) {
     const { role } = request.params;
     try {
         const users = await prisma.user.findMany({
-            where: { role: role},
+            where: { role: role },
             select: { id: true, name: true, email: true, role: true, status: true }
         });
         return response.json(users);
@@ -147,4 +148,24 @@ export async function getUserSessions(request: Request, response: Response) {
     } catch (error) {
         return response.status(500).json({ error: 'Erro ao buscar sessões do usuário' });
     }
+}
+
+export async function getSessions(req: Request, res: Response) {
+    const sessions = await prisma.session.findMany({
+        include: { user: { select: { email: true } } },
+        orderBy: { createdAt: 'desc' }
+    });
+    return res.json(sessions);
+}
+
+export async function getLogs(req: Request, res: Response) {
+    const logs = await prisma.log.findMany({
+        include: {
+            session: {
+                include: { user: { select: { email: true } } }
+            }
+        },
+        orderBy: { createdAt: 'desc' }
+    });
+    return res.json(logs);
 }

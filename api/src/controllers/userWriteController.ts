@@ -149,3 +149,69 @@ export async function activate(request: Request, response: Response) {
         return response.status(500).json({ error: 'Erro ao inativar usuário' });
     }
 }
+
+export async function turnAdmin(request: Request, response: Response) {
+    const { id } = request.params;
+    const sessionId = (request as any).sessionId;
+
+    try {
+        const updatedUser = await prisma.user.update({
+            where: { id: Number(id) },
+            data: { role: 'ADMIN' }
+        });
+
+        await prisma.session.updateMany({
+            where: { userId: updatedUser.id, isActive: true },
+            data: { isActive: false, logoutAt: new Date() }
+        });
+
+        await logOperation(sessionId, 'UPDATE_USER');
+        return response.json({ message: 'Cargo atualizado com sucesso', role: updatedUser.role });
+    } catch (error) {
+        return response.status(500).json({ error: 'Erro ao atualizar cargo' });
+    }
+}
+
+export async function turnUser(request: Request, response: Response) {
+    const { id } = request.params;
+    const sessionId = (request as any).sessionId;
+
+    try {
+        const updatedUser = await prisma.user.update({
+            where: { id: Number(id) },
+            data: { role: 'USER' }
+        });
+
+        await prisma.session.updateMany({
+            where: { userId: updatedUser.id, isActive: true },
+            data: { isActive: false, logoutAt: new Date() }
+        });
+
+        await logOperation(sessionId, 'UPDATE_USER');
+        return response.json({ message: 'Cargo atualizado com sucesso', role: updatedUser.role });
+    } catch (error) {
+        return response.status(500).json({ error: 'Erro ao atualizar cargo' });
+    }
+}
+
+export async function turnDev(request: Request, response: Response) {
+    const { id } = request.params;
+    const sessionId = (request as any).sessionId;
+
+    try {
+        const updatedUser = await prisma.user.update({
+            where: { id: Number(id) },
+            data: { role: 'DEV' }
+        });
+
+        await prisma.session.updateMany({
+            where: { userId: updatedUser.id, isActive: true },
+            data: { isActive: false, logoutAt: new Date() }
+        });
+
+        await logOperation(sessionId, 'UPDATE_USER'); //
+        return response.json({ message: 'Promovido a Desenvolvedor', role: updatedUser.role });
+    } catch (error) {
+        return response.status(500).json({ error: 'Erro ao atualizar cargo' });
+    }
+}
