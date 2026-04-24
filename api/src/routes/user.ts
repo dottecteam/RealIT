@@ -16,6 +16,6 @@ router.get('/email/:email', sessionMiddleware, adminOnly, validateData(getByEmai
 
 router.post('/', sessionMiddleware, adminOnly, validateData(createUserSchema), register)
 router.put('/:id', sessionMiddleware, adminOnly, validateData(updateUserSchema), update)
-router.patch('/:id/inactivate', sessionMiddleware, adminOnly, softDelete)
+router.patch('/:id/inactivate', sessionMiddleware, adminOnly, validateData(getByIdSchema), softDelete)
 
 export default router

@@ -84,22 +84,32 @@ export async function getById(request: Request, response: Response) {
 
 export async function update(request: Request, response: Response) {
     const { id } = request.params
-    const data = request.body
+    const { name, email, password, status } = request.body
     const sessionId = (request as any).sessionId
 
-    if (Object.keys(data).length === 0) {
-        return response.status(400).json({ error: 'Nenhum dado fornecido para atualização' })
+    const updateData: any = {}
+    if (name) updateData.name = name
+    if (email) updateData.email = email
+    if (status) updateData.status = status
+
+    if (password) {
+        const hashedPassword = await bcrypt.hash(password, 10)
+        updateData.password = hashedPassword
+    }
+
+    if (Object.keys(updateData).length === 0) {
+        return response.status(400).json({ error: 'Nenhum dado válido fornecido para atualização' })
     }
 
     try {
         const user = await prisma.user.update({
             where: { id: Number(id) },
-            data: data
+            data: updateData
         })
 
         await logOperation(sessionId, 'UPDATE_USER')
 
-        if (data.status === 'INACTIVE') {
+        if (updateData.status === 'INACTIVE') {
             await prisma.session.updateMany({
                 where: { userId: user.id, isActive: true },
                 data: { isActive: false, logoutAt: new Date() }
@@ -107,7 +117,7 @@ export async function update(request: Request, response: Response) {
         }
 
         return response.json({
-            message: 'Usuário atualizado',
+            message: 'Usuário atualizado com sucesso',
             user: { id: user.id, status: user.status }
         })
     } catch (error) {
