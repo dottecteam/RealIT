@@ -104,15 +104,15 @@ export default function FilterBar(){
         <div className="relative w-1/3">
             <div className="bg-white rounded-[40px] shadow-[0_8px_30px_rgba(0,0,0,0.04)] p-2 min-h-[50px] flex justify-center gap-2">
                 
-                <div onClick={() => { fecharTodos(); setVisibilidade(!barraVisibilidade)}} className="w-1/6 flex items-center justify-center cursor-pointer hover:bg-[#F6F6F6] rounded-[10px]">
+                <div onClick={() => { fecharTodos(); setVisibilidade(!barraVisibilidade)}} className={`w-1/6 flex items-center justify-center cursor-pointer hover:bg-[#F6F6F6] rounded-[10px] ${barraVisibilidade ? "bg-blue-100" : "bg-white"}`}>
                 <LayoutGrid className="w-6 h-6 text-black" />
                 </div>
 
-                <div onClick={() => { fecharTodos(); setFiltros(!barraFiltros)}} className="w-1/6 flex items-center justify-center cursor-pointer hover:bg-[#F6F6F6] rounded-[10px]">
+                <div onClick={() => { fecharTodos(); setFiltros(!barraFiltros)}} className={`w-1/6 flex items-center justify-center cursor-pointer hover:bg-[#F6F6F6] rounded-[10px] ${barraFiltros ? "bg-blue-100" : "bg-white"}`}>
                 <Filter className="w-6 h-6 text-black" />
                 </div>
 
-                <div onClick={() => { fecharTodos(); setDownload(!barraDownload)}} className="w-1/6 flex items-center justify-center cursor-pointer hover:bg-[#F6F6F6] rounded-[10px]">
+                <div onClick={() => { fecharTodos(); setDownload(!barraDownload)}} className={`w-1/6 flex items-center justify-center cursor-pointer hover:bg-[#F6F6F6] rounded-[10px] ${barraDownload ? "bg-blue-100" : "bg-white"}`}>
                 <Download className="w-6 h-6 text-black" />
                 </div>
             </div>

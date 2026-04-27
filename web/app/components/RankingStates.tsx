@@ -11,20 +11,34 @@ const ReactApexChart = dynamic(() => import("react-apexcharts"), {
   ),
 })
 
-const Regioes = ["Norte", "Nordeste", "C-Oeste", "Sudeste", "Sul"]
+const Categorias = [
+  "AC","AL","AM","AP","BA","CE","DF","ES","GO",
+  "MA","MG","MS","MT","PA","PB","PE","PI","PR",
+  "RJ","RN","RO","RR","RS","SC","SE","SP","TO"
+]
+
+const Estados: Record<string, string> = {
+  AC: "Acre", AL: "Alagoas", AP: "Amapá", AM: "Amazonas",
+  BA: "Bahia", CE: "Ceará", DF: "Distrito Federal", ES: "Espírito Santo",
+  GO: "Goiás", MA: "Maranhão", MT: "Mato Grosso", MS: "Mato Grosso do Sul",
+  MG: "Minas Gerais", PA: "Pará", PB: "Paraíba", PR: "Paraná",
+  PE: "Pernambuco", PI: "Piauí", RJ: "Rio de Janeiro", RN: "Rio Grande do Norte",
+  RS: "Rio Grande do Sul", RO: "Rondônia", RR: "Roraima", SC: "Santa Catarina",
+  SP: "São Paulo", SE: "Sergipe", TO: "Tocantins"
+}
 
 const OPTIONS: ApexCharts.ApexOptions = {
   chart: {
     type: "bar",
     stacked: true,
     toolbar: { show: false },
-    zoom: { enabled: false },
+    zoom: { enabled: true },
     fontFamily: "inherit",
   },
   colors: ["#FF9A98", "#2cfff1", "#68E699", "#FFE372"],
   plotOptions: {
     bar: {
-      columnWidth: "45%",
+      columnWidth: 20,
       horizontal: false,
       borderRadius: 7,
       borderRadiusApplication: "end",
@@ -36,19 +50,21 @@ const OPTIONS: ApexCharts.ApexOptions = {
           formatter: (val: string) => parseFloat(val).toFixed(1),
           style: {
             fontSize: "14px",
-            fontWeight: 400,
+            fontWeight: 400
           },
         },
       },
     },
   },
-  dataLabels: { enabled: false },
+  dataLabels: {
+    enabled: false,
+  },
   xaxis: {
-    categories: Regioes,
+    categories: Categorias,
     axisBorder: { show: false },
     axisTicks: { show: false },
     labels: {
-      style: { colors: "#908f8f", fontSize: "13px", fontWeight: 500 },
+      style: { colors: "#908f8f", fontSize: "11px", fontWeight: 600 },
     },
   },
   yaxis: {
@@ -56,7 +72,7 @@ const OPTIONS: ApexCharts.ApexOptions = {
     max: 5,
     tickAmount: 5,
     labels: {
-      style: { colors: "#ADADAD", fontSize: "13px" },
+      style: { colors: "#ADADAD", fontSize: "12px" },
       formatter: (v: number) => v.toFixed(1),
     },
   },
@@ -77,7 +93,18 @@ const OPTIONS: ApexCharts.ApexOptions = {
     theme: "light",
     shared: true,
     intersect: false,
+    x: {
+      formatter: (val: string) => Estados[val] || val
+    }
   },
+  responsive: [
+    {
+      breakpoint: 480,
+      options: {
+        legend: { position: "bottom", offsetX: -10, offsetY: 0 },
+      },
+    },
+  ],
 }
 
 interface SeriesData {
@@ -85,18 +112,14 @@ interface SeriesData {
   data: number[]
 }
 
-interface RankingChartProps {
+interface RankingStatesProps {
   series: SeriesData[]
 }
 
-export function RankingChart({ series }: RankingChartProps) {
+export function RankingStates({ series }: RankingStatesProps) {
   return (
-    <div className="bg-white rounded-[40px] shadow-[0_8px_30px_rgba(0,0,0,0.04)] p-5 flex flex-col items-center w-full">
-      <h3 className="text-2xl font-black text-[#202AD0] mb-6 self-center">
-        Brasil - Rank
-      </h3>
-
-      <div className="w-full h-[300px] sm:h-[400px] lg:h-[500px]">
+    <div className="bg-white rounded-[40px] p-10 flex flex-col items-center w-full">
+      <div className="w-full h-[450px]">
         <ReactApexChart
           options={OPTIONS}
           series={series}
