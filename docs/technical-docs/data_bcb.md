@@ -215,7 +215,7 @@ Detalha a metodologia de cálculo para a identificação de mercados potenciais 
 
 | Parâmetro (z) | Descrição técnica | Métrica* | Peso (W) |
 | :--- | :--- | :--- | :--- |
-| **Inadimplência Real** | Taxa de negativados (CPFs) ativos na UF. | X<sub>UF</sub> = Σ carteira_inadimplencia / Σ carteira_ativa | 35% |
+| **Inadimplência Real** | Taxa de negativados (CPFs) ativos na UF. | X<sub>UF</sub> = Σ carteira_vencida / Σ carteira_ativa | 35% |
 | **Fragilidade de Renda** | Classe social | X<sub>UF</sub> = Σ carteira_ativa (PF até 3SM) / Σ carteira_ativa total (PF) | 35% |
 | **Aging da Dívida** | Tempo médio de atraso das dívidas em aberto > 90 dias | X<sub>UF</sub> = Σ vencido_acima_de_90_dias / carteira_vencida | 20% |
 | **Vulnerabilidade Social** | Escolaridade | X<sub>UF</sub> = 100 - Taxa da faixa etária "25 anos ou mais" | 10% |
@@ -226,7 +226,7 @@ Detalha a metodologia de cálculo para a identificação de mercados potenciais 
 
 | Parâmetro (z) | Variáveis a considerar | Database |
 | :--- | :--- | :--- |
-| **Inadimplência Real** | Carteira_inadimplencia, uf, <mark>carteira_ativa</mark> | SCR.data |
+| **Inadimplência Real** | Carteira_vencida, uf, <mark>carteira_ativa</mark> | SCR.data |
 | **Fragilidade de Renda** | <mark>carteira_ativa</mark> | SCR.data |
 | **Aging da Dívida** | Carteira_vencida, <mark>vencido_acima_de_90_dias</mark> | SCR.data |
 | **Vulnerabilidade Social** | NN, V, D1N, D3N, D5N | IBGE |
@@ -265,9 +265,14 @@ $\text{Score} = (z_1 \cdot W_1) + (z_2 \cdot W_2) + \dots + (z_n \cdot W_n)$
 
 ## 4. Matriz estratégica de tomada de decisão
 
-| Risco (RC) | Inclusão (IE) | Diagnóstico | Estratégia recomendada |
+| Risco (RC) | Inclusão (IE) | Diagnóstico | Estratégia Recomendada |
 | :--- | :--- | :--- | :--- |
-| **Baixo (1-2)** | **Baixo (1-2)** | DIAMANTE BRUTO | Fomento Imediato. Público seguro com demanda |
-| **Baixo (1-2)** | **Alto (4-5)** | MERCADO MADURO | Oceano Vermelho. Foco em fidelização e taxas baixas |
-| **Alto (4-5)** | **Baixo (1-2)** | FOMENTO SOCIAL | Alto risco. Requer garantias governamentais |
-| **Alto (4-5)** | **Alto (4-5)** | SATURAÇÃO | Risco de superendividamento. Recomenda-se cautela. |
+| Baixo(1‑2) | Baixo(1‑2) | DIAMANTE BRUTO | Fomento Imediato. Público seguro com demanda. |
+| Baixo(1‑2) | Médio(2‑4) | POTENCIAL EMERGENTE | Boa segurança. Oportunidade de acelerar a aquisição de clientes antes que o mercado sature. |
+| Baixo(1‑2) | Alto(4‑5) | MERCADO MADURO | Oceano Vermelho. Foco em fidelização e taxas baixas. |
+| Médio(2‑4) | Baixo(1‑2) | EXPANSÃO CAUTELOSA | Demanda reprimida, mas risco requer atenção. Testar limites de crédito menores e aumentar progressivamente. |
+| Médio(2‑4) | Médio(2‑4) | CRESCIMENTO ORGÂNICO | Ponto de equilíbrio. Estratégia padrão de crédito com monitoramento contínuo das safras de clientes. |
+| Médio(2‑4) | Alto(4‑5) | DEFESA DE MERCADO | Região com alta concorrência e risco moderado. Foco em rentabilizar a base atual com produtos complementares. |
+| Alto(4‑5) | Baixo(1‑2) | FOMENTO SOCIAL | Alto risco. Requer garantias governamentais. |
+| Alto(4‑5) | Médio(2‑4) | RETENÇÃO RESTRITA | Risco elevado sem o benefício da alta demanda populacional. Manter carteira atual e restringir novas concessões. |
+| Alto(4‑5) | Alto(4‑5) | SATURAÇÃO | Risco de superendividamento. Recomenda-se cautela. |
