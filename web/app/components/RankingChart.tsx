@@ -80,7 +80,7 @@ interface RankingChartProps {
 export function RankingChart({ title, info, series}: RankingChartProps) {
   return (
     <ChartCard title={title} info={info}>
-      <div className="w-full h-[460px]">
+      <div className="w-full h-[600px]">
         <ReactApexChart
           options={OPTIONS}
           series={series}

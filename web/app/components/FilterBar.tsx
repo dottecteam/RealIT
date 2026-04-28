@@ -101,8 +101,8 @@ export default function FilterBar(){
     
 
     return (
-        <div className="relative w-1/3">
-            <div className="bg-white rounded-[40px] shadow-[0_8px_30px_rgba(0,0,0,0.04)] p-2 min-h-[50px] flex justify-center gap-2">
+        <div className="relative w-1/2">
+            <div className="bg-white rounded-[40px] shadow-[0_8px_30px_rgba(0,0,0,0.04)] p-2 min-h-[60px] flex justify-center gap-2">
                 
                 <div onClick={() => { fecharTodos(); setVisibilidade(!barraVisibilidade)}} className={`w-1/6 flex items-center justify-center cursor-pointer hover:bg-[#F6F6F6] rounded-[10px] ${barraVisibilidade ? "bg-blue-100" : "bg-white"}`}>
                 <LayoutGrid className="w-6 h-6 text-black" />

@@ -2,6 +2,7 @@ import { RankingChart } from "../components/RankingChart";
 import { BrasilMap } from "../components/BrasilMap";
 import { mockDadosMediaRegiao } from "../mocks/score";
 import FilterBar from "../components/FilterBar";
+import RegionFilter from "../components/RegionFilter";
 import { RankingStates } from "../components/RankingStates";
 import { dadosEixoI_Ranking, dadosEixoII_Ranking, dadosEixoI_Score, dadosEixoII_Score } from "../mocks/chartData";
 import { EvolucaoScoresChart } from "../components/EvolucaoScoresChart";
@@ -18,7 +19,7 @@ export default function Dashboard() {
 
         {/* Mapa */}
         <div className="flex justify-center items-start w-full">
-          <div className="w-full max-w-[700px]">
+          <div className="w-full max-w-[900px]">
             <BrasilMap />
           </div>
         </div>
@@ -26,9 +27,13 @@ export default function Dashboard() {
         {/* Scores lado a lado */}
         <div className="flex flex-col gap-6">
           <div className="flex justify-end">
-            <FilterBar />
+            <div className="h-[50px] flex flex-col lg:flex-row lg:justify-end items-center gap-4 w-full">
+              <RegionFilter />
+              <FilterBar />
+            </div>
           </div>
-          <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
+
+          <div className="grid grid-cols-1 xl:grid-cols-2 gap-6 flex-col justify-end">
             <RankingChart
               title="Risco de Crédito"
               info="Composição do score de risco de crédito para cada região do Brasil."
@@ -42,7 +47,7 @@ export default function Dashboard() {
           </div>
         </div>
       </div>
-
+      
       {/* EVOLUÇÃO E PROJEÇÃO */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 px-6 mt-6 bg-[#F6F6F6]">
         <EvolucaoScoresChart
@@ -71,6 +76,9 @@ export default function Dashboard() {
           ]}
         />
       </div>
+
+      <br />
+      <br />
 
       {/* RANKING POR ESTADO */}
       <div className="px-30 mt-10 pb-10 bg-[#F6F6F6]">
