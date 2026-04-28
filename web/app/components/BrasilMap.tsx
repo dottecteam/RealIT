@@ -64,14 +64,22 @@ export function BrasilMap() {
 
         //Clona o SVG do mapa da biblioteca p resolver o problema que tava dando antes (mapa ficava arrastável)
         const clone = svg.cloneNode(true) as SVGElement;
+        clone.querySelectorAll("path").forEach((path) => {
+        const title = path.querySelector("title")?.textContent?.trim();
+        if (title) {
+            path.setAttribute("data-title", title.toUpperCase());
+        }
+        });
+
+        clone.querySelectorAll("title").forEach((t) => t.remove());
 
         clone.removeAttribute("width");
         clone.removeAttribute("height");
         clone.removeAttribute("style");
-        clone.setAttribute("width", "100%");
-        clone.setAttribute("height", "100%");
-        clone.setAttribute("viewBox", "0 0 700 800");
 
+        clone.setAttribute("width", "100%");
+        clone.setAttribute("height", "auto");
+        clone.setAttribute("viewBox", "0 0 700 800");
         clone.setAttribute("preserveAspectRatio", "xMidYMid meet");
 
         svgBaseRef.current = clone.outerHTML;
@@ -169,7 +177,7 @@ export function BrasilMap() {
         const target = e.target as SVGPathElement;
         if (target.tagName !== "path") return;
 
-        const title = target.querySelector("title")?.textContent?.trim().toUpperCase();
+        const title = target.getAttribute("data-title");
         if (!title) return;
 
         const codIbge = STATE_TO_IBGE[title];
@@ -185,7 +193,7 @@ export function BrasilMap() {
         const target = e.target as SVGPathElement;
 
         if (target.tagName === "path") {
-            const title = target.querySelector("title")?.textContent?.trim().toUpperCase();
+            const title = target.getAttribute("data-title");
 
             if (title) {
             const uf = getUFByTitle(title);
@@ -300,13 +308,9 @@ export function BrasilMap() {
     return (
         <div className="w-full flex flex-col p-4 bg-white rounded-[40px] shadow-[0_8px_30px_rgba(0,0,0,0.04)]">
             <div className="h-8 mb-4 z-10 text-center">
-                {regiaoAtiva ? (
                 <h3 className="text-xl font-bold text-[#202AD0]">
-                    Região Selecionada: <span className="text-gray-700">{regiaoAtiva}</span>
+                    Mapa Brasil - <span className="text-gray-700">Visualização</span>
                 </h3>
-                ) : (
-                <h3 className="text-xl text-gray-400">Clique em um estado no mapa</h3>
-                )}
             </div>
 
             <label className="flex items-center gap-2 mb-4">

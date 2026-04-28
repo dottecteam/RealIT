@@ -40,6 +40,7 @@ export default function Switch(){
 
                 .toggled-btn.ativo{
                     background-color: #202AD0;
+                    border: none;
                 }
 
                 .toggled-btn:hover{

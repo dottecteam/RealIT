@@ -30,14 +30,12 @@ const opcoesFiltro = [
         {id: "endividamento_faixa_renda", texto: "Endividamento por faixa de renda"},
         {id: "participacao_credito_orcamento", texto: "Participação do crédito no orçamento familiar"}
     ]},
-
     {categoria: "Crescimento Carteira", opcoes: [
         {id: "carteria_pf_vs_pj", texto: "Carteria PF vs PJ"},
         {id: "imobiliario", texto: "Imobiliário"},
         {id: "veiculos", texto: "Veículos"},
         {id: "consignado", texto: "Consignado"},
     ]},
-
     {categoria: "Inadimplência", opcoes: [
         {id: "volume_mensal_concessao_total", texto: "Volume mensal de concessão total"},
         {id: "credito_pessoal", texto: "Crédito pessoal"},
@@ -45,7 +43,6 @@ const opcoesFiltro = [
         {id: "financiamento_imobiliario", texto: "Financiamento imobiliário"},
         {id: "financiamento_veiculos", texto: "Financiamento de veículos"},
     ]},
-
     {categoria: "Dados PIX", opcoes: [
         {id: "valor_total_movimentado", texto: "Valor total movimentedo"},
         {id: "valor_medio_transacao", texto: "Valor médio por transação"},
@@ -101,27 +98,27 @@ export default function FilterBar(){
     
 
     return (
-        <div className="relative w-1/2">
+        <div className="relative w-full sm:w-1/2">
             <div className="bg-white rounded-[40px] shadow-[0_8px_30px_rgba(0,0,0,0.04)] p-2 min-h-[60px] flex justify-center gap-2">
                 
                 <div onClick={() => { fecharTodos(); setVisibilidade(!barraVisibilidade)}} className={`w-1/6 flex items-center justify-center cursor-pointer hover:bg-[#F6F6F6] rounded-[10px] ${barraVisibilidade ? "bg-blue-100" : "bg-white"}`}>
-                <LayoutGrid className="w-6 h-6 text-black" />
+                    <LayoutGrid className="w-6 h-6 text-black" />
                 </div>
 
                 <div onClick={() => { fecharTodos(); setFiltros(!barraFiltros)}} className={`w-1/6 flex items-center justify-center cursor-pointer hover:bg-[#F6F6F6] rounded-[10px] ${barraFiltros ? "bg-blue-100" : "bg-white"}`}>
-                <Filter className="w-6 h-6 text-black" />
+                    <Filter className="w-6 h-6 text-black" />
                 </div>
 
                 <div onClick={() => { fecharTodos(); setDownload(!barraDownload)}} className={`w-1/6 flex items-center justify-center cursor-pointer hover:bg-[#F6F6F6] rounded-[10px] ${barraDownload ? "bg-blue-100" : "bg-white"}`}>
-                <Download className="w-6 h-6 text-black" />
+                    <Download className="w-6 h-6 text-black" />
                 </div>
             </div>
 
             {barraVisibilidade && (
-                <div className="absolute top-full right-0 mt-2 w-[500px] bg-white shadow-xl rounded-2xl p-4 z-50">
+                <div className="absolute top-full right-0 mt-2 w-[calc(100vw-24px)] sm:w-[400px] md:w-[500px] max-h-[70vh] overflow-y-auto bg-white shadow-xl rounded-2xl p-4 z-[9999]">
                     <p className="font-bold mb-3 text-[#202ad0]">Visibilidade dos Gráficos</p>
 
-                    <div className="grid grid-cols-2 gap-2">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                         {opcoesVisibilidade.map(opcao => (
                             <label className="flex items-center gap-2 select-none" key={opcao.id}>
                                 <input type="checkbox" defaultChecked />
@@ -133,7 +130,7 @@ export default function FilterBar(){
             )}
 
             {barraFiltros && (
-                <div className="absolute top-full right-0 mt-2 w-[320px] bg-white rounded-2xl shadow-xl p-4 z-50">
+                <div className="absolute top-full right-0 mt-2 w-[calc(100vw-24px)] sm:w-[320px] max-h-[70vh] overflow-y-auto bg-white rounded-2xl shadow-xl p-4 z-[9999]">
                     <h2 className="text-lg text-[#202ad0] font-bold mb-4">Filtros</h2>
 
                     <div className="mb-4">
@@ -193,7 +190,7 @@ export default function FilterBar(){
             )}
 
             {barraDownload && (
-                <div className="absolute top-full right-0 mt-2 w-[320px] bg-white rounded-2xl shadow-xl p-4 z-50">
+                <div className="absolute top-full right-0 mt-2 w-[calc(100vw-24px)] sm:w-[320px] max-h-[70vh] overflow-y-auto bg-white rounded-2xl shadow-xl p-4 z-[9999]">
                     <h2 className="text-lg text-[#202ad0] font-bold mb-4">Download</h2>
                     <p className="text-sm text-gray-600 mb-4">
                         Selecione o formato de download desejado:

@@ -15,25 +15,23 @@ const mesesProjecao = ["Jan/23","Abr/23","Jul/23","Out/23","Jan/24","Abr/24","Ju
 export default function Dashboard() {
   return (
     <>
-      <div className="grid grid-cols-1 lg:grid-cols-[1fr_1fr] gap-6 mt-4 px-6 bg-[#F6F6F6]">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mt-4 px-3 sm:px-4 md:px-6 bg-[#F6F6F6]">
 
         {/* Mapa */}
         <div className="flex justify-center items-start w-full">
-          <div className="w-full max-w-[900px]">
+          <div className="w-full max-w-[900px] aspect-[4/3]">
             <BrasilMap />
           </div>
         </div>
 
         {/* Scores lado a lado */}
         <div className="flex flex-col gap-6">
-          <div className="flex justify-end">
-            <div className="h-[50px] flex flex-col lg:flex-row lg:justify-end items-center gap-4 w-full">
-              <RegionFilter />
-              <FilterBar />
-            </div>
+          <div className="flex flex-col sm:flex-row gap-2 w-full">
+            <RegionFilter />
+            <FilterBar />
           </div>
 
-          <div className="grid grid-cols-1 xl:grid-cols-2 gap-6 flex-col justify-end">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <RankingChart
               title="Risco de Crédito"
               info="Composição do score de risco de crédito para cada região do Brasil."
@@ -49,7 +47,7 @@ export default function Dashboard() {
       </div>
       
       {/* EVOLUÇÃO E PROJEÇÃO */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 px-6 mt-6 bg-[#F6F6F6]">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 px-3 sm:px-4 md:px-6 mt-6 bg-[#F6F6F6]">
         <EvolucaoScoresChart
           categorias={periodos}
           info="Mostra como o Score de Risco de Crédito e o Score de Inclusão e Expansão de cada região evoluíram ao longo dos períodos disponíveis. Linhas sólidas representam o RC e linhas tracejadas o IE, com uma cor por região. O gráfico permite identificar movimentos estratégicos relevantes — uma região que estava deteriorando e começou a melhorar, ou um mercado que era pouco explorado e está rapidamente se tornando competitivo."
@@ -81,7 +79,7 @@ export default function Dashboard() {
       <br />
 
       {/* RANKING POR ESTADO */}
-      <div className="px-30 mt-10 pb-10 bg-[#F6F6F6]">
+      <div className="px-3 sm:px-6 md:px-10 lg:px-20 mt-10 pb-10 bg-[#F6F6F6]">
         <h3 className="text-2xl font-black text-[#202AD0] mb-6 text-center">
           Ranking Geral por Estado
         </h3>

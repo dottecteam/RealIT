@@ -5,11 +5,26 @@ import { Logo } from "./Logo";
 
 export function Sidebar({ isOpen, onToggle }: SidebarProps) {
   return (
-    <aside className={`${isOpen ? "w-64" : "w-20"} bg-white border-r border-zinc-200 flex flex-col transition-all duration-300 ease-in-out z-50`}>
-      <div className="h-20 flex items-center px-4 gap-4">
+    <aside
+      className={`
+        shadow-md bg-white z-50 flex
+
+        fixed bottom-0 left-0 w-full h-16 
+        flex-row items-center justify-around 
+        border-t border-zinc-200
+
+        md:relative md:h-full md:flex-col md:justify-start
+        md:border-t-0 md:border-r
+
+        md:transition-[width] md:duration-300 md:ease-in-out
+
+        ${isOpen ? "md:w-64" : "md:w-20"}
+      `}
+    >
+      <div className="hidden md:flex h-20 items-center px-4 gap-4">
         <button
           onClick={onToggle}
-          className="p-3 hover:bg-zinc-100 rounded-xl text-zinc-600 transition-colors"
+          className="w-10 h-10 flex items-center justify-center hover:bg-zinc-100 rounded-xl text-zinc-600 transition-colors" 
           title={isOpen ? "Recolher menu" : "Expandir menu"}
         >
           <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -17,11 +32,12 @@ export function Sidebar({ isOpen, onToggle }: SidebarProps) {
           </svg>
         </button>
         <div className={`overflow-hidden transition-all duration-300 ${isOpen ? "opacity-100 w-auto" : "opacity-0 w-0"}`}>
-          <Logo color="var(--primary)" secondaryColor="var(--primary)"/>
+          {/* <Logo color="var(--primary)" secondaryColor="var(--primary)"/> */}
+          <h1 className="font-bold text-xl text-[#202AD0] text-5x1">MENU</h1>
         </div>
       </div>
 
-      <nav className="flex-grow py-4 px-3 space-y-2">
+      <nav className="flex flex-row md:flex-col w-full justify-around md:justify-start md:py-4 md:px-3 md:space-y-2">
         <SidebarItem label="Dashboard" isOpen={isOpen} href="/dashboard" active
           icon={<path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />}
         />

@@ -27,12 +27,14 @@ const Estados: Record<string, string> = {
   SP: "São Paulo", SE: "Sergipe", TO: "Tocantins"
 }
 
+const CHART_MIN_WIDTH = 900
+
 const OPTIONS: ApexCharts.ApexOptions = {
   chart: {
     type: "bar",
     stacked: true,
     toolbar: { show: false },
-    zoom: { enabled: true },
+    zoom: { enabled: false },
     fontFamily: "inherit",
   },
   colors: ["#FF9A98", "#2cfff1", "#68E699", "#FFE372"],
@@ -118,16 +120,21 @@ interface RankingStatesProps {
 
 export function RankingStates({ series }: RankingStatesProps) {
   return (
-    <div className="bg-white rounded-[40px] p-10 flex flex-col items-center w-full">
-      <div className="w-full h-[450px]">
-        <ReactApexChart
-          options={OPTIONS}
-          series={series}
-          type="bar"
-          height="100%"
-          width="100%"
-        />
+    <div className="bg-white rounded-[40px] p-4 sm:p-10 flex flex-col items-center w-full">
+      <div className="w-full overflow-x-auto">
+        <div style={{ minWidth: CHART_MIN_WIDTH }} className="h-[450px]">
+          <ReactApexChart
+            options={OPTIONS}
+            series={series}
+            type="bar"
+            height="100%"
+            width="100%"
+          />
+        </div>
       </div>
+      <p className="text-xs text-zinc-400 mt-3 sm:hidden">
+        ← Deslize para ver todos os estados →
+      </p>
     </div>
   )
 }
