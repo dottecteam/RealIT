@@ -1,6 +1,6 @@
 "use client"
-
 import dynamic from "next/dynamic"
+import { ChartCard } from "./ChartCard"
 
 const ReactApexChart = dynamic(() => import("react-apexcharts"), {
   ssr: false,
@@ -34,10 +34,7 @@ const OPTIONS: ApexCharts.ApexOptions = {
           enabled: true,
           offsetY: -12,
           formatter: (val: string) => parseFloat(val).toFixed(1),
-          style: {
-            fontSize: "14px",
-            fontWeight: 400,
-          },
+          style: { fontSize: "13px", fontWeight: 400 },
         },
       },
     },
@@ -47,25 +44,18 @@ const OPTIONS: ApexCharts.ApexOptions = {
     categories: Regioes,
     axisBorder: { show: false },
     axisTicks: { show: false },
-    labels: {
-      style: { colors: "#908f8f", fontSize: "13px", fontWeight: 500 },
-    },
+    labels: { style: { colors: "#908f8f", fontSize: "12px", fontWeight: 500 } },
   },
   yaxis: {
     min: 0,
     max: 5,
     tickAmount: 5,
     labels: {
-      style: { colors: "#ADADAD", fontSize: "13px" },
+      style: { colors: "#ADADAD", fontSize: "12px" },
       formatter: (v: number) => v.toFixed(1),
     },
   },
-  legend: {
-    position: "bottom",
-    horizontalAlign: "center",
-    fontSize: "13px",
-    labels: { colors: "#374151" },
-  },
+  legend: { position: "bottom", fontSize: "11px" },
   fill: { opacity: 1 },
   grid: {
     borderColor: "#E5E7EB",
@@ -73,11 +63,7 @@ const OPTIONS: ApexCharts.ApexOptions = {
     xaxis: { lines: { show: false } },
     yaxis: { lines: { show: true } },
   },
-  tooltip: {
-    theme: "light",
-    shared: true,
-    intersect: false,
-  },
+  tooltip: { theme: "light", shared: true, intersect: false },
 }
 
 interface SeriesData {
@@ -86,17 +72,15 @@ interface SeriesData {
 }
 
 interface RankingChartProps {
+  title: string
+  info?: string
   series: SeriesData[]
 }
 
-export function RankingChart({ series }: RankingChartProps) {
+export function RankingChart({ title, info, series}: RankingChartProps) {
   return (
-    <div className="bg-white rounded-[40px] shadow-[0_8px_30px_rgba(0,0,0,0.04)] p-5 flex flex-col items-center w-full">
-      <h3 className="text-2xl font-black text-[#202AD0] mb-6 self-center">
-        Brasil - Rank
-      </h3>
-
-      <div className="w-full h-[300px] sm:h-[400px] lg:h-[500px]">
+    <ChartCard title={title} info={info}>
+      <div className="w-full h-[460px]">
         <ReactApexChart
           options={OPTIONS}
           series={series}
@@ -105,6 +89,6 @@ export function RankingChart({ series }: RankingChartProps) {
           width="100%"
         />
       </div>
-    </div>
+    </ChartCard>
   )
 }
