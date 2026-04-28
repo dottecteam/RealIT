@@ -1,5 +1,6 @@
 import { Router } from 'express';
-import * as dataController from '../controllers/dataController';
+import * as dataController from '../controllers/dataWriteController';
+import * as dataRead from '../controllers/dataReadController';
 import { validateData } from '../middlewares/dataMiddleware';
 import { sessionMiddleware } from '../middlewares/sessionMiddleware';
 import { adminOnly } from '../middlewares/roleMiddleware';
@@ -47,5 +48,13 @@ routerData.post(
   validateData(z.object({ body: schemas.ibgeStructureArray })),
   dataController.createIBGEStructure
 );
+
+
+routerData.get('/credit-risk', sessionMiddleware, dataRead.getCreditRisk);
+routerData.get('/inclusion-expansion', sessionMiddleware, dataRead.getInclusionExpansion);
+routerData.get('/pix-structure', sessionMiddleware, dataRead.getPixStructure);
+routerData.get('/ibge-structure', sessionMiddleware, dataRead.getIBGEStructure);
+routerData.get('/all-indicators', sessionMiddleware, dataRead.getAllIndicators);
+
 
 export default routerData;
