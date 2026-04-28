@@ -50,11 +50,11 @@ routerData.post(
 );
 
 
+routerData.get('/calculate-scores', sessionMiddleware, dataRead.calculateDashboardScores);
+
 routerData.get('/credit-risk', sessionMiddleware, dataRead.getCreditRisk);
 routerData.get('/inclusion-expansion', sessionMiddleware, dataRead.getInclusionExpansion);
 routerData.get('/pix-structure', sessionMiddleware, dataRead.getPixStructure);
 routerData.get('/ibge-structure', sessionMiddleware, dataRead.getIBGEStructure);
-routerData.get('/all-indicators', sessionMiddleware, dataRead.getAllIndicators);
-
 
 export default routerData;
