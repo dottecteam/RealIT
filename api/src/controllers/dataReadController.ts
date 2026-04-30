@@ -3,100 +3,46 @@ import { prisma } from '../lib/prisma';
 import * as scoreService from '../services/scoreService';
 
 export async function calculateDashboardScores(req: Request, res: Response) {
-    const userId = (req as any).userId;
-    const { uf } = req.query;
-
     try {
-        // Busca Pesos do Usuário ou define o Padrão (Metodologia)
-        const userWeights = await prisma.filtroScore.findFirst({ where: { idUsuario: userId } });
-
-        const weights = userWeights || {
-            inadiplenciaRealPeso: 0.35,
-            fragilidadeRendaPeso: 0.35,
-            agingDividaPeso: 0.20,
-            vulnerabilidadeSocialPeso: 0.10,
-            maturidadePixPeso: 0.35,
-            crescimentoPopulacionalPeso: 0.25,
-            populacaoAbsolutaPeso: 0.25,
-            bonusDemograficoPeso: 0.15
-        };
-
-        // Busca todos os dados para calcular Min-Max global (essencial para a normalização)
-        const [riscoTotal, inclusaoTotal] = await Promise.all([
-            prisma.riscoCredito.findMany(),
-            prisma.inclusaoExpansao.findMany()
-        ]);
-
-        if (riscoTotal.length === 0 || inclusaoTotal.length === 0) {
-            return res.status(404).json({ error: 'Dados insuficientes para calcular o score.' });
-        }
-
-        // Mapeia os limites globais (Min e Max de cada coluna)
-        const limits = {
-            inad: { min: Math.min(...riscoTotal.map(r => r.inadiplenciaReal)), max: Math.max(...riscoTotal.map(r => r.inadiplenciaReal)) },
-            renda: { min: Math.min(...riscoTotal.map(r => r.fragilidadeRenda)), max: Math.max(...riscoTotal.map(r => r.fragilidadeRenda)) },
-            aging: { min: Math.min(...riscoTotal.map(r => r.agingDivida)), max: Math.max(...riscoTotal.map(r => r.agingDivida)) },
-            vulner: { min: Math.min(...riscoTotal.map(r => r.vulnerabilidadeSocial)), max: Math.max(...riscoTotal.map(r => r.vulnerabilidadeSocial)) },
-            pix: { min: Math.min(...inclusaoTotal.map(i => i.maturidadePix)), max: Math.max(...inclusaoTotal.map(i => i.maturidadePix)) },
-            cresc: { min: Math.min(...inclusaoTotal.map(i => i.crescimentoPopulacional)), max: Math.max(...inclusaoTotal.map(i => i.crescimentoPopulacional)) },
-            pop: { min: Math.min(...inclusaoTotal.map(i => i.populacaoAbsoluta)), max: Math.max(...inclusaoTotal.map(i => i.populacaoAbsoluta)) },
-            bonus: { min: Math.min(...inclusaoTotal.map(i => i.bonusDemografico)), max: Math.max(...inclusaoTotal.map(i => i.bonusDemografico)) },
-        };
-
-        // Filtra apenas os dados que o usuário quer ver (ou todos se não passar UF)
-        const riscoBase = uf ? riscoTotal.filter(r => r.uf === String(uf)) : riscoTotal;
-
-        const scoresProcessados = riscoBase.map(r => {
-            const inc = inclusaoTotal.find(i => i.uf === r.uf && i.mesAno === r.mesAno);
-
-            const zInad = scoreService.normalize(r.inadiplenciaReal, limits.inad.min, limits.inad.max);
-            const zRenda = scoreService.normalize(r.fragilidadeRenda, limits.renda.min, limits.renda.max);
-            const zAging = scoreService.normalize(r.agingDivida, limits.aging.min, limits.aging.max);
-            const zVulner = scoreService.normalize(r.vulnerabilidadeSocial, limits.vulner.min, limits.vulner.max);
-
-            const zPix = inc ? scoreService.normalize(inc.maturidadePix, limits.pix.min, limits.pix.max) : 1;
-            const zCresc = inc ? scoreService.normalize(inc.crescimentoPopulacional, limits.cresc.min, limits.cresc.max) : 1;
-            const zPop = inc ? scoreService.normalize(inc.populacaoAbsoluta, limits.pop.min, limits.pop.max) : 1;
-            const zBonus = inc ? scoreService.normalize(inc.bonusDemografico, limits.bonus.min, limits.bonus.max) : 1;
-
-            const scoreRC = scoreService.calculateWeightedScore(
-                [zInad, zRenda, zAging, zVulner],
-                [weights.inadiplenciaRealPeso, weights.fragilidadeRendaPeso, weights.agingDividaPeso, weights.vulnerabilidadeSocialPeso]
-            );
-
-            const scoreIE = scoreService.calculateWeightedScore(
-                [zPix, zCresc, zPop, zBonus],
-                [weights.maturidadePixPeso, weights.crescimentoPopulacionalPeso, weights.populacaoAbsolutaPeso, weights.bonusDemograficoPeso]
-            );
-
-            return {
-                uf: r.uf,
-                mesAno: r.mesAno,
-                regiao: r.regiao,
-                score_eixo_i: scoreRC,
-                score_eixo_ii: scoreIE,
-                categoria: scoreService.getStrategicCategory(scoreRC, scoreIE),
-                detalhes_normalizados: {
-                    inadimplencia: zInad,
-                    crescimento: zCresc,
-
-                }
-            };
-        });
-
-        return res.json(scoresProcessados);
+        const result = await scoreService.processAllScores((req as any).userId, req.query);
+        return res.json(result);
     } catch (error) {
-        console.error("Erro no motor de cálculo:", error);
-        return res.status(500).json({ error: 'Falha interna ao processar o Score.' });
+        return res.status(500).json({ error: 'Erro no motor de cálculo' });
+    }
+}
+
+export async function getRanking(req: Request, res: Response) {
+    const { orderBy } = req.query;
+    try {
+        const allScores = await scoreService.processAllScores((req as any).userId, req.query);
+        const sorted = allScores.sort((a, b) => orderBy === 'RC' ? a.score_eixo_i - b.score_eixo_i : b.score_eixo_ii - a.score_eixo_ii);
+        return res.json(sorted);
+    } catch (error) {
+        return res.status(500).json({ error: 'Erro ao gerar ranking' });
+    }
+}
+
+export async function getSummary(req: Request, res: Response) {
+    const { uf, regiao, mesAno } = req.query;
+    try {
+        const [risco, inclusao, pix, ibge] = await Promise.all([
+            prisma.riscoCredito.findMany({ where: { uf: uf as string, regiao: regiao as string, mesAno: mesAno as string } }),
+            prisma.inclusaoExpansao.findMany({ where: { uf: uf as string, regiao: regiao as string, mesAno: mesAno as string } }),
+            prisma.estruturaSrcPix.findMany({ where: { uf: uf as string, regiao: regiao as string, ano_mes: mesAno as string } }),
+            prisma.estruturaIBGE.findMany({ where: { uf: uf as string, regiao: regiao as string } })
+        ]);
+        return res.json({ uf, regiao, data: { risco, inclusao, pix, ibge } });
+    } catch (error) {
+        return res.status(500).json({ error: 'Erro ao buscar resumo' });
     }
 }
 
 export async function getEvolutionHistory(req: Request, res: Response) {
     const { uf, regiao, limit } = req.query;
-    const monthsLimit = Number(limit);
+    const monthsLimit = Number(limit) || 12;
 
     try {
-        const riscoHistorico = await prisma.riscoCredito.findMany({
+        const historico = await prisma.riscoCredito.findMany({
             where: {
                 uf: uf ? String(uf) : undefined,
                 regiao: regiao ? String(regiao) : undefined,
@@ -105,27 +51,17 @@ export async function getEvolutionHistory(req: Request, res: Response) {
             take: monthsLimit
         });
 
-        const dadosOrdenados = riscoHistorico.reverse();
+        const dadosOrdenados = historico.reverse();
 
-        // Formatação para o ApexCharts (Front-end)
-        // O front espera um array de categorias (meses) e as séries de dados
-        const chartData = {
+        return res.json({
             categories: dadosOrdenados.map(d => d.mesAno),
             series: [
-                {
-                    name: `Inadimplência - ${uf || regiao || 'Brasil'}`,
-                    data: dadosOrdenados.map(d => d.inadiplenciaReal)
-                },
-                {
-                    name: `Renda - ${uf || regiao || 'Brasil'}`,
-                    data: dadosOrdenados.map(d => d.fragilidadeRenda)
-                }
+                { name: "Inadimplência Real", data: dadosOrdenados.map(d => d.inadiplenciaReal) },
+                { name: "Fragilidade de Renda", data: dadosOrdenados.map(d => d.fragilidadeRenda) }
             ]
-        };
-
-        return res.json(chartData);
+        });
     } catch (error) {
-        return res.status(500).json({ error: 'Erro ao gerar histórico de evolução' });
+        return res.status(500).json({ error: 'Erro ao buscar histórico temporal' });
     }
 }
 
@@ -174,87 +110,5 @@ export async function getIBGEStructure(req: Request, res: Response) {
         return res.json(data);
     } catch (error) {
         return res.status(500).json({ error: 'Failed to fetch IBGE structure data' });
-    }
-}
-
-export async function getRegionSummary(req: Request, res: Response) {
-    const { regiao, mesAno } = req.query;
-
-    if (!regiao) {
-        return res.status(400).json({ error: 'O parâmetro regiao é obrigatório.' });
-    }
-
-    try {
-        const [risco, inclusao, pix, ibge] = await Promise.all([
-            prisma.riscoCredito.findMany({
-                where: {
-                    regiao: String(regiao),
-                    mesAno: mesAno ? String(mesAno) : undefined
-                }
-            }),
-            prisma.inclusaoExpansao.findMany({
-                where: {
-                    regiao: String(regiao),
-                    mesAno: mesAno ? String(mesAno) : undefined
-                }
-            }),
-            prisma.estruturaSrcPix.findMany({
-                where: {
-                    regiao: String(regiao),
-                    ano_mes: mesAno ? String(mesAno) : undefined
-                }
-            }),
-            prisma.estruturaIBGE.findMany({
-                where: { regiao: String(regiao) }
-            })
-        ]);
-
-        return res.json({
-            regiao,
-            periodo: mesAno || "Todos os períodos",
-            data: {
-                creditRisk: risco,
-                inclusionExpansion: inclusao,
-                pixStructure: pix,
-                ibgeStructure: ibge
-            }
-        });
-    } catch (error) {
-        console.error("Erro ao buscar resumo regional:", error);
-        return res.status(500).json({ error: 'Falha ao processar dados regionais' });
-    }
-}
-
-export async function getUFSummary(req: Request, res: Response) {
-    const { uf, mesAno } = req.query;
-
-    try {
-        const [risco, inclusao, pix, ibge] = await Promise.all([
-            prisma.riscoCredito.findMany({
-                where: { uf: String(uf), mesAno: mesAno ? String(mesAno) : undefined }
-            }),
-            prisma.inclusaoExpansao.findMany({
-                where: { uf: String(uf), mesAno: mesAno ? String(mesAno) : undefined }
-            }),
-            prisma.estruturaSrcPix.findMany({
-                where: { uf: String(uf), ano_mes: mesAno ? String(mesAno) : undefined }
-            }),
-            prisma.estruturaIBGE.findFirst({
-                where: { uf: String(uf) }
-            })
-        ]);
-
-        return res.json({
-            uf,
-            periodo: mesAno || "Todos os períodos",
-            data: {
-                creditRisk: risco,
-                inclusionExpansion: inclusao,
-                pixStructure: pix,
-                ibgeDetails: ibge
-            }
-        });
-    } catch (error) {
-        return res.status(500).json({ error: 'Erro ao buscar resumo do estado' });
     }
 }

@@ -55,12 +55,14 @@ export const inclusionExpansionArray = z.array(inclusionExpansionSchema);
 export const pixStructureArray = z.array(pixStructureSchema);
 export const ibgeStructureArray = z.array(ibgeStructureSchema);
 
-
-export const regionSummaryQuerySchema = z.object({
+export const summaryQuerySchema = z.object({
   query: z.object({
-    regiao: z.string()
-             .min(1, "A região não pode estar vazia"),
+    uf: z.string().length(2, "A UF deve ter 2 caracteres").optional(),
+    regiao: z.string().min(1, "A região não pode estar vazia").optional(),
     mesAno: z.string().optional(),
+  }).refine(data => data.uf || data.regiao, {
+    message: "Você deve fornecer ao menos a 'uf' ou a 'regiao' para o resumo.",
+    path: ["uf"]
   })
 });
 
@@ -71,17 +73,17 @@ export const calculateScoresQuerySchema = z.object({
   })
 });
 
-export const ufSummaryQuerySchema = z.object({
-  query: z.object({
-    uf: z.string().length(2, "A UF deve ter exatamente 2 caracteres (ex: SP)"),
-    mesAno: z.string().optional(),
-  })
-});
-
 export const evolutionQuerySchema = z.object({
   query: z.object({
     uf: z.string().length(2).optional(),
     regiao: z.string().optional(),
     limit: z.string().regex(/^\d+$/).optional().default("12"),
+  })
+});
+
+export const rankingQuerySchema = z.object({
+  query: z.object({
+    orderBy: z.enum(['RC', 'IE']).optional().default('RC'),
+    mesAno: z.string().optional(),
   })
 });
