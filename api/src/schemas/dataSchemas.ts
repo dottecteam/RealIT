@@ -67,6 +67,7 @@ export const regionSummaryQuerySchema = z.object({
 export const calculateScoresQuerySchema = z.object({
   query: z.object({
     uf: z.string().length(2, "A UF deve ter exatamente 2 caracteres (ex: SP)").optional(),
+    regiao: z.string().optional()
   })
 });
 

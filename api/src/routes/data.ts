@@ -16,9 +16,9 @@ routerData.post('/pix-structure',sessionMiddleware,adminOnly,validateData(z.obje
 routerData.post('/ibge-structure',sessionMiddleware,adminOnly,validateData(z.object({ body: schemas.ibgeStructureArray })),dataController.createIBGEStructure);
 
 
-routerData.get('/calculate-scores', sessionMiddleware, validateData(schemas.calculateScoresQuerySchema), dataRead.calculateDashboardScores);
-routerData.get('/region-summary', sessionMiddleware, validateData(schemas.regionSummaryQuerySchema), dataRead.getRegionSummary);
-routerData.get('/uf-summary', sessionMiddleware, validateData(schemas.ufSummaryQuerySchema), dataRead.getUFSummary);
+routerData.get('/score', sessionMiddleware, validateData(schemas.calculateScoresQuerySchema), dataRead.calculateDashboardScores);
+routerData.get('/summary/region', sessionMiddleware, validateData(schemas.regionSummaryQuerySchema), dataRead.getRegionSummary);
+routerData.get('/summary/uf', sessionMiddleware, validateData(schemas.ufSummaryQuerySchema), dataRead.getUFSummary);
 
 routerData.get('/credit-risk', sessionMiddleware, dataRead.getCreditRisk);
 routerData.get('/inclusion-expansion', sessionMiddleware, dataRead.getInclusionExpansion);
