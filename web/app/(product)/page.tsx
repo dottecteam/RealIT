@@ -7,6 +7,7 @@ import { RankingStates } from "../components/RankingStates";
 import { dadosEixoI_Ranking, dadosEixoII_Ranking, dadosEixoI_Score, dadosEixoII_Score } from "../mocks/chartData";
 import { EvolucaoScoresChart } from "../components/EvolucaoScoresChart";
 import { ProjecaoScoreChart } from "../components/ProjecaoScoreChart";
+import { MapProvider } from "../utils/MapContext";
 
 const periodos = ["Jan/22","Abr/22","Jul/22","Out/22","Jan/23","Abr/23","Jul/23","Out/23","Jan/24","Abr/24","Jul/24"]
 const mesesProjecao = ["Jan/23","Abr/23","Jul/23","Out/23","Jan/24","Abr/24","Jul/24","Out/24","Jan/25","Abr/25","Jul/25"]
@@ -14,7 +15,7 @@ const mesesProjecao = ["Jan/23","Abr/23","Jul/23","Out/23","Jan/24","Abr/24","Ju
 
 export default function Dashboard() {
   return (
-    <>
+    <MapProvider>
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mt-4 px-3 sm:px-4 md:px-6 bg-[#F6F6F6]">
 
         {/* Mapa */}
@@ -94,6 +95,6 @@ export default function Dashboard() {
           </div>
         </div>
       </div>
-    </>
+    </MapProvider>
   )
 }
