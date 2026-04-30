@@ -77,3 +77,11 @@ export const ufSummaryQuerySchema = z.object({
     mesAno: z.string().optional(),
   })
 });
+
+export const evolutionQuerySchema = z.object({
+  query: z.object({
+    uf: z.string().length(2).optional(),
+    regiao: z.string().optional(),
+    limit: z.string().regex(/^\d+$/).optional().default("12"),
+  })
+});

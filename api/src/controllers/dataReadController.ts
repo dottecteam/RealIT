@@ -91,6 +91,44 @@ export async function calculateDashboardScores(req: Request, res: Response) {
     }
 }
 
+export async function getEvolutionHistory(req: Request, res: Response) {
+    const { uf, regiao, limit } = req.query;
+    const monthsLimit = Number(limit);
+
+    try {
+        const riscoHistorico = await prisma.riscoCredito.findMany({
+            where: {
+                uf: uf ? String(uf) : undefined,
+                regiao: regiao ? String(regiao) : undefined,
+            },
+            orderBy: { mesAno: 'desc' },
+            take: monthsLimit
+        });
+
+        const dadosOrdenados = riscoHistorico.reverse();
+
+        // Formatação para o ApexCharts (Front-end)
+        // O front espera um array de categorias (meses) e as séries de dados
+        const chartData = {
+            categories: dadosOrdenados.map(d => d.mesAno),
+            series: [
+                {
+                    name: `Inadimplência - ${uf || regiao || 'Brasil'}`,
+                    data: dadosOrdenados.map(d => d.inadiplenciaReal)
+                },
+                {
+                    name: `Renda - ${uf || regiao || 'Brasil'}`,
+                    data: dadosOrdenados.map(d => d.fragilidadeRenda)
+                }
+            ]
+        };
+
+        return res.json(chartData);
+    } catch (error) {
+        return res.status(500).json({ error: 'Erro ao gerar histórico de evolução' });
+    }
+}
+
 async function getFilteredData(model: any, req: Request) {
     const { uf, regiao, mesAno } = req.query;
     return await model.findMany({
