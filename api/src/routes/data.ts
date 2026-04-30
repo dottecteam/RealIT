@@ -50,7 +50,8 @@ routerData.post(
 );
 
 
-routerData.get('/calculate-scores', sessionMiddleware, dataRead.calculateDashboardScores);
+routerData.get('/calculate-scores', sessionMiddleware, validateData(schemas.calculateScoresQuerySchema), dataRead.calculateDashboardScores);
+routerData.get('/region-summary', sessionMiddleware, validateData(schemas.regionSummaryQuerySchema), dataRead.getRegionSummary);
 
 routerData.get('/credit-risk', sessionMiddleware, dataRead.getCreditRisk);
 routerData.get('/inclusion-expansion', sessionMiddleware, dataRead.getInclusionExpansion);

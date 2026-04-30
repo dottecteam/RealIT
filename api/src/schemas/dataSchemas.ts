@@ -54,3 +54,18 @@ export const creditRiskArray = z.array(creditRiskSchema);
 export const inclusionExpansionArray = z.array(inclusionExpansionSchema);
 export const pixStructureArray = z.array(pixStructureSchema);
 export const ibgeStructureArray = z.array(ibgeStructureSchema);
+
+
+export const regionSummaryQuerySchema = z.object({
+  query: z.object({
+    regiao: z.string()
+             .min(1, "A região não pode estar vazia"),
+    mesAno: z.string().optional(),
+  })
+});
+
+export const calculateScoresQuerySchema = z.object({
+  query: z.object({
+    uf: z.string().length(2, "A UF deve ter exatamente 2 caracteres (ex: SP)").optional(),
+  })
+});

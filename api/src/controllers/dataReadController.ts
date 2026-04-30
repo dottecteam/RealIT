@@ -98,3 +98,53 @@ export async function getIBGEStructure(req: Request, res: Response) {
         return res.status(500).json({ error: 'Failed to fetch IBGE structure data' });
     }
 }
+
+export async function getRegionSummary(req: Request, res: Response) {
+    const { regiao, mesAno } = req.query;
+
+    if (!regiao) {
+        return res.status(400).json({ error: 'O parâmetro regiao é obrigatório.' });
+    }
+
+    try {
+        // Realiza todas as buscas em paralelo para otimizar a performance
+        const [risco, inclusao, pix, ibge] = await Promise.all([
+            prisma.riscoCredito.findMany({
+                where: {
+                    regiao: String(regiao),
+                    mesAno: mesAno ? String(mesAno) : undefined
+                }
+            }),
+            prisma.inclusaoExpansao.findMany({
+                where: {
+                    regiao: String(regiao),
+                    mesAno: mesAno ? String(mesAno) : undefined
+                }
+            }),
+            prisma.estruturaSrcPix.findMany({
+                where: {
+                    regiao: String(regiao),
+                    ano_mes: mesAno ? String(mesAno) : undefined
+                }
+            }),
+            prisma.estruturaIBGE.findMany({
+                where: { regiao: String(regiao) } // IBGE geralmente é anual ou estático
+            })
+        ]);
+
+        // Retorna um objeto único para o Front-end
+        return res.json({
+            regiao,
+            periodo: mesAno || "Todos os períodos",
+            data: {
+                creditRisk: risco,
+                inclusionExpansion: inclusao,
+                pixStructure: pix,
+                ibgeStructure: ibge
+            }
+        });
+    } catch (error) {
+        console.error("Erro ao buscar resumo regional:", error);
+        return res.status(500).json({ error: 'Falha ao processar dados regionais' });
+    }
+}
