@@ -69,3 +69,10 @@ export const calculateScoresQuerySchema = z.object({
     uf: z.string().length(2, "A UF deve ter exatamente 2 caracteres (ex: SP)").optional(),
   })
 });
+
+export const ufSummaryQuerySchema = z.object({
+  query: z.object({
+    uf: z.string().length(2, "A UF deve ter exatamente 2 caracteres (ex: SP)"),
+    mesAno: z.string().optional(),
+  })
+});

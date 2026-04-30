@@ -148,3 +148,37 @@ export async function getRegionSummary(req: Request, res: Response) {
         return res.status(500).json({ error: 'Falha ao processar dados regionais' });
     }
 }
+
+export async function getUFSummary(req: Request, res: Response) {
+    const { uf, mesAno } = req.query;
+
+    try {
+        const [risco, inclusao, pix, ibge] = await Promise.all([
+            prisma.riscoCredito.findMany({
+                where: { uf: String(uf), mesAno: mesAno ? String(mesAno) : undefined }
+            }),
+            prisma.inclusaoExpansao.findMany({
+                where: { uf: String(uf), mesAno: mesAno ? String(mesAno) : undefined }
+            }),
+            prisma.estruturaSrcPix.findMany({
+                where: { uf: String(uf), ano_mes: mesAno ? String(mesAno) : undefined }
+            }),
+            prisma.estruturaIBGE.findFirst({
+                where: { uf: String(uf) }
+            })
+        ]);
+
+        return res.json({
+            uf,
+            periodo: mesAno || "Todos os períodos",
+            data: {
+                creditRisk: risco,
+                inclusionExpansion: inclusao,
+                pixStructure: pix,
+                ibgeDetails: ibge
+            }
+        });
+    } catch (error) {
+        return res.status(500).json({ error: 'Erro ao buscar resumo do estado' });
+    }
+}
