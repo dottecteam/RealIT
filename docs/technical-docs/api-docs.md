@@ -32,36 +32,46 @@ Authorization: Bearer <token>
 ## Módulo de Autenticação — `/auth`
 
 ### `POST /auth/login`
-Autentica o usuário e inicia uma sessão.
+Gera token JWT e registra log de acesso.
 
-- **Sucesso `200`:** Retorna `token` e dados do usuário.
-
----
-
-### `POST /auth/logout` 🔒
-Encerra a sessão ativa e invalida o token.
+### `POST /auth/logout`
+Invalida a sessão e encerra o token atual.
 
 ---
 
-## Módulo de Dados e Analytics — `/data` 🔒
+## Módulo de Ingestão e Dados — `/data`
 
-Este módulo fornece a inteligência para o Dashboard, integrando os dados brutos ao motor de cálculo de scores.
+Este módulo permite a alimentação do banco de dados (via Google Colab/Admin) e o consumo de análises para o Dashboard. Todas as rotas exigem `sessionMiddleware`.
 
-### Análise e Performance
+---
+
+### Ingestão de Dados — Apenas `ADMIN`
+
+| Endpoint | Descrição |
+|----------|-----------|
+| `POST /data/import-monthly` | Ingestão em massa (Bulk) que processa simultaneamente Risco, Inclusão, PIX e IBGE em uma única transação. |
+| `POST /data/credit-risk` | Ingestão específica de arrays de dados de Risco de Crédito. |
+| `POST /data/inclusion-expansion` | Ingestão específica de dados de Inclusão e Expansão. |
+| `POST /data/pix-structure` | Ingestão específica da estrutura de transações PIX. |
+| `POST /data/ibge-structure` | Ingestão de indicadores demográficos e educacionais do IBGE. |
+
+---
+
+### Consulta de Análises
 
 #### `GET /data/score`
-Calcula scores dinâmicos (Eixo I e II) para todas as UFs ou uma específica.
+Retorna os scores calculados (Eixo I e II) e a categoria estratégica por UF.
 
 | Parâmetro | Tipo | Obrigatório | Descrição |
 |-----------|------|-------------|-----------|
 | `uf` | query | Não | Filtra por Unidade Federativa. |
 
-**Diferencial:** Retorna a categoria estratégica (ex: `DIAMANTE BRUTO`) baseada na matriz de decisão.
+> **Diferencial:** Retorna a categoria estratégica (ex: `DIAMANTE BRUTO`) baseada na matriz de decisão.
 
 ---
 
 #### `GET /data/summary`
-Endpoint unificado para resgate de indicadores brutos por nível geográfico.
+Resumo consolidado de todos os indicadores filtrados por `uf` ou `regiao`.
 
 | Parâmetro | Tipo | Obrigatório | Descrição |
 |-----------|------|-------------|-----------|
@@ -71,23 +81,21 @@ Endpoint unificado para resgate de indicadores brutos por nível geográfico.
 
 > *Obrigatório informar `uf` **ou** `regiao`.
 
-**Retorno:** Consolida Risco de Crédito, Inclusão, PIX e IBGE em um único objeto.
-
 ---
 
 #### `GET /data/ranking`
-Gera a lista prioritária de estados para investimento.
+Lista ordenada das melhores oportunidades de mercado baseada nos scores.
 
 | Parâmetro | Tipo | Obrigatório | Descrição |
 |-----------|------|-------------|-----------|
 | `orderBy` | query | Não | `'RC'` ou `'IE'` |
 
-**Lógica:** No eixo RC, menores notas aparecem no topo (menor risco = melhor oportunidade).
+> **Lógica:** No eixo RC, menores notas aparecem no topo (menor risco = melhor oportunidade).
 
 ---
 
 #### `GET /data/history`
-Fornece séries temporais para gráficos de evolução.
+Séries temporais para gráficos de evolução (Inadimplência vs. Renda).
 
 | Parâmetro | Tipo | Obrigatório | Descrição |
 |-----------|------|-------------|-----------|
@@ -95,34 +103,74 @@ Fornece séries temporais para gráficos de evolução.
 | `uf` | query | Não | Filtra por UF. |
 | `regiao` | query | Não | Filtra por região. |
 
-**Retorno:** Formatado para integração direta com a biblioteca **ApexCharts**.
+> **Retorno:** Formatado para integração direta com a biblioteca **ApexCharts**.
 
 ---
 
-### Ingestão de Dados — Apenas `ADMIN`
+### Consulta de Dados Brutos
 
-#### `POST /data/import-monthly`
-Ingestão em massa via transação (Bulk Ingestion) para dados processados no Google Colab.
-
-#### `POST /data/credit-risk`
-Importação manual de lotes de Risco de Crédito.
+| Endpoint | Descrição |
+|----------|-----------|
+| `GET /data/credit-risk` | Lista dados brutos de risco com filtros de UF/Região. |
+| `GET /data/inclusion-expansion` | Lista dados brutos de inclusão com filtros. |
+| `GET /data/pix-structure` | Lista dados estruturais de transações PIX. |
+| `GET /data/ibge-structure` | Lista indicadores brutos do IBGE. |
 
 ---
 
-## Módulo de Usuários — `/users` 🔒
+## Módulo de Usuários e Administração — `/users`
 
-### `GET /users/me`
-Retorna os dados do perfil do usuário autenticado.
+Gerencia permissões, perfis e auditoria do sistema.
 
-### `POST /users/create` — Apenas `ADMIN`
-Cadastro de novos analistas.
+---
 
-### `PATCH /users/inactivate/:id`
-Desativa o acesso de um usuário e derruba todas as suas sessões ativas.
+### Gestão de Perfil
 
-| Parâmetro | Tipo | Obrigatório | Descrição |
-|-----------|------|-------------|-----------|
-| `id` | path | Sim | ID do usuário a ser inativado. |
+| Endpoint | Descrição |
+|----------|-----------|
+| `GET /users/me` | Retorna os dados do usuário autenticado. |
+
+---
+
+### Administração de Contas — Apenas `ADMIN`
+
+| Endpoint | Descrição |
+|----------|-----------|
+| `GET /users/` | Lista todos os usuários cadastrados. |
+| `GET /users/search` | Busca usuários por nome (via query string). |
+| `GET /users/id/:id` | Busca detalhes de um usuário específico pelo ID. |
+| `GET /users/email/:email` | Busca usuário pelo endereço de e-mail. |
+| `GET /users/role/:role` | Filtra usuários por nível de acesso (`USER`, `ADMIN`, `DEV`). |
+| `POST /users/create` | Criação de novas contas com validação de senha e rate limit. |
+| `PUT /users/edit/:id` | Atualização completa dos dados do usuário. |
+| `PATCH /users/inactivate/:id` | Desativa o acesso de um usuário. |
+| `PATCH /users/activate/:id` | Reativa uma conta inativa. |
+| `PATCH /users/role/admin/:id` | Promove um usuário para o cargo `ADMIN`. |
+| `PATCH /users/role/user/:id` | Altera o cargo de um usuário para `USER`. |
+
+---
+
+### Auditoria e Diagnóstico — Apenas `DEV`
+
+| Endpoint | Descrição |
+|----------|-----------|
+| `GET /users/sessions` | Lista todas as sessões ativas no sistema. |
+| `GET /users/sessions/:id` | Lista o histórico de sessões de um usuário específico. |
+| `GET /users/logs` | Exibe o log global de operações do sistema. |
+| `GET /users/logs/:id` | Exibe os logs de ações realizadas por um usuário específico. |
+| `PATCH /users/role/dev/:id` | Atribui nível de acesso `DEV` a um usuário. |
+
+---
+
+## Ferramentas de Desenvolvedor — `/dev`
+
+Exclusivo para o cargo `DEV`.
+
+| Endpoint | Descrição |
+|----------|-----------|
+| `DELETE /dev/reset-database` | Limpa tabelas de Logs, Sessões e Usuários. |
+| `POST /dev/seed-admin` | Cria o usuário administrador padrão (`admin@teste.com`). |
+| `POST /dev/seed-dev` | Cria o usuário desenvolvedor padrão (`dev@teste.com`). |
 
 ---
 
