@@ -1,30 +1,56 @@
-import { z } from 'zod'
+import { z } from 'zod';
 
-export const scoreUf = z.object({
+export const creditRiskSchema = z.object({
+  mesAno: z.string(),
   uf: z.string(),
-  score_inadimplencia: z.number(), 
-  score_fragilidade: z.number(), 
-  score_aging_divida: z.number(), 
-  score_escolarizacao: z.number(), 
-  score_eixo_i: z.number(), 
-  score_maturidade: z.number(), 
-  score_crescimento: z.number(),
-  score_populacao: z.number(), 
-  score_eixo_ii: z.number()
-})
+  regiao: z.string(),
+  inadiplenciaReal: z.number(),
+  fragilidadeRenda: z.number(),
+  agingDivida: z.number(),
+  vulnerabilidadeSocial: z.number(),
+});
 
-export const mediaRegiao = z.object({
-  regiao: z.string(), 
-  media_inadimplencia: z.number(), 
-  media_fragilidade: z.number(), 
-  media_aging_divida: z.number(), 
-  media_escolarizacao: z.number(), 
-  media_score_eixo_i: z.number(), 
-  media_maturidade: z.number(), 
-  media_crescimento: z.number(), 
-  media_populacao: z.number(), 
-  media_score_eixo_ii: z.number()
-})
+export const inclusionExpansionSchema = z.object({
+  mesAno: z.string(),
+  uf: z.string(),
+  regiao: z.string(),
+  maturidadePix: z.number(),
+  crescimentoPopulacional: z.number(),
+  populacaoAbsoluta: z.number(),
+  bonusDemografico: z.number(),
+});
 
-export const scoreUfArray = z.array(scoreUf)
-export const mediaRegiaoArray = z.array(mediaRegiao)
+export const pixStructureSchema = z.object({
+  ano_mes: z.string(),
+  regiao: z.string(),
+  uf: z.string(),
+  tipo: z.string(),
+  classe: z.string(),
+  metrica: z.string(),
+  origem: z.string(),
+  valor: z.number(),
+});
+
+export const ibgeStructureSchema = z.object({
+  ano: z.string(),
+  regiao: z.string(),
+  uf: z.string(),
+  taxa_escolarizacao: z.number(),
+  populacao_residente: z.number(),
+  taxa_crescimento: z.number(),
+  variacao_populacao: z.number(),
+});
+
+export const masterDataSchema = z.object({
+  body: z.object({
+    creditRisk: z.array(creditRiskSchema),
+    inclusionExpansion: z.array(inclusionExpansionSchema),
+    pixStructure: z.array(pixStructureSchema),
+    ibgeStructure: z.array(ibgeStructureSchema),
+  }),
+});
+
+export const creditRiskArray = z.array(creditRiskSchema);
+export const inclusionExpansionArray = z.array(inclusionExpansionSchema);
+export const pixStructureArray = z.array(pixStructureSchema);
+export const ibgeStructureArray = z.array(ibgeStructureSchema);

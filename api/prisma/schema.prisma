@@ -113,4 +113,4 @@ model EstruturaIBGE{
   populacao_residente Int
   taxa_crescimento Float
   variacao_populacao Int
-}
+} 

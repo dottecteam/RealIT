@@ -6,7 +6,7 @@ import helmet from 'helmet'
 // Rotas 
 import routerUser from './routes/user'
 import routerAuth from './routes/auth'
-import routerDados from './routes/data'
+import routerData from './routes/data'
 import routerDev from './routes/dev';
 
 export const app = express()
@@ -26,7 +26,7 @@ app.use(globalLimiter)
 
 app.use('/users', routerUser)
 app.use('/auth', routerAuth)
-app.use('/dados', routerDados)
+app.use('/data', routerData)
 app.use('/dev', routerDev)
 
 app.get('/health', (_req, res) => {
