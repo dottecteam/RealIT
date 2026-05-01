@@ -1,21 +1,20 @@
 import express from 'express'
 import 'dotenv/config'
 import { prisma } from './lib/prisma'
-
+ 
 //Rotas 
 import routerUser from './routes/auth'
 import routerDados from './routes/data'
-
+ 
 export const app = express()
-
+ 
 app.use(express.json())
 app.use('/auth', routerUser)
-app.use('/dados', routerDados)
-
+app.use('/data', routerDados)
+ 
 app.get('/health', (_req, res) => {
   res.json({ status: 'ok' })
 })
-
 
 // // ---- ROTAS DE EXEMPLO ----
 // // Utilizei para testar a instância do Prisma
