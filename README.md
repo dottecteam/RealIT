@@ -107,7 +107,7 @@ A maneira mais rápida de rodar o ecossistema completo (API + Web) é utilizando
 ### 1. Pré-requisitos
 - **Docker** e **Docker Compose** instalados.
 - Arquivo `.env` configurado dentro da pasta `/api`.
-> (veja o modelo na seção da API)[./api]
+> [veja o modelo na seção da API](./api)
 
 ### 2. Subir o projeto
 Na raiz do repositório, execute:
@@ -118,7 +118,7 @@ Isso iniciará:
 - *API (Backend):* em ```http://localhost:3000```
 - *Web (Frontend):* em ```http://localhost:3001```
 
-> Caso queira rodar localmente, acesse o (diretório de frontend)[./web] e o (diretório de backend)[./api]
+> Caso queira rodar localmente, acesse o [diretório de frontend](./web) e o [diretório de backend](./api)
 
 ---
 
