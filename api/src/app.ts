@@ -16,8 +16,8 @@ app.use(helmet())
 app.use(express.json())
 
 const globalLimiter = rateLimit({
-  windowMs: 20 * 60 * 1000, 
-  limit: 100, 
+  windowMs: Number(process.env.GLOBAL_LIMIT_WINDOW_MS) || 20 * 60 * 1000,
+  limit: Number(process.env.GLOBAL_LIMIT_MAX) || 100,
   message: { error: 'Muitas requisições vindas deste IP, tente novamente mais tarde.' },
   standardHeaders: 'draft-7',
   legacyHeaders: false,

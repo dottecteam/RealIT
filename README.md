@@ -100,6 +100,28 @@ Abaixo, as principais funcionalidades priorizadas para o sucesso do projeto:
 
 ---
 
+## Como Executar com Docker (Recomendado)
+
+A maneira mais rápida de rodar o ecossistema completo (API + Web) é utilizando o Docker Compose.
+
+### 1. Pré-requisitos
+- **Docker** e **Docker Compose** instalados.
+- Arquivo `.env` configurado dentro da pasta `/api`.
+> (veja o modelo na seção da API)[./api]
+
+### 2. Subir o projeto
+Na raiz do repositório, execute:
+```bash
+docker compose up --build
+```
+Isso iniciará:
+- *API (Backend):* em ```http://localhost:3000```
+- *Web (Frontend):* em ```http://localhost:3001```
+
+> Caso queira rodar localmente, acesse o (diretório de frontend)[./web] e o (diretório de backend)[./api]
+
+---
+
 ## Colaboradores
 
 Nome | Função | LinkedIn | GitHub
