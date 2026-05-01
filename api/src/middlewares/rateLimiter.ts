@@ -1,17 +1,17 @@
 import { rateLimit } from 'express-rate-limit'
 
 export const authLimiter = rateLimit({
-  windowMs: 20 * 60 * 1000,
-  limit: 5, // Apenas 5 tentativas de login por IP
+  windowMs: Number(process.env.AUTH_LIMIT_WINDOW_MS) || 20 * 60 * 1000,
+  limit: Number(process.env.AUTH_LIMIT_MAX) || 5,
   message: { 
-    error: 'Bloqueio por suspeita de força bruta. Tente novamente em uma hora.' 
+     error: 'Bloqueio por suspeita de força bruta. Tente novamente em instantes.' 
   },
   standardHeaders: true,
   legacyHeaders: false,
 })
 
 export const createAccountLimiter = rateLimit({
-  windowMs: 24 * 60 * 60 * 1000, // 1 dia
-  limit: 10, // Permite criar apenas 10 contas por IP por dia
+  windowMs: Number(process.env.CREATE_ACCOUNT_LIMIT_WINDOW_MS) || 24 * 60 * 60 * 1000,
+  limit: Number(process.env.CREATE_ACCOUNT_LIMIT_MAX) || 10,
   message: { error: 'Limite de criação de contas atingido para hoje.' }
 })

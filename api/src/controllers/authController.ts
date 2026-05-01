@@ -28,7 +28,7 @@ export async function login(request: Request, response: Response) {
     const token = jwt.sign(
         { userId: user.id, email: user.email },
         process.env.JWT_SECRET as string,
-        { expiresIn: '1d' }
+        { expiresIn: process.env.JWT_EXPIRES_IN || '1d' }
     )
 
     // Calcula a expiração (1 dia a partir de agora)
