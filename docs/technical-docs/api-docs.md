@@ -171,7 +171,142 @@ Todas as rotas de `POST` possuem validação do body via Zod. Em caso de falha n
   "detalhes": [
     {
       "campo": "uf",
-      "mensagem": "UF deve ter exatamente 2 letras"
+      "mensagem": "UF deve ter exatamente 2 caracteres"
+    }
+  ]
+}
+```
+
+> **Nota sobre o contrato POST:** O pipeline Colab envia os dados usando a função `enviar()`, que itera o DataFrame registro a registro e dispara **um POST por linha**. Por isso, todos os endpoints de ingestão recebem um **objeto único** por requisição — não um array.
+
+---
+
+### `POST /dados/receber-risco-credito`
+
+Recebe e persiste um registro do **Eixo I — Risco de Crédito**.
+
+Os valores são razões financeiras brutas calculadas pelo Colab a partir dos dados SCR do Banco Central, agrupados por `(mesAno, regiao, uf)`. Os dados são séries temporais: um registro por período por UF.
+
+**Body (JSON — objeto único):**
+
+| Campo                  | Tipo   | Obrigatório | Descrição                                                          |
+|------------------------|--------|-------------|--------------------------------------------------------------------|
+| `mesAno`               | string | Sim         | Período de referência no formato `YYYYMM` (ex: `"202401"`)        |
+| `uf`                   | string | Sim         | Sigla do estado — exatamente 2 caracteres                          |
+| `regiao`               | string | Sim         | Macrorregião (ex: `"Sudeste"`)                                     |
+| `inadiplenciaReal`     | number | Sim         | Razão: carteira_vencida / carteira_ativa                           |
+| `fragilidadeRenda`     | number | Sim         | Razão: carteira_ativa (classes D e E) / carteira_ativa total       |
+| `agingDivida`          | number | Sim         | Razão: vencido acima de 90 dias / carteira_vencida                 |
+| `vulnerabilidadeSocial`| number | **Não**     | Derivado de taxa_escolarizacao (IBGE) — pendente no Colab. Omitir até conclusão. |
+
+**Exemplo de requisição:**
+```json
+{
+  "mesAno": "202401",
+  "uf": "SP",
+  "regiao": "Sudeste",
+  "inadiplenciaReal": 0.045,
+  "fragilidadeRenda": 0.312,
+  "agingDivida": 0.621
+}
+```
+
+**Resposta de sucesso `201`:**
+```json
+{
+  "message": "Registro de Risco de Crédito cadastrado com sucesso.",
+  "id": 42
+}
+```
+
+---
+
+### `POST /dados/receber-inclusao-expansao`
+
+Recebe e persiste um registro do **Eixo II — Inclusão e Expansão**.
+
+Calculado pelo Colab a partir dos dados Pix (BCB) e censo demográfico (IBGE), agrupados por `(mesAno, regiao, uf)`.
+
+> **Status:** `calcular_eixo_ii` está em desenvolvimento no Colab. Os campos abaixo refletem o contrato esperado baseado nos dados disponíveis em `df_ibge` e `df_scr_pix`.
+
+**Body (JSON — objeto único):**
+
+| Campo                    | Tipo   | Obrigatório | Descrição                                                      |
+|--------------------------|--------|-------------|----------------------------------------------------------------|
+| `mesAno`                 | string | Sim         | Período de referência no formato `YYYYMM` (ex: `"202401"`)    |
+| `uf`                     | string | Sim         | Sigla do estado — exatamente 2 caracteres                      |
+| `regiao`                 | string | Sim         | Macrorregião (ex: `"Sul"`)                                     |
+| `maturidadePix`          | number | Sim         | Volume Pix per capita (volume_pix / populacao_residente)       |
+| `crescimentoPopulacional`| number | Sim         | Taxa de crescimento geométrico do censo                        |
+| `populacaoAbsoluta`      | number | Sim         | População residente absoluta                                   |
+| `bonusDemografico`       | number | Sim         | Derivado da variação absoluta da população / estrutura etária  |
+
+**Exemplo de requisição:**
+```json
+{
+  "mesAno": "202401",
+  "uf": "PR",
+  "regiao": "Sul",
+  "maturidadePix": 1823.45,
+  "crescimentoPopulacional": 0.0087,
+  "populacaoAbsoluta": 11597484,
+  "bonusDemografico": 0.412
+}
+```
+
+**Resposta de sucesso `201`:**
+```json
+{
+  "message": "Registro de Inclusão/Expansão cadastrado com sucesso.",
+  "id": 17
+}
+```
+
+---
+
+## Rota de Listagem com Granularidade — `GET /dados/listar-dados`
+
+Os dados no banco são **séries temporais** — cada registro representa um período (`mesAno`) para uma UF específica. A granularidade controla o agrupamento geográfico: a dimensão temporal é sempre colapsada pela média quando uma granularidade é aplicada.
+
+### Parâmetro
+
+| Parâmetro       | Tipo   | Obrigatório | Valores aceitos    | Descrição                               |
+|-----------------|--------|-------------|--------------------|-----------------------------------------|
+| `granularidade` | string | Não         | `macro` ou `micro` | Define o nível de agrupamento geográfico |
+
+---
+
+#### `GET /dados/listar-dados` _(sem parâmetro)_
+
+Retorna a **série temporal completa** — todos os registros brutos de ambos os eixos, ordenados por região, UF e período cronologicamente. Ideal para análise de evolução temporal.
+
+**Resposta de sucesso `200`:**
+```json
+{
+  "granularidade": null,
+  "descricao": "Série temporal completa — todos os registros brutos por UF e período",
+  "riscoCredito": [
+    {
+      "id": 1,
+      "mesAno": "202401",
+      "uf": "SP",
+      "regiao": "Sudeste",
+      "inadiplenciaReal": 0.045,
+      "fragilidadeRenda": 0.312,
+      "agingDivida": 0.621,
+      "vulnerabilidadeSocial": 0
+    }
+  ],
+  "inclusaoExpansao": [
+    {
+      "id": 1,
+      "mesAno": "202401",
+      "uf": "SP",
+      "regiao": "Sudeste",
+      "maturidadePix": 1950.32,
+      "crescimentoPopulacional": 0.0091,
+      "populacaoAbsoluta": 45900000,
+      "bonusDemografico": 0.389
     }
   ]
 }
@@ -179,312 +314,89 @@ Todas as rotas de `POST` possuem validação do body via Zod. Em caso de falha n
 
 ---
 
-### `POST /dados/receber-dados`
+#### `GET /dados/listar-dados?granularidade=macro`
 
-Recebe dados do SCR (Sistema de Informações de Crédito do Banco Central).
+Retorna os valores **agregados por macrorregião** (Norte, Nordeste, Centro-Oeste, Sudeste, Sul). Os campos numéricos são a **média** de todos os registros — de todos os estados e de todos os períodos — de cada região.
 
-**Body (JSON):**
-
-| Campo                    | Tipo    | Obrigatório | Descrição                      |
-|--------------------------|---------|-------------|--------------------------------|
-| `data_base`              | string  | Sim         | Data de referência (ex: `"01/2024"`) |
-| `uf`                     | string  | Sim         | Sigla do estado (2 letras)     |
-| `cliente`                | string  | Sim         | Tipo de cliente                |
-| `cnae_ocupacao`          | string  | Sim         | Código CNAE ou ocupação        |
-| `porte`                  | string  | Sim         | Porte do tomador               |
-| `carteira_inadiplencia`  | number  | Sim         | Valor da carteira em inadimplência |
-| `carteira_vencida`       | number  | Não         | Valor da carteira vencida      |
-
-**Exemplo de requisição:**
+**Resposta de sucesso `200`:**
 ```json
 {
-  "data_base": "01/2024",
-  "uf": "SP",
-  "cliente": "Pessoa Física",
-  "cnae_ocupacao": "4711-3/01",
-  "porte": "Micro",
-  "carteira_inadiplencia": 1500.50,
-  "carteira_vencida": 300.00
-}
-```
-
-**Resposta de sucesso `201`:**
-```json
-{
-  "message": "Dado recebido e cadastrado com sucesso",
-  "dado": { ... }
-}
-```
-
----
-
-### `POST /dados/receber-dados-pix`
-
-Recebe dados de transações Pix por município.
-
-**Body (JSON):**
-
-| Campo               | Tipo    | Obrigatório | Descrição                           |
-|---------------------|---------|-------------|--------------------------------------|
-| `ano_mes`           | integer | Sim         | Período no formato `YYYYMM` (ex: `202401`) |
-| `municipio_ibge`    | integer | Sim         | Código IBGE do município             |
-| `municipio`         | string  | Sim         | Nome do município                    |
-| `estado_ibge`       | integer | Sim         | Código IBGE do estado                |
-| `estado`            | string  | Sim         | Nome do estado                       |
-| `sigla_regiao`      | string  | Sim         | Sigla da região (ex: `"SE"`)         |
-| `vl_pagador_pf`     | number  | Sim         | Volume financeiro de pagadores PF    |
-| `qt_pagador_pf`     | integer | Sim         | Quantidade de transações de pagadores PF |
-| `vl_recebedor_pf`   | number  | Sim         | Volume financeiro de recebedores PF  |
-| `qt_recebedor_pf`   | integer | Sim         | Quantidade de transações de recebedores PF |
-| `qt_pes_pagador_pf` | integer | Sim         | Quantidade de pessoas pagadoras PF   |
-| `qt_pes_recebedor_pf` | integer | Sim       | Quantidade de pessoas recebedoras PF |
-
-**Exemplo de requisição:**
-```json
-{
-  "ano_mes": 202401,
-  "municipio_ibge": 3550308,
-  "municipio": "São Paulo",
-  "estado_ibge": 35,
-  "estado": "São Paulo",
-  "sigla_regiao": "SE",
-  "vl_pagador_pf": 980000.00,
-  "qt_pagador_pf": 15000,
-  "vl_recebedor_pf": 870000.00,
-  "qt_recebedor_pf": 14200,
-  "qt_pes_pagador_pf": 8000,
-  "qt_pes_recebedor_pf": 7500
-}
-```
-
-**Resposta de sucesso `201`:**
-```json
-{
-  "message": "Dado PIX recebido e cadastrado com sucesso",
-  "dado": { ... }
+  "granularidade": "macro",
+  "descricao": "Médias agregadas por macrorregião (todos os estados e períodos)",
+  "riscoCredito": [
+    {
+      "regiao": "Sudeste",
+      "_avg": {
+        "inadiplenciaReal": 0.041,
+        "fragilidadeRenda": 0.298,
+        "agingDivida": 0.589,
+        "vulnerabilidadeSocial": 0
+      }
+    }
+  ],
+  "inclusaoExpansao": [
+    {
+      "regiao": "Sudeste",
+      "_avg": {
+        "maturidadePix": 1742.10,
+        "crescimentoPopulacional": 0.0082,
+        "populacaoAbsoluta": 22500000.00,
+        "bonusDemografico": 0.401
+      }
+    }
+  ]
 }
 ```
 
 ---
 
-### `POST /dados/receber-taxa`
+#### `GET /dados/listar-dados?granularidade=micro`
 
-Recebe dados de taxa de escolarização (IBGE/SIDRA tabela 7138).
+Retorna os valores **agregados por UF** (estado), colapsando todos os períodos disponíveis na média. O campo `regiao` é incluído no agrupamento para que o cliente saiba a qual macrorregião cada UF pertence sem necessitar de join adicional.
 
-**Body (JSON):**
-
-| Campo  | Tipo    | Obrigatório | Descrição                              |
-|--------|---------|-------------|----------------------------------------|
-| `nn`   | string  | Sim         | Unidade da Federação (nome)            |
-| `v`    | number  | Sim         | Valor da taxa                          |
-| `d1n`  | string  | Sim         | Unidade da Federação (dimensão 1)      |
-| `d3n`  | integer | Sim         | Ano de referência                      |
-| `d5n`  | string  | Sim         | Grupo de idade                         |
-
-**Exemplo de requisição:**
+**Resposta de sucesso `200`:**
 ```json
 {
-  "nn": "São Paulo",
-  "v": 92.5,
-  "d1n": "São Paulo",
-  "d3n": 2022,
-  "d5n": "15 a 17 anos"
-}
-```
-
-**Resposta de sucesso `201`:**
-```json
-{
-  "message": "Taxa de escolarização recebida e cadastrada com sucesso",
-  "dado": { ... }
-}
-```
-
----
-
-### `POST /dados/receber-crescimento`
-
-Recebe dados de crescimento populacional (IBGE).
-
-**Body (JSON):**
-
-| Campo  | Tipo   | Obrigatório | Descrição                          |
-|--------|--------|-------------|-------------------------------------|
-| `d1n`  | string | Sim         | Unidade da Federação               |
-| `d2n`  | string | Sim         | Tipo de taxa de crescimento        |
-| `v`    | number | Sim         | Valor da taxa                      |
-
-**Exemplo de requisição:**
-```json
-{
-  "d1n": "Minas Gerais",
-  "d2n": "Taxa de crescimento geométrico",
-  "v": 0.87
-}
-```
-
-**Resposta de sucesso `201`:**
-```json
-{
-  "message": "Crescimento populacional recebido e cadastrado com sucesso",
-  "dado": { ... }
+  "granularidade": "micro",
+  "descricao": "Médias agregadas por UF (todos os períodos disponíveis), com macrorregião de contexto",
+  "riscoCredito": [
+    {
+      "uf": "MG",
+      "regiao": "Sudeste",
+      "_avg": {
+        "inadiplenciaReal": 0.038,
+        "fragilidadeRenda": 0.271,
+        "agingDivida": 0.554,
+        "vulnerabilidadeSocial": 0
+      }
+    },
+    {
+      "uf": "SP",
+      "regiao": "Sudeste",
+      "_avg": {
+        "inadiplenciaReal": 0.045,
+        "fragilidadeRenda": 0.312,
+        "agingDivida": 0.621,
+        "vulnerabilidadeSocial": 0
+      }
+    }
+  ],
+  "inclusaoExpansao": [ "..." ]
 }
 ```
 
 ---
 
-### `POST /dados/receber-populacao`
+### Respostas de erro
 
-Recebe dados de população absoluta (IBGE).
-
-**Body (JSON):**
-
-| Campo  | Tipo    | Obrigatório | Descrição                        |
-|--------|---------|-------------|-----------------------------------|
-| `d1n`  | string  | Sim         | Unidade da Federação             |
-| `d2n`  | string  | Sim         | Tipo de população residente      |
-| `v`    | integer | Sim         | Valor absoluto da população      |
-
-**Exemplo de requisição:**
+**Parâmetro `granularidade` inválido `400`:**
 ```json
 {
-  "d1n": "Rio de Janeiro",
-  "d2n": "População residente",
-  "v": 17366189
+  "error": "Parâmetro 'granularidade' inválido: \"estado\". Valores aceitos: macro, micro."
 }
 ```
 
-**Resposta de sucesso `201`:**
-```json
-{
-  "message": "População Absoluta recebida e cadastrada com sucesso",
-  "dado": { ... }
-}
-```
-
----
-
-### `POST /dados/receber-bonus`
-
-Recebe dados de bônus demográfico.
-
-**Body (JSON):**
-
-| Campo                  | Tipo    | Obrigatório | Descrição                                   |
-|------------------------|---------|-------------|----------------------------------------------|
-| `brasilGrandeRegiaoUf` | string  | Sim         | Localidade (Brasil, grande região ou UF)     |
-| `total`                | integer | Sim         | População total                              |
-| `xy_anos`              | integer | Sim         | População na faixa etária específica         |
-
-**Exemplo de requisição:**
-```json
-{
-  "brasilGrandeRegiaoUf": "Sudeste",
-  "total": 89012114,
-  "xy_anos": 14200000
-}
-```
-
-**Resposta de sucesso `201`:**
-```json
-{
-  "message": "Bônus Demográfico recebido e cadastrado com sucesso",
-  "dado": { ... }
-}
-```
-
----
-
-### `POST /dados/receber-risco`
-
-Recebe dados de Risco de Crédito (scores do Eixo I). **Sem validação Zod** — a validação é feita manualmente no controller.
-
-**Body (JSON):**
-
-| Campo                  | Tipo   | Obrigatório | Descrição                                  |
-|------------------------|--------|-------------|---------------------------------------------|
-| `inadimplenciaReal`    | number | Sim         | Score de inadimplência                      |
-| `FragilidadeRenda`     | number | Sim         | Score de fragilidade de renda               |
-| `AgingDivida`          | number | Sim         | Score de aging da dívida                    |
-| `VulnerabilidadeSocial`| number | Sim         | Score de vulnerabilidade social (escolarização) |
-
-**Exemplo de requisição:**
-```json
-{
-  "inadimplenciaReal": 3,
-  "FragilidadeRenda": 2.7,
-  "AgingDivida": 1.8,
-  "VulnerabilidadeSocial": 3.5
-}
-```
-
-**Resposta de sucesso `201`:**
-```json
-{
-  "message": "Risco de Crédito cadastrado com sucesso",
-  "dado": { ... }
-}
-```
-
----
-
-### `POST /dados/receber-inclusao`
-
-Recebe dados de Inclusão Demográfica (scores do Eixo II).
-
-**Body (JSON):**
-
-| Campo                    | Tipo    | Obrigatório | Descrição                            |
-|--------------------------|---------|-------------|---------------------------------------|
-| `MaturidadePix`          | number  | Sim         | Score de maturidade Pix               |
-| `CrescimentoPopulacional`| number  | Sim         | Score de crescimento populacional     |
-| `PopulacaoAbsoluta`      | integer | Sim         | Valor de população absoluta           |
-| `BonusDemografico`       | number  | Sim         | Score de bônus demográfico            |
-
-**Exemplo de requisição:**
-```json
-{
-  "MaturidadePix": 4.2,
-  "CrescimentoPopulacional": 3.1,
-  "PopulacaoAbsoluta": 45900000,
-  "BonusDemografico": 2.8
-}
-```
-
-**Resposta de sucesso `201`:**
-```json
-{
-  "message": "Inclusão Demográfica cadastrada com sucesso",
-  "dado": { ... }
-}
-```
-
----
-
-## Rotas de Listagem — `GET /dados`
-
-Todas retornam `200` com um array de registros ou `500` em caso de erro interno.
-
-| Rota                        | Retorna                        |
-|-----------------------------|--------------------------------|
-| `GET /dados/listar-dados`   | Todos os registros SCR         |
-| `GET /dados/listar-dados-pix` | Todos os registros Pix       |
-| `GET /dados/listar-taxa`    | Taxas de escolarização         |
-| `GET /dados/listar-crescimento` | Crescimento populacional   |
-| `GET /dados/listar-populacao` | Dados de população absoluta  |
-| `GET /dados/listar-bonus`   | Dados de bônus demográfico     |
-| `GET /dados/listar-risco`   | Dados de risco de crédito      |
-| `GET /dados/listar-inclusao` | Dados de inclusão demográfica |
-
-**Exemplo de resposta `200`:**
-```json
-[
-  { "id": 1, ... },
-  { "id": 2, ... }
-]
-```
-
-**Resposta de erro `500`:**
+**Erro interno `500`:**
 ```json
 { "error": "Erro ao buscar dados" }
 ```
