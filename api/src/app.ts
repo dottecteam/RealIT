@@ -21,7 +21,7 @@ const globalLimiter = rateLimit({
   message: { error: 'Muitas requisições vindas deste IP, tente novamente mais tarde.' },
   standardHeaders: 'draft-7',
   legacyHeaders: false,
-}
+})
 app.use(globalLimiter)
 
 app.use('/users', routerUser)

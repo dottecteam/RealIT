@@ -1,0 +1,19 @@
+version: '3.8'
+
+services:
+  api:
+    build:
+      context: ./api
+      dockerfile: Dockerfile
+    container_name: real-it-api
+    # Mapeia a porta do .env para a porta do container
+    ports:
+      - "3000:3000"
+    # Passa o arquivo .env para dentro do container
+    env_file:
+      - ./api/.env
+    # Volumes permitem que você altere o código e o container atualize (Hot Reload)
+    volumes:
+      - ./api:/app
+      - /app/node_modules # Evita que o node_modules do container seja sobrescrito pelo local
+    restart: always
