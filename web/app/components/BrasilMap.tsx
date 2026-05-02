@@ -88,7 +88,7 @@ export function BrasilMap() {
       mapaBrasil(hiddenRef.current, {
         unidade: "br",
         regiao: "federacao",
-        dataPath: "/data",
+        dataPath: "/map-data",
         defaultFillColor: "#E5E5E5",
         defaultStrokeColor: "#FFFFFF",
         unidadeData: [],
