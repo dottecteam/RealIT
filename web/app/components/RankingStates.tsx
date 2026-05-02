@@ -29,7 +29,7 @@ const Estados: Record<string, string> = {
 
 const CHART_MIN_WIDTH = 900
 
-const OPTIONS: ApexCharts.ApexOptions = {
+const BASE_OPTIONS: ApexCharts.ApexOptions = {
   chart: {
     type: "bar",
     stacked: true,
@@ -116,15 +116,30 @@ interface SeriesData {
 
 interface RankingStatesProps {
   series: SeriesData[]
+  categorias: string[]
 }
 
-export function RankingStates({ series }: RankingStatesProps) {
+export function RankingStates({ series, categorias }: RankingStatesProps) {
+  const minWidth = categorias.length > 10 ? 900 : 400
+
+  const options: ApexCharts.ApexOptions = {
+    ...BASE_OPTIONS,
+    xaxis: {
+      ...BASE_OPTIONS.xaxis,
+      categories: categorias,
+    },
+    tooltip: {
+      ...BASE_OPTIONS.tooltip,
+      x: { formatter: (val: string) => Estados[val] ?? val },
+    },
+  }
+
   return (
     <div className="bg-white rounded-[40px] p-4 sm:p-10 flex flex-col items-center w-full">
       <div className="w-full overflow-x-auto">
         <div style={{ minWidth: CHART_MIN_WIDTH }} className="h-[450px]">
           <ReactApexChart
-            options={OPTIONS}
+            options={options}
             series={series}
             type="bar"
             height="100%"
@@ -133,7 +148,7 @@ export function RankingStates({ series }: RankingStatesProps) {
         </div>
       </div>
       <p className="text-xs text-zinc-400 mt-3 sm:hidden">
-        ← Deslize para ver todos os estados →
+      ← Deslize para ver todos os estados →
       </p>
     </div>
   )

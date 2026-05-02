@@ -10,7 +10,9 @@ export default function Switch() {
     <>
       <div className="flex justify-center gap-3">
         <button
+          type="button"
           className={`toggled-btn ${ativo ? "ativo" : ""}`}
+          aria-label="Toggle view mode"
           onClick={() => setViewMode(ativo ? "regioes" : "uf")}
         >
           <div className="thumb" />
