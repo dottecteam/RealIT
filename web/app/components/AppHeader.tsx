@@ -1,28 +1,37 @@
-import {Logo} from "./Logo"
+import { Logo } from "./Logo";
+import { getInitials } from "../utils/stringUtils";
+import AppHeaderProps from "../types/components/AppHeader";
 
-export function AppHeader() {
-    return (
-        <header className="h-20 border-b border-zinc-200 bg-white flex items-center justify-between px-4 sm:px-6 md:px-8 z-40">
-            <div className="flex items-center">
-                <Logo color="#202AD0" size={24} />
-            </div>
-            <div className="flex items-center gap-4 sm:gap-6">
-                <button className="relative p-2.5 text-zinc-500 hover:bg-zinc-100 rounded-full transition-colors">
-                    <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
-                    </svg>
-                    <span className="absolute top-2.5 right-2.5 w-2 h-2 bg-red-500 rounded-full border-2 border-white" />
-                </button>
-                <div className="flex items-center gap-3 pl-4 sm:pl-6 border-l border-zinc-100">
-                    <div className="text-right hidden sm:block">
-                        <p className="text-sm font-bold text-zinc-900 leading-tight">Nome do Usuário</p>
-                        <p className="text-xs text-zinc-500">Membro Premium</p>
-                    </div>
-                    <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-full bg-primary flex items-center justify-center text-white font-bold text-sm shadow-md shadow-primary/20">
-                        NU
-                    </div>
-                </div>
-            </div>
-        </header>
-    );
+export function AppHeader({ 
+  userName = "Usuário", 
+  userRole = "Membro" 
+}: AppHeaderProps) {
+  
+  const initials = getInitials(userName);
+
+  return (
+    <header className="h-20 border-b border-gray-200 bg-white flex items-center justify-between px-4 sm:px-6 md:px-8 z-40">
+      <div className="flex items-center">
+
+        <Logo color="var(--primary)" size={24} />
+      </div>
+
+      <div className="flex items-center gap-4 sm:gap-6">
+        <div className="flex items-center gap-3 pl-4 sm:pl-6 border-l border-gray-100">
+          <div className="text-right hidden sm:block">
+            <p className="text-sm font-bold text-gray-900 leading-tight">
+              {userName}
+            </p>
+            <p className="text-xs text-gray-500">
+              {userRole}
+            </p>
+          </div>
+          
+          <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-full bg-primary flex items-center justify-center text-white font-bold text-sm shadow-md shadow-primary/20 select-none">
+            <span className="leading-none">{initials}</span>
+          </div>
+        </div>
+      </div>
+    </header>
+  );
 }

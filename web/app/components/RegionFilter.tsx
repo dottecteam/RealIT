@@ -1,6 +1,6 @@
 "use client";
 
-import { useMapContext } from "../utils/MapContext";
+import { useMapContext } from "../contexts/MapContext";
 import Switch from "./Switch";
 
 export default function RegionFilter() {

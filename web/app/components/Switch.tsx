@@ -1,6 +1,6 @@
 "use client"
 
-import { useMapContext } from "../utils/MapContext"
+import { useMapContext } from "../contexts/MapContext"
 
 export default function Switch() {
   const { viewMode, setViewMode } = useMapContext()
