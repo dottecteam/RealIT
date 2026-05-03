@@ -62,8 +62,8 @@
   --breakpoint-xl: 80rem;   /* 1280px */
   --breakpoint-2xl: 96rem;  /* 1536px */
 
-  --radius-xl: 28px;
-  --radius-2xl: 40px;
+  --radius-xl: 14px;
+  --radius-2xl: 20px;
 
   --spacing-18: 4.5rem;
 }

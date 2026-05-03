@@ -8,9 +8,12 @@ export default function RegionFilter() {
 
   return (
     <div className="relative w-full sm:w-1/2">
-      <div className="bg-white rounded-[40px] shadow-[0_8px_30px_rgba(0,0,0,0.04)] p-4 min-h-[60px] flex justify-center items-center gap-5">
-        <Switch />
-        <h2 className="text-[#202AD0] font-bold">
+      <div className="card-base min-h-[64px] flex justify-center items-center gap-6">
+        <div className="shrink-0 scale-110">
+          <Switch />
+        </div>
+        
+        <h2 className="text-primary font-black uppercase tracking-tight text-sm sm:text-base">
           {viewMode === "uf" ? "Visualização por UF" : "Visualização por Região"}
         </h2>
       </div>

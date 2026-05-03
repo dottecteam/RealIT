@@ -1,13 +1,13 @@
-import { RankingChart } from "../components/RankingChart";
-import { BrasilMap } from "../components/BrasilMap";
-import { mockDadosMediaRegiao } from "../mocks/score";
-import FilterBar from "../components/FilterBar";
-import RegionFilter from "../components/RegionFilter";
-import { RankingStates } from "../components/RankingStates";
-import { dadosEixoI_Ranking, dadosEixoII_Ranking, dadosEixoI_Score, dadosEixoII_Score } from "../mocks/chartData";
-import { EvolucaoScoresChart } from "../components/EvolucaoScoresChart";
-import { ProjecaoScoreChart } from "../components/ProjecaoScoreChart";
-import { MapProvider } from "../contexts/MapContext";
+import { RankingChart } from "../../../components/RankingChart";
+import { BrasilMap } from "../../../components/BrasilMap";
+import { mockDadosMediaRegiao } from "../../../mocks/score";
+import FilterBar from "../../../components/FilterBar";
+import RegionFilter from "../../../components/RegionFilter";
+import { RankingStates } from "../../../components/RankingStates";
+import { dadosEixoI_Ranking, dadosEixoII_Ranking, dadosEixoI_Score, dadosEixoII_Score } from "../../../mocks/chartData";
+import { EvolucaoScoresChart } from "../../../components/EvolucaoScoresChart";
+import { ProjecaoScoreChart } from "../../../components/ProjecaoScoreChart";
+import { MapProvider } from "../../../contexts/MapContext";
 
 const periodos = ["Jan/22","Abr/22","Jul/22","Out/22","Jan/23","Abr/23","Jul/23","Out/23","Jan/24","Abr/24","Jul/24"]
 const mesesProjecao = ["Jan/23","Abr/23","Jul/23","Out/23","Jan/24","Abr/24","Jul/24","Out/24","Jan/25","Abr/25","Jul/25"]
