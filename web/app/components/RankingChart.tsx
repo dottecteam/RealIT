@@ -34,6 +34,8 @@ interface RankingChartProps {
 }
 
 export function RankingChart({ title, info, series, categorias }: RankingChartProps) {
+  const isMany = categorias.length > 10
+
   const options: ApexCharts.ApexOptions = {
     chart: {
       type: "bar",
@@ -45,7 +47,7 @@ export function RankingChart({ title, info, series, categorias }: RankingChartPr
     colors: ["#FF9A98", "#2cfff1", "#68E699", "#FFE372"],
     plotOptions: {
       bar: {
-        columnWidth: "45%",
+        columnWidth: isMany ? "75%" : "50%",
         horizontal: false,
         borderRadius: 7,
         borderRadiusApplication: "end",
@@ -53,9 +55,12 @@ export function RankingChart({ title, info, series, categorias }: RankingChartPr
         dataLabels: {
           total: {
             enabled: true,
-            offsetY: -12,
+            offsetY: -10,
             formatter: (val: string) => parseFloat(val).toFixed(1),
-            style: { fontSize: "13px", fontWeight: 400 },
+            style: {
+              fontSize: isMany ? "10px" : "13px",
+              fontWeight: 300,
+            },
           },
         },
       },
@@ -65,14 +70,20 @@ export function RankingChart({ title, info, series, categorias }: RankingChartPr
       categories: categorias,
       axisBorder: { show: false },
       axisTicks: { show: false },
-      labels: { style: { colors: "#908f8f", fontSize: "12px", fontWeight: 500 } },
+      labels: {
+        style: {
+          colors: "#908f8f",
+          fontSize: isMany ? "9px" : "11px",
+          fontWeight: 400,
+        },
+      },
     },
     yaxis: {
       min: 0,
       max: 5,
       tickAmount: 5,
       labels: {
-        style: { colors: "#ADADAD", fontSize: "12px" },
+        style: { colors: "#ADADAD", fontSize: "10px" },
         formatter: (v: number) => v.toFixed(1),
       },
     },
@@ -92,11 +103,21 @@ export function RankingChart({ title, info, series, categorias }: RankingChartPr
         formatter: (val: string) => ESTADOS[val] ?? val,
       },
     },
+    responsive: [
+      {
+        breakpoint: 640,
+        options: {
+          plotOptions: { bar: { columnWidth: isMany ? "85%" : "60%" } },
+          xaxis: { labels: { style: { fontSize: isMany ? "8px" : "10px" } } },
+          legend: { fontSize: "10px" },
+        },
+      },
+    ],
   }
 
   return (
     <ChartCard title={title} info={info}>
-      <div className="w-full h-[600px]">
+      <div className="w-full h-[380px] sm:h-[450px] md:h-[500px]">
         <ReactApexChart
           options={options}
           series={series}

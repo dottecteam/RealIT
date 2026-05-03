@@ -27,8 +27,6 @@ const Estados: Record<string, string> = {
   SP: "São Paulo", SE: "Sergipe", TO: "Tocantins"
 }
 
-const CHART_MIN_WIDTH = 900
-
 const BASE_OPTIONS: ApexCharts.ApexOptions = {
   chart: {
     type: "bar",
@@ -40,7 +38,7 @@ const BASE_OPTIONS: ApexCharts.ApexOptions = {
   colors: ["#FF9A98", "#2cfff1", "#68E699", "#FFE372"],
   plotOptions: {
     bar: {
-      columnWidth: 20,
+      columnWidth: 25,
       horizontal: false,
       borderRadius: 7,
       borderRadiusApplication: "end",
@@ -120,8 +118,6 @@ interface RankingStatesProps {
 }
 
 export function RankingStates({ series, categorias }: RankingStatesProps) {
-  const minWidth = categorias.length > 10 ? 900 : 400
-
   const options: ApexCharts.ApexOptions = {
     ...BASE_OPTIONS,
     xaxis: {
@@ -136,20 +132,15 @@ export function RankingStates({ series, categorias }: RankingStatesProps) {
 
   return (
     <div className="bg-white rounded-[40px] p-4 sm:p-10 flex flex-col items-center w-full">
-      <div className="w-full overflow-x-auto">
-        <div style={{ minWidth: CHART_MIN_WIDTH }} className="h-[450px]">
-          <ReactApexChart
-            options={options}
-            series={series}
-            type="bar"
-            height="100%"
-            width="100%"
-          />
-        </div>
+      <div className="w-full h-[450px]">
+        <ReactApexChart
+          options={options}
+          series={series}
+          type="bar"
+          height="100%"
+          width="100%"
+        />
       </div>
-      <p className="text-xs text-zinc-400 mt-3 sm:hidden">
-      ← Deslize para ver todos os estados →
-      </p>
     </div>
   )
 }

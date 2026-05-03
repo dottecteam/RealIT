@@ -48,7 +48,7 @@ export default function Dashboard() {
             <FilterBar />
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div className={`grid grid-cols-1 ${isMicro ? "" : "md:grid-cols-2"} gap-6`}>
             <RankingChart
               title="Risco de Crédito"
               info={`Composição do score de risco de crédito por ${isMicro ? "estado (UF)" : "macrorregião"}.`}
