@@ -1,7 +1,6 @@
-
 export interface SeriesData {
   name: string
-  data: number[]
+  data: (number | null)[]
 }
 
 export interface EvolucaoScoresChartProps {
