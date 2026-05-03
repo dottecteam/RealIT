@@ -1,246 +1,154 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
-import mapaBrasil from "mapa-brasil";
+import { useState, useCallback, memo } from "react";
+import { BRASIL_PATHS } from "../constants/BrasilMapPaths";
+import { EstadoPath, TooltipState } from "../types/components/BrasilMap";
 import { mockDadosScoreCompleto } from "../mocks/score";
-import { IBGE_TO_REGION, STATE_TO_IBGE, STATE_TO_UF, IBGE_TO_UF } from "../mocks/ufRegionData";
-import { useMapContext } from "../utils/MapContext";
+import { useMapContext } from "../contexts/MapContext";
+import { getCategoria } from "../utils/mapUtils";
+import { REGIAO_COR, UF_COLORS, CATEGORIA_TEXTO, CATEGORIA_CORES } from "../constants/mapColors";
+import { EstadoProps } from "../types/components/BrasilMap";
 
-const REGIONS_COLORS = {
-  norte: "#68E699",
-  nordeste: "#FF9A98",
-  centroOeste: "#FFE372",
-  sudeste: "#202AD0",
-  sul: "#4EDAD3",
-};
+// ─── Sub-componente (MEMOIZADO) ──────────
 
-const REGIAO_COR: Record<string, string> = {
-  "Norte": REGIONS_COLORS.norte,
-  "Nordeste": REGIONS_COLORS.nordeste,
-  "Sudeste": REGIONS_COLORS.sudeste,
-  "Sul": REGIONS_COLORS.sul,
-  "Centro-Oeste": REGIONS_COLORS.centroOeste,
-};
+const EstadoPath_ = memo(function EstadoPath_({
+  estado,
+  fill,
+  isHovered,
+  anyHovered,
+  onMouseEnter,
+  onMouseLeave,
+  onMouseMove,
+}: EstadoProps) {
+  const opacity = anyHovered ? (isHovered ? 1 : 0.38) : 0.88;
+  const stroke = isHovered ? "var(--primary)" : "var(--white)";
+  const strokeWidth = isHovered ? 1.5 : 0.8;
 
-const UF_COLORS: Record<string, string> = {
-  AC: "#68E699", AL: "#FF9A98", AM: "#FFE372", AP: "#4EDAD3", BA: "#FF6B6B",
-  CE: "#FFA07A", DF: "#9B59B6", ES: "#3498DB", GO: "#E67E22", MA: "#1ABC9C",
-  MG: "#2ECC71", MS: "#E74C3C", MT: "#F39C12", PA: "#16A085", PB: "#8E44AD",
-  PE: "#D35400", PI: "#27AE60", PR: "#2980B9", RJ: "#C0392B", RN: "#7F8C8D",
-  RO: "#BDC3C7", RR: "#95A5A6", RS: "#34495E", SC: "#1E8BC3", SE: "#BE90D4",
-  SP: "#202AD0", TO: "#6C3483",
-};
-
-const CATEGORIA_CORES: Record<string, string> = {
-  diamante: "#fad144",
-  emergente: "#f2e394",
-  maduro: "#f2b46b",
-  expansao: "#f2b46b",
-  organico: "#f2a541",
-  defesa: "#f28c28",
-  fomento: "#f02817",
-  retencao: "#c21807",
-  saturacao: "#941336",
-  intermediario: "#bbbbbb",
-};
-
-const CATEGORIA_TEXTO: Record<string, string> = {
-  diamante: "Diamante Bruto",
-  emergente: "Potencial Emergente",
-  maduro: "Mercado Maduro",
-  expansao: "Expansão Cautelosa",
-  organico: "Crescimento Orgânico",
-  defesa: "Defesa de Mercado",
-  fomento: "Fomento Social",
-  retencao: "Retenção Restrita",
-  saturacao: "Saturação",
-  intermediario: "Intermediário",
-};
-
-function getCategoria(scoreI: number, scoreII: number): string {
-  if (scoreI <= 2 && scoreII <= 2) return "diamante";
-  if (scoreI <= 2 && scoreII >= 2 && scoreII <= 4) return "emergente";
-  if (scoreI <= 2 && scoreII >= 4 && scoreII <= 5) return "maduro";
-  if (scoreI >= 2 && scoreI <= 4 && scoreII <= 2) return "expansao";
-  if (scoreI >= 2 && scoreI <= 4 && scoreII >= 2 && scoreII <= 4) return "organico";
-  if (scoreI >= 2 && scoreI <= 4 && scoreII >= 4 && scoreII <= 5) return "defesa";
-  if (scoreI >= 4 && scoreI <= 5 && scoreII <= 2) return "fomento";
-  if (scoreI >= 4 && scoreI <= 5 && scoreII >= 2 && scoreII <= 4) return "retencao";
-  if (scoreI >= 4 && scoreI <= 5 && scoreII >= 4 && scoreII <= 5) return "saturacao";
-  return "intermediario";
-}
+  return (
+    <path
+      d={estado.d}
+      fill={fill}
+      stroke={stroke}
+      strokeWidth={strokeWidth}
+      opacity={opacity}
+      style={{ cursor: "pointer", transition: "opacity 0.18s ease, fill 0.3s ease" }}
+      onMouseEnter={(e) => onMouseEnter(e, estado)}
+      onMouseLeave={onMouseLeave}
+      onMouseMove={onMouseMove}
+    />
+  );
+});
 
 export function BrasilMap() {
   const { viewMode } = useMapContext();
 
-  const hiddenRef = useRef<HTMLDivElement>(null);
-  const [svgContent, setSvgContent] = useState<string>("");
-  const [tooltip, setTooltip] = useState({ visible: false, x: 0, y: 0, lines: [] as string[] });
   const [heatmap, setHeatmap] = useState(false);
-  const svgBaseRef = useRef<string>("");
+  const [hoveredUf, setHoveredUf] = useState<string | null>(null);
+  const [tooltip, setTooltip] = useState<TooltipState>({
+    visible: false,
+    x: 0,
+    y: 0,
+    lines: [],
+  });
 
-  //Inicializa o SVG base uma única vez pela biblioteca
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      if (!hiddenRef.current) return;
-      hiddenRef.current.innerHTML = "";
-
-      mapaBrasil(hiddenRef.current, {
-        unidade: "br",
-        regiao: "federacao",
-        dataPath: "/map-data",
-        defaultFillColor: "#E5E5E5",
-        defaultStrokeColor: "#FFFFFF",
-        unidadeData: [],
-        onClick: () => {},
-      });
-
-      setTimeout(() => {
-        const svg = hiddenRef.current?.querySelector("svg");
-        if (!svg) return;
-
-        const clone = svg.cloneNode(true) as SVGElement;
-
-        clone.querySelectorAll("path").forEach((path) => {
-          const title = path.querySelector("title")?.textContent?.trim();
-          if (!title) return;
-
-          const titleUpper = title.toUpperCase();
-          path.setAttribute("data-title", titleUpper);
-
-          const codIbge = STATE_TO_IBGE[titleUpper];
-          if (codIbge) {
-            const uf = IBGE_TO_UF[Number(codIbge)];
-            const regiao = IBGE_TO_REGION[codIbge];
-            if (uf) path.setAttribute("data-uf", uf);
-            if (regiao) path.setAttribute("data-regiao", regiao);
-          }
-        });
-
-        clone.querySelectorAll("title").forEach((t) => t.remove());
-        clone.removeAttribute("width");
-        clone.removeAttribute("height");
-        clone.removeAttribute("style");
-        clone.setAttribute("width", "100%");
-        clone.setAttribute("height", "auto");
-        clone.setAttribute("viewBox", "0 0 700 800");
-        clone.setAttribute("preserveAspectRatio", "xMidYMid meet");
-
-        svgBaseRef.current = clone.outerHTML;
-        setSvgContent(applyColors(clone.outerHTML, heatmap, viewMode));
-      }, 200);
-    }, 100);
-
-    return () => clearTimeout(timer);
-  }, []);
-
-  useEffect(() => {
-    if (!svgBaseRef.current) return;
-    setSvgContent(applyColors(svgBaseRef.current, heatmap, viewMode));
-  }, [heatmap, viewMode]);
-
-  function applyColors(svgString: string, isHeatmap: boolean, mode: string): string {
-    if (!svgString) return "";
-
-    const parser = new DOMParser();
-    const doc = parser.parseFromString(svgString, "image/svg+xml");
-
-    doc.querySelectorAll("path").forEach((path) => {
-      const uf = path.getAttribute("data-uf");
-      const regiao = path.getAttribute("data-regiao");
-
-      if (!uf && !regiao) return;
-
-      let cor = "#E5E5E5";
-
-      if (isHeatmap) {
-        if (mode === "uf") {
-          const dados = mockDadosScoreCompleto.dadosScore.find((d) => d.uf === uf);
+  const getFill = useCallback(
+    (estado: EstadoPath): string => {
+      if (heatmap) {
+        if (viewMode === "uf") {
+          const dados = mockDadosScoreCompleto.dadosScore.find(
+            (d) => d.uf === estado.uf
+          );
           if (dados) {
-            cor = CATEGORIA_CORES[getCategoria(dados.score_eixo_i, dados.score_eixo_ii)];
-          } else {
-            cor = "#d1d5db";
+            return CATEGORIA_CORES[getCategoria(dados.score_eixo_i, dados.score_eixo_ii)];
           }
         } else {
           const dadosRegiao = mockDadosScoreCompleto.dadosMediaRegiao.find(
-            (r) => r.regiao === regiao
+            (r) => r.regiao === estado.regiao
           );
           if (dadosRegiao) {
-            cor = CATEGORIA_CORES[getCategoria(dadosRegiao.media_score_eixo_i, dadosRegiao.media_score_eixo_ii)];
-          } else {
-            cor = "#d1d5db";
+            return CATEGORIA_CORES[
+              getCategoria(dadosRegiao.media_score_eixo_i, dadosRegiao.media_score_eixo_ii)
+            ];
           }
         }
-      } else {
-        if (mode === "uf") {
-          //Cor por UF
-          cor = uf ? (UF_COLORS[uf] ?? "#E5E5E5") : "#E5E5E5";
+        return "var(--gray-300)";
+      }
+
+      return viewMode === "uf"
+        ? (UF_COLORS[estado.uf] ?? "var(--gray-200)")
+        : (REGIAO_COR[estado.regiao] ?? "var(--gray-200)");
+    },
+    [heatmap, viewMode]
+  );
+
+  const buildTooltipLines = useCallback(
+    (estado: EstadoPath): string[] => {
+      const lines: string[] = [];
+
+      if (viewMode === "uf") {
+        const dados = mockDadosScoreCompleto.dadosScore.find(
+          (d) => d.uf === estado.uf
+        );
+        if (dados) {
+          const categoria = getCategoria(dados.score_eixo_i, dados.score_eixo_ii);
+          lines.push(`${estado.nome} (${estado.uf})`);
+          lines.push(`Eixo I: ${dados.score_eixo_i}`);
+          lines.push(`Eixo II: ${dados.score_eixo_ii}`);
+          lines.push(`Inadimplência: ${dados.score_inadimplencia}`);
+          lines.push(`Crescimento: ${dados.score_crescimento}`);
+          lines.push(`Categoria: ${CATEGORIA_TEXTO[categoria] ?? categoria}`);
         } else {
-          //Cor por região
-          cor = regiao ? (REGIAO_COR[regiao] ?? "#E5E5E5") : "#E5E5E5";
+          lines.push(`${estado.nome} (${estado.uf})`);
+        }
+      } else {
+        const dadosRegiao = mockDadosScoreCompleto.dadosMediaRegiao.find(
+          (r) => r.regiao === estado.regiao
+        );
+        if (dadosRegiao) {
+          const categoria = getCategoria(
+            dadosRegiao.media_score_eixo_i,
+            dadosRegiao.media_score_eixo_ii
+          );
+          lines.push(`Região ${estado.regiao}`);
+          lines.push(`Eixo I (média): ${dadosRegiao.media_score_eixo_i}`);
+          lines.push(`Eixo II (média): ${dadosRegiao.media_score_eixo_ii}`);
+          lines.push(`Inadimplência (média): ${dadosRegiao.media_inadimplencia}`);
+          lines.push(`Crescimento (média): ${dadosRegiao.media_crescimento}`);
+          lines.push(`Categoria: ${CATEGORIA_TEXTO[categoria] ?? categoria}`);
+        } else {
+          lines.push(estado.regiao);
         }
       }
 
-      path.setAttribute("fill", cor);
-      path.style.fill = cor;
-    });
+      return lines;
+    },
+    [viewMode]
+  );
 
-    const svg = doc.querySelector("svg");
-    return svg ? svg.outerHTML : svgString;
-  }
+  const handleMouseEnter = useCallback(
+    (e: React.MouseEvent, estado: EstadoPath) => {
+      setHoveredUf(estado.uf);
+      setTooltip({
+        visible: true,
+        x: e.clientX,
+        y: e.clientY,
+        lines: buildTooltipLines(estado),
+      });
+    },
+    [buildTooltipLines]
+  );
 
-  function handleMouseMove(e: React.MouseEvent<HTMLDivElement>) {
-    const target = e.target as SVGPathElement;
+  const handleMouseMove = useCallback((e: React.MouseEvent) => {
+    setTooltip((prev) =>
+      prev.visible ? { ...prev, x: e.clientX, y: e.clientY } : prev
+    );
+  }, []);
 
-    if (target.tagName !== "path") {
-      setTooltip((prev) => ({ ...prev, visible: false }));
-      return;
-    }
-
-    const uf = target.getAttribute("data-uf");
-    const regiao = target.getAttribute("data-regiao");
-    const title = target.getAttribute("data-title");
-
-    const lines: string[] = [];
-
-    if (viewMode === "uf" && uf) {
-      const dados = mockDadosScoreCompleto.dadosScore.find((d) => d.uf === uf);
-      if (dados) {
-        const categoria = getCategoria(dados.score_eixo_i, dados.score_eixo_ii);
-        lines.push(`${title ?? uf} (${uf})`);
-        lines.push(`Eixo I: ${dados.score_eixo_i}`);
-        lines.push(`Eixo II: ${dados.score_eixo_ii}`);
-        lines.push(`Inadimplência: ${dados.score_inadimplencia}`);
-        lines.push(`Crescimento: ${dados.score_crescimento}`);
-        lines.push(`Categoria: ${CATEGORIA_TEXTO[categoria] ?? categoria}`);
-      } else {
-        lines.push(title ?? uf ?? "");
-      }
-    } else if (viewMode === "regioes" && regiao) {
-      const dadosRegiao = mockDadosScoreCompleto.dadosMediaRegiao.find(
-        (r) => r.regiao === regiao
-      );
-      if (dadosRegiao) {
-        const categoria = getCategoria(dadosRegiao.media_score_eixo_i, dadosRegiao.media_score_eixo_ii);
-        lines.push(`Região ${regiao}`);
-        lines.push(`Eixo I (média): ${dadosRegiao.media_score_eixo_i}`);
-        lines.push(`Eixo II (média): ${dadosRegiao.media_score_eixo_ii}`);
-        lines.push(`Inadimplência (média): ${dadosRegiao.media_inadimplencia}`);
-        lines.push(`Crescimento (média): ${dadosRegiao.media_crescimento}`);
-        lines.push(`Categoria: ${CATEGORIA_TEXTO[categoria] ?? categoria}`);
-      } else {
-        lines.push(regiao);
-      }
-    } else {
-      lines.push(title ?? "");
-    }
-
-    setTooltip({ visible: true, x: e.clientX, y: e.clientY, lines });
-  }
-
-  function handleMouseLeave() {
+  const handleMouseLeave = useCallback(() => {
+    setHoveredUf(null);
     setTooltip((prev) => ({ ...prev, visible: false }));
-  }
+  }, []);
+
 
   function renderLegenda() {
     if (heatmap) {
@@ -248,8 +156,11 @@ export function BrasilMap() {
         <>
           {Object.entries(CATEGORIA_TEXTO).map(([key, label]) => (
             <div key={key} className="flex items-center gap-2">
-              <div className="w-4 h-4 rounded-sm" style={{ backgroundColor: CATEGORIA_CORES[key] }} />
-              {label}
+              <div
+                className="w-4 h-4 rounded-sm flex-shrink-0"
+                style={{ backgroundColor: CATEGORIA_CORES[key] }}
+              />
+              <span className="text-gray-600 font-medium">{label}</span>
             </div>
           ))}
         </>
@@ -258,7 +169,7 @@ export function BrasilMap() {
 
     if (viewMode === "uf") {
       return (
-        <p className="text-xs text-zinc-400 italic">
+        <p className="text-xs text-gray-400 italic">
           Cada estado exibe sua própria cor identificadora.
         </p>
       );
@@ -266,68 +177,82 @@ export function BrasilMap() {
 
     return (
       <>
-        <div className="flex items-center gap-2"><div className="w-4 h-4 bg-[#68E699]" /> Norte</div>
-        <div className="flex items-center gap-2"><div className="w-4 h-4 bg-[#FF9A98]" /> Nordeste</div>
-        <div className="flex items-center gap-2"><div className="w-4 h-4 bg-[#FFE372]" /> Centro-Oeste</div>
-        <div className="flex items-center gap-2"><div className="w-4 h-4 bg-[#202AD0]" /> Sudeste</div>
-        <div className="flex items-center gap-2"><div className="w-4 h-4 bg-[#4EDAD3]" /> Sul</div>
+        {Object.entries(REGIAO_COR).map(([regiao, cor]) => (
+          <div key={regiao} className="flex items-center gap-2">
+            <div className="w-4 h-4 rounded-sm flex-shrink-0" style={{ backgroundColor: cor }} />
+            <span className="text-gray-600 font-medium">{regiao}</span>
+          </div>
+        ))}
       </>
     );
   }
 
+
+  const anyHovered = hoveredUf !== null;
+
   return (
-    <div className="w-full flex flex-col p-4 bg-white rounded-[40px] shadow-[0_8px_30px_rgba(0,0,0,0.04)]">
-      <div className="h-8 mb-4 z-10 text-center">
-        <h3 className="text-xl font-bold text-[#202AD0]">
-          Mapa Brasil —{" "}
-          <span className="text-gray-700">
-            {viewMode === "uf" ? "Por UF" : "Por Região"}
-          </span>
+    <div className="card-base flex flex-col w-full h-fit min-h-[600px] relative overflow-hidden">
+      <div className="mb-6 text-center shrink-0">
+        <h3 className="text-xl font-black text-primary uppercase tracking-tight">
+          Mapa Brasil <span className="text-gray-400 font-medium">/ {viewMode == "uf" ? "UF" : "Região"}</span>
         </h3>
       </div>
 
-      <label className="flex items-center gap-2 mb-4">
-        <input
-          type="checkbox"
-          checked={heatmap}
-          onChange={() => setHeatmap((prev) => !prev)}
-        />
-        Modo mapa de calor
-      </label>
-
-      <style>{`
-        .mapa-interativo path {
-          transition: opacity 0.2s ease, filter 0.2s ease;
-          cursor: pointer;
-          opacity: 0.85;
-        }
-        .mapa-interativo svg:has(path:hover) path {
-          opacity: 0.4;
-        }
-        .mapa-interativo svg path:hover {
-          opacity: 1 !important;
-          stroke: #000;
-          stroke-width: 1.5;
-        }
-      `}</style>
-
-      <div ref={hiddenRef} style={{ display: "none" }} />
-
-      <div className="w-full flex justify-center items-center">
-        <div className="w-full max-w-[900px]">
-          <div
-            className="mapa-interativo w-full aspect-[4/3] drop-shadow-2xl select-none"
-            onMouseMove={handleMouseMove}
-            onMouseLeave={handleMouseLeave}
-            dangerouslySetInnerHTML={{ __html: svgContent }}
+      <div className="mb-4 shrink-0 px-4">
+        <label className="flex items-center gap-2 cursor-pointer select-none w-fit">
+          <input
+            type="checkbox"
+            className="w-4 h-4 accent-primary"
+            checked={heatmap}
+            onChange={() => setHeatmap((prev) => !prev)}
           />
-        </div>
+          <span className="text-sm font-bold text-gray-600">Modo mapa de calor</span>
+        </label>
       </div>
 
-      <div className="w-full mt-4 flex flex-wrap gap-4 text-sm justify-center">
+      {/* SVG do mapa*/}
+      <div className="flex-1 flex justify-center items-center w-full relative px-4">
+        <svg
+          viewBox="0 0 800 691"
+          className="w-full h-full max-h-[500px] drop-shadow-2xl select-none"
+          preserveAspectRatio="xMidYMid meet"
+        >
+          {BRASIL_PATHS.map((estado) => (
+            <EstadoPath_
+              key={estado.uf}
+              estado={estado}
+              fill={getFill(estado)}
+              isHovered={hoveredUf === estado.uf}
+              anyHovered={anyHovered}
+              onMouseEnter={handleMouseEnter}
+              onMouseLeave={handleMouseLeave}
+              onMouseMove={handleMouseMove}
+            />
+          ))}
+
+          {/* Labels de UF */}
+          {BRASIL_PATHS.map((estado) => (
+            <text
+              key={`label-${estado.uf}`}
+              x={estado.centroid[0]}
+              y={estado.centroid[1]}
+              textAnchor="middle"
+              dominantBaseline="middle"
+              className="fill-white font-black pointer-events-none select-none"
+              style={{ fontSize: "11px", paintOrder: "stroke", stroke: "rgba(0,0,0,0.3)", strokeWidth: "2.5px" }}
+            >
+              {estado.uf}
+            </text>
+          ))}
+        </svg>
+      </div>
+
+      {/* Legenda */}
+      <div className="w-full mt-6 py-4 flex flex-wrap gap-x-6 gap-y-2 text-[10px] sm:text-xs justify-center shrink-0 border-t border-gray-100">
         {renderLegenda()}
       </div>
 
+      {/* Tooltip*/}
       {tooltip.visible && (
         <div
           style={{
@@ -335,13 +260,13 @@ export function BrasilMap() {
             top: tooltip.y + 12,
             left: tooltip.x + 12,
             pointerEvents: "none",
-            backgroundColor: "#202ad0",
-            zIndex: 50,
+            backgroundColor: "var(--primary)",
+            zIndex: 9999,
           }}
-          className="text-white text-xs px-3 py-2 rounded shadow-lg"
+          className="text-white text-xs px-4 py-3 rounded-xl shadow-2xl backdrop-blur-md border border-white/10"
         >
           {tooltip.lines.map((line, i) => (
-            <div key={i} className={i === 0 ? "font-bold mb-1" : ""}>
+            <div key={i} className={i === 0 ? "font-black text-secondary border-b border-white/10 mb-1 pb-1 uppercase tracking-wider" : "opacity-90 py-0.5"}>
               {line}
             </div>
           ))}
