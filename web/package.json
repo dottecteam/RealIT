@@ -11,7 +11,6 @@
   "dependencies": {
     "apexcharts": "^5.10.4",
     "lucide-react": "^0.469.0",
-    "mapa-brasil": "^1.0.6",
     "next": "16.2.1",
     "react": "19.2.4",
     "react-apexcharts": "^2.1.0",
