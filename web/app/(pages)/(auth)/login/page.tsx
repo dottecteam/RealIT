@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { Logo } from "../../../components/Logo";
 import { Mail, Lock, ArrowRight, Loader2, AlertCircle } from "lucide-react";
@@ -10,9 +10,18 @@ export default function LoginPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+  const [isCheckingAuth, setIsCheckingAuth] = useState(true);
   const [error, setError] = useState("");
   const router = useRouter();
 
+  useEffect(() => {
+    const token = localStorage.getItem('@RealIT:token');
+    if (token) {
+      router.push('/app');
+    } else {
+      setIsCheckingAuth(false);
+    }
+  }, [router]);
 
   const validateFrontend = () => {
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -129,9 +138,9 @@ export default function LoginPage() {
           <footer className="mt-8 pt-6 border-t border-gray-50 text-center">
             <p className="text-sm text-gray-400 font-medium">
               Não tem acesso?{" "}
-              <button className="text-primary font-black hover:underline">
+              <a className="text-primary font-black hover:underline" href="/solicite">
                 Solicite ao administrador
-              </button>
+              </a>
             </p>
           </footer>
         </div>
