@@ -11,7 +11,7 @@ export function KPICard({ label, val, change, icon: Icon, color }: KPICardProps)
       </div>
       <p className="text-3xl font-black text-gray-900 tracking-tighter">{val}</p>
       <p className="text-xs mt-2 font-bold" style={{ color: color }}>
-        {change} <span className="text-gray-400 font-medium">vs mês anterior</span>
+        {change}
       </p>
     </div>
   );

@@ -43,7 +43,17 @@ export async function processAllScores(userId: number, filters: { uf?: string, m
         bonus: { min: Math.min(...inclusaoTotal.map(i => i.bonusDemografico)), max: Math.max(...inclusaoTotal.map(i => i.bonusDemografico)) },
     };
 
-    const base = filters.uf ? riscoTotal.filter(r => r.uf === filters.uf) : riscoTotal;
+    // Pega apenas o mês mais recente por UF para evitar dados repetidos no ranking
+    const maisRecentePorUf = new Map<string, typeof riscoTotal[0]>();
+    for (const r of riscoTotal) {
+        const atual = maisRecentePorUf.get(r.uf);
+        if (!atual || r.mesAno > atual.mesAno) {
+            maisRecentePorUf.set(r.uf, r);
+        }
+    }
+    const base = filters.uf
+        ? [...maisRecentePorUf.values()].filter(r => r.uf === filters.uf)
+        : [...maisRecentePorUf.values()];
 
     return base.map(r => {
         const inc = inclusaoTotal.find(i => i.uf === r.uf && i.mesAno === r.mesAno);

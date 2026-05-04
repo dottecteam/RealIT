@@ -1,6 +1,5 @@
 "use client"
 import { useMemo } from "react"
-import { ChartCard } from "./ChartCard"
 import { ReactApexChart } from "../hooks/useApexChart"
 import { createLineOptions } from "../services/ApexCharts/createLineOptions"
 import { CORES_DEFAULT_EVO, DASHES_DEFAULT_EVO } from "../constants/ChartOptions"
@@ -15,6 +14,12 @@ export function EvolucaoScoresChart({ categorias, series, cores, dashArray }: Ev
   }), [categorias, cores, dashArray])
 
   return (
-    <ReactApexChart options={options} series={series} type="line" height="100%" width="100%" />
+    <div className="w-full flex flex-col items-center">
+      <div className="w-full overflow-x-auto scrollbar-hide">
+        <div style={{ minWidth: 500 }} className="h-[350px]">
+          <ReactApexChart options={options} series={series} type="line" height="100%" width="100%" />
+        </div>
+      </div>
+    </div>
   )
 }

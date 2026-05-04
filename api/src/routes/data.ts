@@ -26,4 +26,6 @@ routerData.get('/inclusion-expansion', sessionMiddleware, dataRead.getInclusionE
 routerData.get('/pix-structure', sessionMiddleware, dataRead.getPixStructure);
 routerData.get('/ibge-structure', sessionMiddleware, dataRead.getIBGEStructure);
 
+routerData.get('/dashboard-charts', sessionMiddleware, dataRead.getDashboardCharts);
+
 export default routerData;

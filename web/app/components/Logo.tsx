@@ -4,7 +4,7 @@ import LogoProps from "../types/components/Logo";
 export function Logo({ color, size, secondaryColor }: LogoProps) {
     return (
         <Link 
-            href="/home" 
+            href="/" 
             className="font-black tracking-tighter flex items-center transition-opacity hover:opacity-90"
             style={{ 
                 fontSize: size ? `${size}px` : "1.5rem"

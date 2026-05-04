@@ -32,6 +32,9 @@ DATABASE_URL="file:./dev.db"
 PORT=3000
 NODE_ENV=development
 
+# Rota do frontend
+CORS_ORIGIN="http://localhost:3000"
+
 # Segurança
 JWT_SECRET="sua_chave_secreta_aqui"
 JWT_EXPIRES_IN="1d"

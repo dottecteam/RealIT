@@ -57,7 +57,8 @@ export async function login(request: Request, response: Response) {
                 id: user.id,
                 name: user.name,
                 email: user.email,
-                status: user.status
+                status: user.status,
+                role: user.role
             }
         })
     } catch (error) {
