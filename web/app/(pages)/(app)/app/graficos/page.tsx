@@ -10,73 +10,70 @@ import { EvolucaoScoresChart } from "../../../../components/EvolucaoScoresChart"
 import { ProjecaoScoreChart } from "../../../../components/ProjecaoScoreChart";
 import { MapProvider } from "../../../../contexts/MapContext";
 import { ChartCard } from "../../../../components/ChartCard";
-import { Timer, Loader2 } from "lucide-react";
-
-import { useApiData } from "../../../../hooks/useApiData";
+import { Loader2 } from "lucide-react";
+import { useApiData } from "../../../../hooks/useApiData"; 
 import { CATEGORIAS, REGIOES } from "../../../../constants/ChartOptions";
 
 export default function AnalyticsPage() {
+  // Chamada única para o endpoint agregador da API
   const { data: dashboardData, isLoading } = useApiData<any>('/data/dashboard-charts');
 
-  // Mapeamento para o Eixo I (Risco de Crédito)
+  // --- 1. MAPEAMENTO DE DADOS POR UF (RANKING) ---
+  
+  // Eixo I: Risco de Crédito
   const seriesEixoI = useMemo(() => {
     if (!dashboardData?.ranking) return [];
-    const scores = CATEGORIAS.map(uf => {
-      const state = dashboardData.ranking.find((d: any) => d.uf === uf);
-      // Garanta que o campo 'score_eixo_i' seja o que o backend envia
-      return state ? state.score_eixo_i : 0;
+    const scores = CATEGORIAS.map(ufSigla => {
+      const item = dashboardData.ranking.find((d: any) => d.uf === ufSigla);
+      return item ? item.score_eixo_i : 0;
     });
     return [{ name: "Risco de Crédito (RC)", data: scores }];
   }, [dashboardData]);
 
+  // Eixo II: Inclusão e Expansão[cite: 4]
   const seriesEixoII = useMemo(() => {
     if (!dashboardData?.ranking) return [];
-    const scores = CATEGORIAS.map(uf => {
-      const state = dashboardData.ranking.find((d: any) => d.uf === uf);
-      return state ? state.score_eixo_ii : 0;
+    const scores = CATEGORIAS.map(ufSigla => {
+      const item = dashboardData.ranking.find((d: any) => d.uf === ufSigla);
+      return item ? item.score_eixo_ii : 0;
     });
     return [{ name: "Inclusão e Expansão (IE)", data: scores }];
   }, [dashboardData]);
 
+
   const { seriesRegiaoI, seriesRegiaoII } = useMemo(() => {
     if (!dashboardData?.ranking) return { seriesRegiaoI: [], seriesRegiaoII: [] };
 
-    const calcMedia = (regiaoNome: string, eixo: 'score_eixo_i' | 'score_eixo_ii') => {
+    const calcMedias = REGIOES.map(regiaoNome => {
       const searchName = regiaoNome === "C-Oeste" ? "Centro-Oeste" : regiaoNome;
-
-      const estadosDaRegiao = dashboardData.ranking.filter((d: any) => d.regiao === searchName);
-      if (estadosDaRegiao.length === 0) return 0;
-
-      const soma = estadosDaRegiao.reduce((acc: number, curr: any) => acc + curr[eixo], 0);
-      return Number((soma / estadosDaRegiao.length).toFixed(2));
-    };
-
-    const scoresRegiaoI = REGIOES.map(regiao => calcMedia(regiao, 'score_eixo_i'));
-    const scoresRegiaoII = REGIOES.map(regiao => calcMedia(regiao, 'score_eixo_ii'));
+      const estados = dashboardData.ranking.filter((d: any) => d.regiao === searchName);
+      
+      if (estados.length === 0) return { r: 0, i: 0 };
+      
+      const somaI = estados.reduce((acc: number, curr: any) => acc + curr.score_eixo_i, 0);
+      const somaII = estados.reduce((acc: number, curr: any) => acc + curr.score_eixo_ii, 0);
+      
+      return {
+        r: Number((somaI / estados.length).toFixed(2)),
+        i: Number((somaII / estados.length).toFixed(2))
+      };
+    });
 
     return {
-      seriesRegiaoI: [{ name: "RC Médio Regional", data: scoresRegiaoI }],
-      seriesRegiaoII: [{ name: "IE Médio Regional", data: scoresRegiaoII }]
+      seriesRegiaoI: [{ name: "RC Médio Regional", data: calcMedias.map(m => m.r) }],
+      seriesRegiaoII: [{ name: "IE Médio Regional", data: calcMedias.map(m => m.i) }]
     };
   }, [dashboardData]);
 
-  const evolutionData = dashboardData?.history;
-
-
-  // ==========================================
-  // 2. DADOS ZERADOS (Projeção Preditiva)
-  // ==========================================
-  // Apenas a projeção fica zerada pois depende de lógica futura no backend
-  const mockProjecaoZerado = [
-    { name: "RC Histórico", data: [0, 0, 0, 0, 0, 0] },
-    { name: "RC Projeção", data: [0, 0, 0, 0, 0, 0] }
+  const mockProjecao = [
+    { name: "Histórico", data: [0,0,0,0,0,0] },
+    { name: "Projeção", data: [0,0,0,0,0,0] }
   ];
 
   return (
     <MapProvider>
       <div className="flex flex-col gap-8 sm:pb-15 animate-in fade-in duration-700">
-
-        {/* Cabeçalho de Contexto */}
+        
         <header className="flex flex-col xl:flex-row justify-between items-start xl:items-center gap-6 border-b border-gray-100">
           <div className="space-y-1">
             <h1 className="text-3xl font-black text-primary tracking-tighter uppercase leading-none">
@@ -92,97 +89,80 @@ export default function AnalyticsPage() {
           </div>
         </header>
 
-        {/* Grid Principal: Mapa e Rankings Regionais */}
+        {/* Grid do Mapa e Rankings Regionais */}
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
           <div className="lg:col-span-8 group">
             <div className="card-base bg-white h-full border border-transparent hover:border-primary/10 transition-all duration-500 shadow-xl">
+              {/* Mapa recebe o array de ranking para o modo Heatmap[cite: 4] */}
               <BrasilMap data={dashboardData?.ranking || []} />
             </div>
           </div>
 
           <div className="lg:col-span-4 flex flex-col gap-6">
-            <ChartCard title="Risco Regional (Eixo I)" info="Média ponderada de inadimplência e fragilidade.">
+            <ChartCard title="Risco Regional (Eixo I)">
               <div className="h-[250px] mt-4">
-                {isLoading ? (
-                  <div className="flex justify-center items-center h-full"><Loader2 className="animate-spin text-primary" /></div>
-                ) : (
-                  <RankingChart series={seriesRegiaoI} title={""} />
-                )}
+                {isLoading ? <Loader2 className="animate-spin m-auto" /> : <RankingChart series={seriesRegiaoI} title="" />}
               </div>
             </ChartCard>
-            <ChartCard title="Inclusão Regional (Eixo II)" info="Nível de maturidade digital e crescimento.">
+
+            <ChartCard title="Inclusão Regional (Eixo II)">
               <div className="h-[250px] mt-4">
-                {isLoading ? (
-                  <div className="flex justify-center items-center h-full"><Loader2 className="animate-spin text-primary" /></div>
-                ) : (
-                  <RankingChart series={seriesRegiaoII} title={""} />
-                )}
+                {isLoading ? <Loader2 className="animate-spin m-auto" /> : <RankingChart series={seriesRegiaoII} title="" />}
               </div>
             </ChartCard>
           </div>
         </div>
 
-        {/* Seção de Séries Temporais e Projeções */}
+        {/* Séries Temporais e Projeções */}
         <section className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-          <ChartCard title="Evolução Temporal dos Scores" info="Análise do comportamento histórico dos índices.">
-            <div className="p-2 space-y-4">
+          <ChartCard title="Evolução Temporal dos Scores" info="Histórico das variáveis macroeconômicas.">
+            <div className="p-2">
               {isLoading ? (
-                <div className="flex justify-center items-center h-[280px]">
-                  <Loader2 className="animate-spin text-primary w-8 h-8" />
-                </div>
+                <div className="h-[280px] flex"><Loader2 className="animate-spin m-auto" /></div>
               ) : (
-                <EvolucaoScoresChart
-                  categorias={evolutionData?.categories || []}
-                  series={evolutionData?.series || []}
+                <EvolucaoScoresChart 
+                  categorias={dashboardData?.history?.categories || []} 
+                  series={dashboardData?.history?.series || []} 
                 />
               )}
             </div>
           </ChartCard>
 
-          <ChartCard title="Modelagem Preditiva" info="Projeção baseada em regressão linear simples.">
+          <ChartCard title="Modelagem Preditiva" info="Tendência baseada em regressão linear.">
             <div className="p-2">
-              <ProjecaoScoreChart categorias={["Jan/24", "Abr/24", "Jul/24", "Out/24", "Jan/25", "Abr/25"]} marcadorProjecao="Jul/24" series={mockProjecaoZerado} />
+              <ProjecaoScoreChart 
+                categorias={["Jan/24", "Abr/24", "Jul/24", "Out/24", "Jan/25", "Abr/25"]} 
+                marcadorProjecao="Jul/24" 
+                series={mockProjecao} 
+              />
             </div>
           </ChartCard>
         </section>
 
-        {/* Seção Final: Ranking Detalhado UF */}
+        {/* Ranking Detalhado por UF */}
         <section className="space-y-6 pt-4">
           <div className="flex items-center gap-4">
             <div className="h-10 w-2 bg-secondary rounded-full" />
             <div>
               <h2 className="text-2xl font-black text-gray-900 tracking-tight uppercase">Ranking por Estado</h2>
-              <p className="text-sm text-gray-400 font-medium">Comparativo granular de performance entre as 27 UFs.</p>
+              <p className="text-sm text-gray-400 font-medium">Comparativo granular entre as 27 UFs.</p>
             </div>
           </div>
-
+          
           <div className="grid grid-cols-1 gap-8">
             <ChartCard title="Performance de Crédito por UF (Eixo I)">
               <div className="mt-4 overflow-hidden rounded-xl border border-gray-50">
-                {isLoading ? (
-                  <div className="flex justify-center items-center h-[450px]">
-                    <Loader2 className="animate-spin text-primary w-8 h-8" />
-                  </div>
-                ) : (
-                  <RankingStates series={seriesEixoI} />
-                )}
+                {isLoading ? <Loader2 className="animate-spin m-auto" /> : <RankingStates series={seriesEixoI} />}
               </div>
             </ChartCard>
 
             <ChartCard title="Maturidade de Mercado por UF (Eixo II)">
-              <div className="mt-4 overflow-hidden rounded-xl border border-gray-50">
-                {isLoading ? (
-                  <div className="flex justify-center items-center h-[450px]">
-                    <Loader2 className="animate-spin text-primary w-8 h-8" />
-                  </div>
-                ) : (
-                  <RankingStates series={seriesEixoII} />
-                )}
+              <div className="mt-4 overflow-hidden rounded-xl border border-gray-100">
+                {isLoading ? <Loader2 className="animate-spin m-auto" /> : <RankingStates series={seriesEixoII} />}
               </div>
             </ChartCard>
           </div>
         </section>
-
       </div>
     </MapProvider>
   );
