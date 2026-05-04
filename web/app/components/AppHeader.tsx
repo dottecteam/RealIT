@@ -27,7 +27,7 @@ export function AppHeader({
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
-  const handleLogout = async () => {
+ const handleLogout = async () => {
     try {
       await api.post('/auth/logout');
     } catch (error) {
@@ -35,7 +35,9 @@ export function AppHeader({
     } finally {
       localStorage.removeItem('@RealIT:token');
       localStorage.removeItem('@RealIT:user');
-      router.push('/login');
+      
+      sessionStorage.clear();
+      window.location.href = '/';
     }
   };
 

@@ -1,19 +1,77 @@
+"use client";
+
+import { useMemo } from "react";
 import { RankingChart } from "../../../../components/RankingChart";
 import { BrasilMap } from "../../../../components/BrasilMap";
 import FilterBar from "../../../../components/FilterBar";
 import RegionFilter from "../../../../components/RegionFilter";
 import { RankingStates } from "../../../../components/RankingStates";
-import { dadosEixoI_Ranking, dadosEixoII_Ranking, dadosEixoI_Score, dadosEixoII_Score } from "../../../../mocks/chartData";
 import { EvolucaoScoresChart } from "../../../../components/EvolucaoScoresChart";
 import { ProjecaoScoreChart } from "../../../../components/ProjecaoScoreChart";
 import { MapProvider } from "../../../../contexts/MapContext";
 import { ChartCard } from "../../../../components/ChartCard";
-import { Timer } from "lucide-react";
+import { Timer, Loader2 } from "lucide-react";
 
-const periodos = ["Jan/22", "Abr/22", "Jul/22", "Out/22", "Jan/23", "Abr/23", "Jul/23", "Out/23", "Jan/24", "Abr/24", "Jul/24"]
-const mesesProjecao = ["Jan/23", "Abr/23", "Jul/23", "Out/23", "Jan/24", "Abr/24", "Jul/24", "Out/24", "Jan/25", "Abr/25", "Jul/25"]
+import { useApiData } from "../../../../hooks/useApiData";
+import { CATEGORIAS, REGIOES } from "../../../../constants/ChartOptions";
 
 export default function AnalyticsPage() {
+  const { data: dashboardData, isLoading } = useApiData<any>('/data/dashboard-charts');
+
+  // Mapeamento para o Eixo I (Risco de Crédito)
+  const seriesEixoI = useMemo(() => {
+    if (!dashboardData?.ranking) return [];
+    const scores = CATEGORIAS.map(uf => {
+      const state = dashboardData.ranking.find((d: any) => d.uf === uf);
+      // Garanta que o campo 'score_eixo_i' seja o que o backend envia
+      return state ? state.score_eixo_i : 0;
+    });
+    return [{ name: "Risco de Crédito (RC)", data: scores }];
+  }, [dashboardData]);
+
+  const seriesEixoII = useMemo(() => {
+    if (!dashboardData?.ranking) return [];
+    const scores = CATEGORIAS.map(uf => {
+      const state = dashboardData.ranking.find((d: any) => d.uf === uf);
+      return state ? state.score_eixo_ii : 0;
+    });
+    return [{ name: "Inclusão e Expansão (IE)", data: scores }];
+  }, [dashboardData]);
+
+  const { seriesRegiaoI, seriesRegiaoII } = useMemo(() => {
+    if (!dashboardData?.ranking) return { seriesRegiaoI: [], seriesRegiaoII: [] };
+
+    const calcMedia = (regiaoNome: string, eixo: 'score_eixo_i' | 'score_eixo_ii') => {
+      const searchName = regiaoNome === "C-Oeste" ? "Centro-Oeste" : regiaoNome;
+
+      const estadosDaRegiao = dashboardData.ranking.filter((d: any) => d.regiao === searchName);
+      if (estadosDaRegiao.length === 0) return 0;
+
+      const soma = estadosDaRegiao.reduce((acc: number, curr: any) => acc + curr[eixo], 0);
+      return Number((soma / estadosDaRegiao.length).toFixed(2));
+    };
+
+    const scoresRegiaoI = REGIOES.map(regiao => calcMedia(regiao, 'score_eixo_i'));
+    const scoresRegiaoII = REGIOES.map(regiao => calcMedia(regiao, 'score_eixo_ii'));
+
+    return {
+      seriesRegiaoI: [{ name: "RC Médio Regional", data: scoresRegiaoI }],
+      seriesRegiaoII: [{ name: "IE Médio Regional", data: scoresRegiaoII }]
+    };
+  }, [dashboardData]);
+
+  const evolutionData = dashboardData?.history;
+
+
+  // ==========================================
+  // 2. DADOS ZERADOS (Projeção Preditiva)
+  // ==========================================
+  // Apenas a projeção fica zerada pois depende de lógica futura no backend
+  const mockProjecaoZerado = [
+    { name: "RC Histórico", data: [0, 0, 0, 0, 0, 0] },
+    { name: "RC Projeção", data: [0, 0, 0, 0, 0, 0] }
+  ];
+
   return (
     <MapProvider>
       <div className="flex flex-col gap-8 sm:pb-15 animate-in fade-in duration-700">
@@ -28,7 +86,6 @@ export default function AnalyticsPage() {
               Cruzamento de dados públicos e variáveis de crédito por UF.
             </p>
           </div>
-
           <div className="flex flex-col sm:flex-row items-center gap-4 w-full md:w-auto">
             <RegionFilter />
             <FilterBar />
@@ -37,30 +94,29 @@ export default function AnalyticsPage() {
 
         {/* Grid Principal: Mapa e Rankings Regionais */}
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
-          {/* Widget do Mapa - Destaque Principal */}
           <div className="lg:col-span-8 group">
             <div className="card-base bg-white h-full border border-transparent hover:border-primary/10 transition-all duration-500 shadow-xl">
-              <BrasilMap />
+              <BrasilMap data={dashboardData?.ranking || []} />
             </div>
           </div>
 
-          {/* Widget lateral de Rankings Regionais */}
           <div className="lg:col-span-4 flex flex-col gap-6">
-            <ChartCard
-              title="Risco Regional (Eixo I)"
-              info="Média ponderada de inadimplência e fragilidade de renda por região."
-            >
+            <ChartCard title="Risco Regional (Eixo I)" info="Média ponderada de inadimplência e fragilidade.">
               <div className="h-[250px] mt-4">
-                <RankingChart series={dadosEixoI_Score} title={""} />
+                {isLoading ? (
+                  <div className="flex justify-center items-center h-full"><Loader2 className="animate-spin text-primary" /></div>
+                ) : (
+                  <RankingChart series={seriesRegiaoI} title={""} />
+                )}
               </div>
             </ChartCard>
-
-            <ChartCard
-              title="Inclusão Regional (Eixo II)"
-              info="Nível de maturidade digital e crescimento populacional regional."
-            >
+            <ChartCard title="Inclusão Regional (Eixo II)" info="Nível de maturidade digital e crescimento.">
               <div className="h-[250px] mt-4">
-                <RankingChart series={dadosEixoII_Score} title={""} />
+                {isLoading ? (
+                  <div className="flex justify-center items-center h-full"><Loader2 className="animate-spin text-primary" /></div>
+                ) : (
+                  <RankingChart series={seriesRegiaoII} title={""} />
+                )}
               </div>
             </ChartCard>
           </div>
@@ -68,30 +124,24 @@ export default function AnalyticsPage() {
 
         {/* Seção de Séries Temporais e Projeções */}
         <section className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-          <ChartCard
-            title="Evolução Temporal dos Scores"
-            info="Análise do comportamento histórico dos índices RC e IE."
-          >
+          <ChartCard title="Evolução Temporal dos Scores" info="Análise do comportamento histórico dos índices.">
             <div className="p-2 space-y-4">
-              <EvolucaoScoresChart categorias={periodos} series={[{ name: "RC — Nacional", data: [2.4, 2.3, 2.1, 2.2, 2.2, 2.0] }]} />
-              <div className="bg-gray-50 p-4 rounded-2xl flex items-start gap-3">
-                <Timer className="w-5 h-5 text-primary mt-0.5" />
-                <p className="text-[11px] text-gray-500 leading-relaxed">
-                  <strong>Insight:</strong> A estabilidade observada no Eixo I sugere uma recuperação da capacidade de pagamento média nas metrópoles.
-                </p>
-              </div>
+              {isLoading ? (
+                <div className="flex justify-center items-center h-[280px]">
+                  <Loader2 className="animate-spin text-primary w-8 h-8" />
+                </div>
+              ) : (
+                <EvolucaoScoresChart
+                  categorias={evolutionData?.categories || []}
+                  series={evolutionData?.series || []}
+                />
+              )}
             </div>
           </ChartCard>
 
-          <ChartCard
-            title="Modelagem Preditiva"
-            info="Projeção baseada em regressão linear simples sobre dados do último semestre."
-          >
+          <ChartCard title="Modelagem Preditiva" info="Projeção baseada em regressão linear simples.">
             <div className="p-2">
-              <ProjecaoScoreChart categorias={mesesProjecao} marcadorProjecao="Jul/24" series={[
-                { name: "RC Histórico", data: [2.0, 2.1, 1.9, 1.8, null, null] },
-                { name: "RC Projeção", data: [null, null, null, 1.8, 1.7, 1.6] }
-              ]} />
+              <ProjecaoScoreChart categorias={["Jan/24", "Abr/24", "Jul/24", "Out/24", "Jan/25", "Abr/25"]} marcadorProjecao="Jul/24" series={mockProjecaoZerado} />
             </div>
           </ChartCard>
         </section>
@@ -102,39 +152,38 @@ export default function AnalyticsPage() {
             <div className="h-10 w-2 bg-secondary rounded-full" />
             <div>
               <h2 className="text-2xl font-black text-gray-900 tracking-tight uppercase">Ranking por Estado</h2>
-              <p className="text-sm text-gray-400 font-medium">Comparativo granular de performance entre as 27 unidades federativas.</p>
+              <p className="text-sm text-gray-400 font-medium">Comparativo granular de performance entre as 27 UFs.</p>
             </div>
           </div>
 
           <div className="grid grid-cols-1 gap-8">
             <ChartCard title="Performance de Crédito por UF (Eixo I)">
               <div className="mt-4 overflow-hidden rounded-xl border border-gray-50">
-                <RankingStates series={dadosEixoI_Ranking} />
-              </div>
-              <div className="mt-6 grid grid-cols-1 md:grid-cols-3 gap-4 border-t border-gray-100 pt-6">
-                <div className="text-center p-4 bg-gray-50 rounded-2xl">
-                  <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Líder do Eixo</p>
-                  <p className="text-xl font-bold text-primary">São Paulo</p>
-                </div>
-                <div className="text-center p-4 bg-gray-50 rounded-2xl">
-                  <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Menor Inadimplência</p>
-                  <p className="text-xl font-bold text-success">Santa Catarina</p>
-                </div>
-                <div className="text-center p-4 bg-gray-50 rounded-2xl">
-                  <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Maior Fragilidade</p>
-                  <p className="text-xl font-bold text-error">Piauí</p>
-                </div>
+                {isLoading ? (
+                  <div className="flex justify-center items-center h-[450px]">
+                    <Loader2 className="animate-spin text-primary w-8 h-8" />
+                  </div>
+                ) : (
+                  <RankingStates series={seriesEixoI} />
+                )}
               </div>
             </ChartCard>
 
             <ChartCard title="Maturidade de Mercado por UF (Eixo II)">
               <div className="mt-4 overflow-hidden rounded-xl border border-gray-50">
-                <RankingStates series={dadosEixoII_Ranking} />
+                {isLoading ? (
+                  <div className="flex justify-center items-center h-[450px]">
+                    <Loader2 className="animate-spin text-primary w-8 h-8" />
+                  </div>
+                ) : (
+                  <RankingStates series={seriesEixoII} />
+                )}
               </div>
             </ChartCard>
           </div>
         </section>
+
       </div>
     </MapProvider>
-  )
+  );
 }

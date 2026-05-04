@@ -112,3 +112,78 @@ export async function getIBGEStructure(req: Request, res: Response) {
         return res.status(500).json({ error: 'Failed to fetch IBGE structure data' });
     }
 }
+
+export async function getDashboardCharts(req: Request, res: Response) {
+    try {
+        const { uf, regiao } = req.query;
+        const ufStr = uf ? String(uf) : undefined;
+        const regiaoStr = regiao ? String(regiao) : undefined;
+
+        const [allScores, riscoRaw, inclusaoRaw] = await Promise.all([
+            scoreService.processAllScores((req as any).userId, req.query),
+            prisma.riscoCredito.findMany({
+                where: { uf: ufStr, regiao: regiaoStr },
+                orderBy: { mesAno: 'asc' }
+            }),
+            prisma.inclusaoExpansao.findMany({
+                where: { uf: ufStr, regiao: regiaoStr },
+                orderBy: { mesAno: 'asc' }
+            })
+        ]);
+
+
+        const agruparPorMes = (dados: any[]) => {
+            const agrupado = dados.reduce((acc: any, curr: any) => {
+                if (!acc[curr.mesAno]) {
+                    acc[curr.mesAno] = { count: 0, ...curr };
+                } else {
+                    Object.keys(curr).forEach(key => {
+                        if (typeof curr[key] === 'number' && key !== 'id') {
+                            acc[curr.mesAno][key] += curr[key];
+                        }
+                    });
+                }
+                acc[curr.mesAno].count += 1;
+                return acc;
+            }, {});
+
+            return Object.values(agrupado).map((item: any) => {
+                const result: any = { mesAno: item.mesAno };
+                Object.keys(item).forEach(key => {
+                    if (typeof item[key] === 'number' && key !== 'count') {
+                        result[key] = Number((item[key] / item.count).toFixed(2));
+                    }
+                });
+                return result;
+            }).slice(-6); 
+        };
+
+        const riscoOrdenado = agruparPorMes(riscoRaw);
+        const inclusaoOrdenada = agruparPorMes(inclusaoRaw);
+
+        const categories = riscoOrdenado.map((d: any) => d.mesAno);
+
+        const historyFormatted = {
+            categories: categories,
+            series: [
+                { name: "Inadimplência Real", data: riscoOrdenado.map((d: any) => d.inadiplenciaReal || 0) },
+                { name: "Fragilidade Renda", data: riscoOrdenado.map((d: any) => d.fragilidadeRenda || 0) },
+                { name: "Aging da Dívida", data: riscoOrdenado.map((d: any) => d.agingDivida || 0) },
+                { name: "Vulnerabilidade", data: riscoOrdenado.map((d: any) => d.vulnerabilidadeSocial || 0) },
+                
+                { name: "Maturidade PIX", data: inclusaoOrdenada.map((d: any) => d.maturidadePix || 0) },
+                { name: "Cresc. Populacional", data: inclusaoOrdenada.map((d: any) => d.crescimentoPopulacional || 0) },
+                { name: "População Absoluta", data: inclusaoOrdenada.map((d: any) => d.populacaoAbsoluta || 0) },
+                { name: "Bônus Demográfico", data: inclusaoOrdenada.map((d: any) => d.bonusDemografico || 0) }
+            ]
+        };
+
+        return res.json({
+            ranking: allScores,
+            history: historyFormatted
+        });
+    } catch (error) {
+        console.error("Erro no getDashboardCharts:", error);
+        return res.status(500).json({ error: 'Erro ao carregar dados do dashboard' });
+    }
+}
