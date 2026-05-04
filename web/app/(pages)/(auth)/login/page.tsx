@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Logo } from "../../../components/Logo";
-import { Mail, Lock, ArrowRight, Loader2 } from "lucide-react";
+import { Mail, Lock, ArrowRight, Loader2, AlertCircle } from "lucide-react";
 import { signIn } from "../../../services/API/authService";
 
 export default function LoginPage() {
@@ -13,16 +13,41 @@ export default function LoginPage() {
   const [error, setError] = useState("");
   const router = useRouter();
 
+
+  const validateFrontend = () => {
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email)) {
+      setError("E-mail inválido (deve conter @ e domínio)");
+      return false;
+    }
+    if (password.length < 8) {
+      setError("A senha deve ter no mínimo 8 caracteres");
+      return false;
+    }
+    return true;
+  };
+
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
-    setIsLoading(true);
     setError("");
+
+    if (!validateFrontend()) return;
+
+    setIsLoading(true);
 
     try {
       await signIn(email, password);
       router.push("/app");
     } catch (err: any) {
-      setError(err.response?.data?.error || "Ocorreu um erro ao acessar a plataforma.");
+      const apiError = err.response?.data;
+
+      if (err.response?.status === 400 && apiError.detalhes) {
+        setError(apiError.detalhes[0].mensagem);
+      } else if (err.response?.status === 429) {
+        setError(apiError.error || "Muitas tentativas. Tente novamente mais tarde.");
+      } else {
+        setError(apiError?.error || "Credenciais inválidas ou erro na conexão.");
+      }
     } finally {
       setIsLoading(false);
     }
@@ -47,8 +72,9 @@ export default function LoginPage() {
 
           <form onSubmit={handleSubmit} className="space-y-6">
             {error && (
-              <div className="bg-error/10 border border-error/20 text-error text-xs font-bold p-4 rounded-xl animate-in fade-in zoom-in duration-200">
-                {error}
+              <div className="bg-error/10 border border-error/20 text-error text-xs font-bold p-4 rounded-xl flex items-center gap-3 animate-in fade-in zoom-in duration-200">
+                <AlertCircle className="w-4 h-4 shrink-0" />
+                <span>{error}</span>
               </div>
             )}
 
@@ -60,7 +86,6 @@ export default function LoginPage() {
                 <Mail className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-300 group-focus-within:text-primary transition-colors" />
                 <input
                   type="email"
-                  required
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   className="w-full bg-gray-50 border-2 border-gray-50 rounded-2xl py-4 pl-12 pr-4 outline-none focus:bg-white focus:border-primary/20 transition-all font-medium text-gray-700"
@@ -77,7 +102,6 @@ export default function LoginPage() {
                 <Lock className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-300 group-focus-within:text-primary transition-colors" />
                 <input
                   type="password"
-                  required
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   className="w-full bg-gray-50 border-2 border-gray-50 rounded-2xl py-4 pl-12 pr-4 outline-none focus:bg-white focus:border-primary/20 transition-all font-medium text-gray-700"
