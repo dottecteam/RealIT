@@ -1,9 +1,9 @@
 export const REGIAO_COR: Record<string, string> = {
-  Norte: "#68E699",
-  Nordeste: "#FF9A98",
-  Sudeste: "#202AD0",
-  Sul: "#4EDAD3",
-  "Centro-Oeste": "#FFE372",
+  Norte: "var(--success)",
+  Nordeste: "#FF9A98",    
+  Sudeste: "var(--primary)",
+  Sul: "var(--tertiary)",   
+  "Centro-Oeste": "var(--secondary)",
 };
 
 export const UF_COLORS: Record<string, string> = {

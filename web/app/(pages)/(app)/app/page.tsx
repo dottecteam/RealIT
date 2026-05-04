@@ -1,100 +1,59 @@
-import { RankingChart } from "../../../components/RankingChart";
-import { BrasilMap } from "../../../components/BrasilMap";
-import { mockDadosMediaRegiao } from "../../../mocks/score";
-import FilterBar from "../../../components/FilterBar";
-import RegionFilter from "../../../components/RegionFilter";
-import { RankingStates } from "../../../components/RankingStates";
-import { dadosEixoI_Ranking, dadosEixoII_Ranking, dadosEixoI_Score, dadosEixoII_Score } from "../../../mocks/chartData";
-import { EvolucaoScoresChart } from "../../../components/EvolucaoScoresChart";
-import { ProjecaoScoreChart } from "../../../components/ProjecaoScoreChart";
-import { MapProvider } from "../../../contexts/MapContext";
+import { Button } from "../../../components/Button";
+import { Map as MapIcon } from "lucide-react";
+import { KPICard } from "../../../components/KPICard";
+import { InsightCard } from "../../../components/InsightCard";
+import { HOME_KPIS, RECENT_ACTIVITIES } from "../../../mocks/homeData";
 
-const periodos = ["Jan/22","Abr/22","Jul/22","Out/22","Jan/23","Abr/23","Jul/23","Out/23","Jan/24","Abr/24","Jul/24"]
-const mesesProjecao = ["Jan/23","Abr/23","Jul/23","Out/23","Jan/24","Abr/24","Jul/24","Out/24","Jan/25","Abr/25","Jul/25"]
-
-
-export default function Dashboard() {
+export default function DashboardHome() {
   return (
-    <MapProvider>
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mt-4 px-3 sm:px-4 md:px-6 bg-[#F6F6F6]">
+    <div className="flex flex-col gap-8 py-6">
+      <section>
+        <h1 className="text-4xl font-black text-primary tracking-tighter uppercase">Painel Estratégico</h1>
+        <p className="text-gray-500 font-medium mt-1">Bem-vindo de volta. Dados atualizados para <span className="text-primary font-bold">Maio/2026</span>.</p>
+      </section>
 
-        {/* Mapa */}
-        <div className="flex justify-center items-start w-full">
-          <div className="w-full max-w-[900px] aspect-[4/3]">
-            <BrasilMap />
-          </div>
-        </div>
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+        {HOME_KPIS.map((kpi, i) => <KPICard key={i} {...kpi} />)}
+      </div>
 
-        {/* Scores lado a lado */}
-        <div className="flex flex-col gap-6">
-          <div className="flex flex-col sm:flex-row gap-2 w-full">
-            <RegionFilter />
-            <FilterBar />
-          </div>
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        <div className="lg:col-span-2 flex flex-col gap-6">
+          {/* Banner Principal */}
+          <section className="card-base bg-primary relative overflow-hidden p-8 md:p-12 text-white shadow-2xl shadow-primary/20">
+            <div className="relative z-10 max-w-md">
+              <h2 className="text-3xl font-black uppercase mb-4">Explore o Mapa da Inadimplência</h2>
+              <p className="text-white/70 font-medium mb-8 leading-relaxed">Analise o crescimento projetado e movimentos de mercado por região.</p>
+              <Button link="/app/graficos" className="bg-secondary text-primary px-10 py-4 font-black rounded-2xl hover:scale-105">
+                ACESSAR ANÁLISES <MapIcon className="ml-2 w-5 h-5" />
+              </Button>
+            </div>
+            <div className="absolute top-0 right-0 w-64 h-64 bg-white/5 rounded-full -mr-20 -mt-20 blur-3xl" />
+          </section>
 
+          {/* Destaques Regionais */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <RankingChart
-              title="Risco de Crédito"
-              info="Composição do score de risco de crédito para cada região do Brasil."
-              series={dadosEixoI_Score}
-            />
-            <RankingChart
-              title="Inclusão Demográfica"
-              info="Composição do score de inclusão demográfica para cada região do Brasil."
-              series={dadosEixoII_Score}
-            />
+            <InsightCard title="Melhor Performance: Sul" desc="Score IE atingiu pico histórico de 4.2." type="success" />
+            <InsightCard title="Atenção Requerida: SE" desc="Sergipe apresenta elevação atípica no Aging." type="error" />
           </div>
         </div>
-      </div>
-      
-      {/* EVOLUÇÃO E PROJEÇÃO */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 px-3 sm:px-4 md:px-6 mt-6 bg-[#F6F6F6]">
-        <EvolucaoScoresChart
-          categorias={periodos}
-          info="Mostra como o Score de Risco de Crédito e o Score de Inclusão e Expansão de cada região evoluíram ao longo dos períodos disponíveis. Linhas sólidas representam o RC e linhas tracejadas o IE, com uma cor por região. O gráfico permite identificar movimentos estratégicos relevantes — uma região que estava deteriorando e começou a melhorar, ou um mercado que era pouco explorado e está rapidamente se tornando competitivo."
-          series={[
-            { name: "RC — SP", data: [2.4,2.3,2.3,2.2,2.2,2.1,2.1,2.1,2.0,2.0,2.0] },
-            { name: "IE — SP", data: [4.0,4.0,4.1,4.1,4.2,4.2,4.3,4.3,4.3,4.4,4.4] },
-            { name: "RC — RJ", data: [3.2,3.2,3.3,3.3,3.2,3.2,3.1,3.1,3.1,3.0,3.0] },
-            { name: "IE — RJ", data: [3.5,3.5,3.6,3.6,3.7,3.7,3.8,3.8,3.8,3.9,3.9] },
-            { name: "RC — MG", data: [2.8,2.8,2.7,2.7,2.6,2.6,2.5,2.5,2.5,2.4,2.4] },
-            { name: "IE — MG", data: [3.0,3.1,3.1,3.2,3.2,3.3,3.3,3.4,3.4,3.4,3.5] },
-            { name: "RC — ES", data: [2.5,2.5,2.4,2.4,2.3,2.3,2.3,2.2,2.2,2.2,2.1] },
-            { name: "IE — ES", data: [2.8,2.9,2.9,3.0,3.0,3.1,3.2,3.2,3.3,3.3,3.4] },
-          ]}
-        />
-        <ProjecaoScoreChart
-          categorias={mesesProjecao}
-          marcadorProjecao="Jul/24"
-          info="Projeta a trajetória futura dos dois scores consolidados — Risco de Crédito e Inclusão e Expansão — para o estado selecionado. A projeção é calculada a partir dos valores históricos de cada parâmetro, que são estimados individualmente e depois recombinados pela mesma fórmula de normalização e ponderação usada no modelo. O resultado indica se o estado tende a migrar de quadrante estratégico nos próximos períodos, o que é determinante para decisões de timing de entrada ou expansão no mercado."
-          series={[
-            { name: "RC — Histórico", data: [2.4,2.3,2.2,2.2,2.1,2.1,2.0,null,null,null,null] },
-            { name: "RC — Projeção",  data: [null,null,null,null,null,null,2.0,1.9,1.9,1.8,1.8] },
-            { name: "IE — Histórico", data: [3.8,3.9,4.0,4.0,4.1,4.2,4.2,null,null,null,null] },
-            { name: "IE — Projeção",  data: [null,null,null,null,null,null,4.2,4.3,4.3,4.4,4.5] },
-          ]}
-        />
-      </div>
 
-      <br />
-      <br />
-
-      {/* RANKING POR ESTADO */}
-      <div className="px-3 sm:px-6 md:px-10 lg:px-20 mt-10 pb-10 bg-[#F6F6F6]">
-        <h3 className="text-2xl font-black text-[#202AD0] mb-6 text-center">
-          Ranking Geral por Estado
-        </h3>
-        <div className="flex flex-col gap-6">
-          <div>
-            <p className="text-center text-zinc-500 font-bold mb-3 uppercase tracking-wider text-sm">Eixo I</p>
-            <RankingStates series={dadosEixoI_Ranking} />
+        {/* Sidebar de Atividade */}
+        <aside className="card-base bg-white p-6 shadow-sm border border-gray-100">
+          <h3 className="font-black text-primary uppercase text-sm tracking-widest mb-6">Atividade Recente</h3>
+          <div className="space-y-6">
+            {RECENT_ACTIVITIES.map((act, i) => (
+              <div key={i} className="flex gap-4 group cursor-default">
+                <div className="w-1 bg-gray-100 group-hover:bg-primary transition-colors rounded-full" />
+                <div>
+                  <p className="text-sm font-bold text-gray-800">{act.title}</p>
+                  <p className="text-xs text-gray-400">{act.desc}</p>
+                  <p className="text-[10px] text-gray-300 mt-1">{act.time}</p>
+                </div>
+              </div>
+            ))}
           </div>
-          <div>
-            <p className="text-center text-zinc-500 font-bold mb-3 uppercase tracking-wider text-sm">Eixo II</p>
-            <RankingStates series={dadosEixoII_Ranking} />
-          </div>
-        </div>
+        </aside>
       </div>
-    </MapProvider>
-  )
+    </div>
+  );
 }

@@ -9,15 +9,14 @@ export function SidebarItem({ icon, label, isOpen, href, active }: SidebarItemPr
             href={href}
             className={`
                 relative
-                flex flex-col md:flex-row items-center justify-center
+                flex flex-col md:flex-row items-center justify-start
                 gap-1 md:gap-4
-                p-2 md:p-3
+                p-3 md:p-3
                 rounded-xl
                 transition-all group
-                /* 1. Cores e sombras agora usam as variáveis do sistema */
                 ${active
-                ? "text-primary md:bg-primary md:text-white md:shadow-lg md:shadow-primary/20"
-                : "text-gray-500 hover:bg-gray-100 hover:text-primary"}
+                    ? "text-primary md:bg-primary md:text-white md:shadow-lg md:shadow-primary/20"
+                    : "text-gray-500 hover:bg-gray-100 hover:text-primary"}
             `}
         >
             <div className="flex-shrink-0 flex items-center justify-center">
@@ -27,9 +26,13 @@ export function SidebarItem({ icon, label, isOpen, href, active }: SidebarItemPr
             <span
                 className={`
                     text-[10px] md:text-sm font-bold
-                    transition-all duration-300
-                    /* 3. Ajuste de visibilidade para evitar quebra de layout */
-                    ${isOpen ? "md:opacity-100 md:translate-x-0" : "md:opacity-0 md:-translate-x-4 md:hidden"}
+                    whitespace-nowrap
+                    overflow-hidden
+                    transition-all duration-300 ease-in-out
+
+                    ${isOpen
+                                        ? "md:opacity-100 md:translate-x-0 md:max-w-[200px]"
+                                        : "md:opacity-0 md:-translate-x-2 md:max-w-0"}
                 `}
             >
                 {label}

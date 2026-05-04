@@ -30,13 +30,18 @@ export function RankingStates({ series }: { series: SeriesData[] }) {
     }],
   })
   return (
-    <div className="bg-white rounded-[40px] p-4 sm:p-10 flex flex-col items-center w-full">
-      <div className="w-full overflow-x-auto">
+    <div className="w-full flex flex-col items-center">
+      <div className="w-full overflow-x-auto scrollbar-hide">
         <div style={{ minWidth: 900 }} className="h-[450px]">
-          <ReactApexChart options={options} series={series} type="bar" height="100%" width="100%" />
+          <ReactApexChart
+            options={options}
+            series={series}
+            type="bar"
+            height="100%"
+            width="100%"
+          />
         </div>
       </div>
-      <p className="text-xs text-zinc-400 mt-3 sm:hidden">← Deslize para ver todos os estados →</p>
     </div>
   )
 }

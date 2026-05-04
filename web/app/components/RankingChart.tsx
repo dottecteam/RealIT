@@ -6,7 +6,7 @@ import { createBarOptions } from "../services/ApexCharts/createBarOptions"
 import { REGIOES } from "../constants/ChartOptions"
 import { RankingChartProps } from "../types/components/RankingChart"
 
-export function RankingChart({ title, info, series }: RankingChartProps) {
+export function RankingChart({ series }: RankingChartProps) {
   const options = createBarOptions({
   plotOptions: { bar: { columnWidth: "45%" } },
   xaxis: {
@@ -17,8 +17,6 @@ export function RankingChart({ title, info, series }: RankingChartProps) {
   },
 })
   return (
-    <ChartCard title={title} info={info}>
         <ReactApexChart options={options} series={series} type="bar" height="100%" width="100%" />
-    </ChartCard>
   )
 }
