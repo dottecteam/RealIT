@@ -1,23 +1,34 @@
+"use client";
+
 import Link from "next/link";
 import NavlinkProps from "../types/components/Navlink";
+
+interface ExtendedNavlinkProps extends NavlinkProps {
+    onClick?: () => void;
+}
 
 export function Navlink({
     children,
     link,
-    color = "inherit",
+    color,
     hoverColor,
-    className
-}: NavlinkProps) {
+    className,
+    onClick
+}: ExtendedNavlinkProps) {
     return (
         <Link
             href={link}
-            className={`transition-colors flex items-center gap-2 ${className || ""}`}
-            style={{
-                color: color,
-                "--hover-color": hoverColor || "var(--secondary)"
-            } as React.CSSProperties}
+            onClick={onClick}
+            className={`
+                transition-all duration-200 
+                flex items-center gap-2 
+                group
+                ${color || "text-white"} 
+                ${hoverColor || "hover:text-secondary"} 
+                ${className || ""}
+            `}
         >
-            <span className={!hoverColor ? "flex gap-2 hover:text-secondary" : ""}>
+            <span className="flex items-center gap-2 active:opacity-70">
                 {children}
             </span>
         </Link>
