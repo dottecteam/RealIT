@@ -25,8 +25,35 @@ npm install
 Crie um arquivo ```.env``` na raiz da pasta ```/api``` com a URL do banco de dados **(Temporariamente utilizando o SQLite)**
 
 ```bash
+# Banco de Dados
 DATABASE_URL="file:./dev.db"
+
+# Servidor
 PORT=3000
+NODE_ENV=development
+
+# Rota do frontend
+CORS_ORIGIN="http://localhost:3000"
+
+# Segurança
+JWT_SECRET="sua_chave_secreta_aqui"
+JWT_EXPIRES_IN="1d"
+
+# Limites de Requisições
+GLOBAL_LIMIT_WINDOW_MS=1200000
+GLOBAL_LIMIT_MAX=100
+AUTH_LIMIT_MAX=5
+CREATE_ACCOUNT_LIMIT_MAX=10
+```
+
+### 4. Preparar o Prisma
+
+É preciso gerar o conteúdo do Prisma e o migrate caso o primeiro acesso:
+
+```bash
+npx prisma generate
+
+npx prisma migrate dev
 ```
 
 ### 4. Executar em modo de Desenvolvimento

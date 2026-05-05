@@ -1,514 +1,211 @@
-# Documentação Técnica da API
+# Documentação Técnica da API — Real IT
+> **Versão:** Sprint 2
+
+---
 
 ## Visão Geral
 
-API REST construída com **Express + TypeScript**, utilizando **Prisma ORM** com SQLite e autenticação via **JWT**. O servidor sobe na porta `3000` por padrão (configurável via variável de ambiente `PORT`).
+API REST escalável construída com **Express + TypeScript**, utilizando **Prisma ORM** (SQLite) e validação de esquemas com **Zod**. A inteligência de dados foi centralizada em serviços para garantir performance e precisão nos cálculos de mercado.
 
 **Base URL:** `http://localhost:3000`
 
 ---
 
-## Autenticação
+## Autenticação e Segurança
 
-A API utiliza autenticação via **Bearer Token (JWT)**. Rotas protegidas exigem o header:
+A API utiliza **JWT (JSON Web Token)**. O token deve ser enviado no header de todas as rotas protegidas:
 
 ```
 Authorization: Bearer <token>
 ```
 
-O token é obtido na rota `POST /auth/login` e tem validade de **1 dia**.
+### Níveis de Permissão (Roles)
+
+| Role | Descrição |
+|------|-----------|
+| `USER` | Acesso básico a perfil e consulta de análises/scores. |
+| `ADMIN` | Gerenciamento de usuários e ingestão de dados via Google Colab. |
+| `DEV` | Diagnósticos de sistema e reset de banco de dados. |
 
 ---
 
-## Health Check
-
-### `GET /health`
-
-Verifica se a API está no ar.
-
-**Resposta de sucesso `200`:**
-```json
-{ "status": "ok" }
-```
-
----
-
-## Rotas de Autenticação — `/auth`
-
-### `POST /auth/registrar`
-
-Cria um novo usuário.
-
-**Body (JSON):**
-
-| Campo      | Tipo   | Obrigatório | Descrição                          |
-|------------|--------|-------------|-------------------------------------|
-| `name`     | string | Sim         | Nome do usuário                     |
-| `email`    | string | Sim         | E-mail válido                       |
-| `password` | string | Sim         | Senha (mínimo 6 caracteres)         |
-
-**Exemplo de requisição:**
-```json
-{
-  "name": "João Silva",
-  "email": "joao@email.com",
-  "password": "senha123"
-}
-```
-
-**Resposta de sucesso `201`:**
-```json
-{
-  "message": "Usuario criado com sucesso",
-  "user": {
-    "id": "clxyz...",
-    "name": "João Silva",
-    "email": "joao@email.com"
-  }
-}
-```
-
-**Respostas de erro:**
-
-| Status | Mensagem                        | Motivo                         |
-|--------|---------------------------------|--------------------------------|
-| `400`  | `Todos os campos são obrigatórios` | Campo ausente no body       |
-| `409`  | `Email já cadastrado`           | E-mail duplicado               |
-
----
+## Módulo de Autenticação — `/auth`
 
 ### `POST /auth/login`
+Gera token JWT e registra log de acesso.
 
-Autentica um usuário e retorna o token JWT.
-
-**Body (JSON):**
-
-| Campo      | Tipo   | Obrigatório |
-|------------|--------|-------------|
-| `email`    | string | Sim         |
-| `password` | string | Sim         |
-
-**Exemplo de requisição:**
-```json
-{
-  "email": "joao@email.com",
-  "password": "senha123"
-}
-```
-
-**Resposta de sucesso `200`:**
-```json
-{
-  "message": "Login realizado com sucesso",
-  "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
-  "user": {
-    "id": "clxyz...",
-    "name": "João Silva",
-    "email": "joao@email.com"
-  }
-}
-```
-
-**Respostas de erro:**
-
-| Status | Mensagem                          | Motivo                               |
-|--------|-----------------------------------|--------------------------------------|
-| `400`  | `Todos os campos são obrigatórios` | Campo ausente no body               |
-| `401`  | `Usuário não encontrado`          | E-mail não cadastrado ou senha errada |
+### `POST /auth/logout`
+Invalida a sessão e encerra o token atual.
 
 ---
 
-### `GET /auth/me` 🔒
+## Módulo de Ingestão e Dados — `/data`
 
-Retorna os dados do usuário autenticado. **Requer token.**
-
-**Resposta de sucesso `200`:**
-```json
-{
-  "user": {
-    "id": "clxyz...",
-    "name": "João Silva",
-    "email": "joao@email.com"
-  }
-}
-```
-
-**Respostas de erro:**
-
-| Status | Mensagem                      | Motivo                    |
-|--------|-------------------------------|---------------------------|
-| `401`  | `Token não fornecido`         | Header Authorization ausente |
-| `401`  | `Token inválido ou expirado`  | Token inválido ou expirado |
+Este módulo permite a alimentação do banco de dados (via Google Colab/Admin) e o consumo de análises para o Dashboard. Todas as rotas exigem `sessionMiddleware`.
 
 ---
 
-### `GET /auth/listar-usuarios`
+### Ingestão de Dados — Apenas `ADMIN`
 
-Lista todos os usuários cadastrados.
-
-**Resposta de sucesso `200`:**
-```json
-[
-  {
-    "id": "clxyz...",
-    "name": "João Silva",
-    "email": "joao@email.com",
-    "password": "..."
-  }
-]
-```
+| Endpoint | Descrição |
+|----------|-----------|
+| `POST /data/import-monthly` | Ingestão em massa (Bulk) que processa simultaneamente Risco, Inclusão, PIX e IBGE em uma única transação. |
+| `POST /data/credit-risk` | Ingestão específica de arrays de dados de Risco de Crédito. |
+| `POST /data/inclusion-expansion` | Ingestão específica de dados de Inclusão e Expansão. |
+| `POST /data/pix-structure` | Ingestão específica da estrutura de transações PIX. |
+| `POST /data/ibge-structure` | Ingestão de indicadores demográficos e educacionais do IBGE. |
 
 ---
 
-## Rotas de Dados — `/dados`
+### Consulta de Análises
 
-Todas as rotas de `POST` possuem validação do body via Zod. Em caso de falha na validação, a resposta será:
+#### `GET /data/score`
+Retorna os scores calculados (Eixo I e II) e a categoria estratégica por UF.
 
-**Resposta de erro de validação `400`:**
-```json
-{
-  "error": "Campos obrigatórios faltando ou com formato inválido",
-  "detalhes": [
-    {
-      "campo": "uf",
-      "mensagem": "UF deve ter exatamente 2 letras"
-    }
-  ]
-}
-```
+| Parâmetro | Tipo | Obrigatório | Descrição |
+|-----------|------|-------------|-----------|
+| `uf` | query | Não | Filtra por Unidade Federativa. |
+
+> **Diferencial:** Retorna a categoria estratégica (ex: `DIAMANTE BRUTO`) baseada na matriz de decisão.
 
 ---
 
-### `POST /dados/receber-dados`
+#### `GET /data/summary`
+Resumo consolidado de todos os indicadores filtrados por `uf` ou `regiao`.
 
-Recebe dados do SCR (Sistema de Informações de Crédito do Banco Central).
+| Parâmetro | Tipo | Obrigatório | Descrição |
+|-----------|------|-------------|-----------|
+| `uf` | query | Sim* | Filtra por Unidade Federativa. |
+| `regiao` | query | Sim* | Filtra por região. |
+| `mesAno` | query | Não | Período de referência. |
 
-**Body (JSON):**
-
-| Campo                    | Tipo    | Obrigatório | Descrição                      |
-|--------------------------|---------|-------------|--------------------------------|
-| `data_base`              | string  | Sim         | Data de referência (ex: `"01/2024"`) |
-| `uf`                     | string  | Sim         | Sigla do estado (2 letras)     |
-| `cliente`                | string  | Sim         | Tipo de cliente                |
-| `cnae_ocupacao`          | string  | Sim         | Código CNAE ou ocupação        |
-| `porte`                  | string  | Sim         | Porte do tomador               |
-| `carteira_inadiplencia`  | number  | Sim         | Valor da carteira em inadimplência |
-| `carteira_vencida`       | number  | Não         | Valor da carteira vencida      |
-
-**Exemplo de requisição:**
-```json
-{
-  "data_base": "01/2024",
-  "uf": "SP",
-  "cliente": "Pessoa Física",
-  "cnae_ocupacao": "4711-3/01",
-  "porte": "Micro",
-  "carteira_inadiplencia": 1500.50,
-  "carteira_vencida": 300.00
-}
-```
-
-**Resposta de sucesso `201`:**
-```json
-{
-  "message": "Dado recebido e cadastrado com sucesso",
-  "dado": { ... }
-}
-```
+> *Obrigatório informar `uf` **ou** `regiao`.
 
 ---
 
-### `POST /dados/receber-dados-pix`
+#### `GET /data/ranking`
+Lista ordenada das melhores oportunidades de mercado baseada nos scores.
 
-Recebe dados de transações Pix por município.
+| Parâmetro | Tipo | Obrigatório | Descrição |
+|-----------|------|-------------|-----------|
+| `orderBy` | query | Não | `'RC'` ou `'IE'` |
 
-**Body (JSON):**
-
-| Campo               | Tipo    | Obrigatório | Descrição                           |
-|---------------------|---------|-------------|--------------------------------------|
-| `ano_mes`           | integer | Sim         | Período no formato `YYYYMM` (ex: `202401`) |
-| `municipio_ibge`    | integer | Sim         | Código IBGE do município             |
-| `municipio`         | string  | Sim         | Nome do município                    |
-| `estado_ibge`       | integer | Sim         | Código IBGE do estado                |
-| `estado`            | string  | Sim         | Nome do estado                       |
-| `sigla_regiao`      | string  | Sim         | Sigla da região (ex: `"SE"`)         |
-| `vl_pagador_pf`     | number  | Sim         | Volume financeiro de pagadores PF    |
-| `qt_pagador_pf`     | integer | Sim         | Quantidade de transações de pagadores PF |
-| `vl_recebedor_pf`   | number  | Sim         | Volume financeiro de recebedores PF  |
-| `qt_recebedor_pf`   | integer | Sim         | Quantidade de transações de recebedores PF |
-| `qt_pes_pagador_pf` | integer | Sim         | Quantidade de pessoas pagadoras PF   |
-| `qt_pes_recebedor_pf` | integer | Sim       | Quantidade de pessoas recebedoras PF |
-
-**Exemplo de requisição:**
-```json
-{
-  "ano_mes": 202401,
-  "municipio_ibge": 3550308,
-  "municipio": "São Paulo",
-  "estado_ibge": 35,
-  "estado": "São Paulo",
-  "sigla_regiao": "SE",
-  "vl_pagador_pf": 980000.00,
-  "qt_pagador_pf": 15000,
-  "vl_recebedor_pf": 870000.00,
-  "qt_recebedor_pf": 14200,
-  "qt_pes_pagador_pf": 8000,
-  "qt_pes_recebedor_pf": 7500
-}
-```
-
-**Resposta de sucesso `201`:**
-```json
-{
-  "message": "Dado PIX recebido e cadastrado com sucesso",
-  "dado": { ... }
-}
-```
+> **Lógica:** No eixo RC, menores notas aparecem no topo (menor risco = melhor oportunidade).
 
 ---
 
-### `POST /dados/receber-taxa`
+#### `GET /data/history`
+Séries temporais para gráficos de evolução (Inadimplência vs. Renda).
 
-Recebe dados de taxa de escolarização (IBGE/SIDRA tabela 7138).
+| Parâmetro | Tipo | Obrigatório | Descrição |
+|-----------|------|-------------|-----------|
+| `limit` | query | Não | Número de meses (padrão: `12`). |
+| `uf` | query | Não | Filtra por UF. |
+| `regiao` | query | Não | Filtra por região. |
 
-**Body (JSON):**
-
-| Campo  | Tipo    | Obrigatório | Descrição                              |
-|--------|---------|-------------|----------------------------------------|
-| `nn`   | string  | Sim         | Unidade da Federação (nome)            |
-| `v`    | number  | Sim         | Valor da taxa                          |
-| `d1n`  | string  | Sim         | Unidade da Federação (dimensão 1)      |
-| `d3n`  | integer | Sim         | Ano de referência                      |
-| `d5n`  | string  | Sim         | Grupo de idade                         |
-
-**Exemplo de requisição:**
-```json
-{
-  "nn": "São Paulo",
-  "v": 92.5,
-  "d1n": "São Paulo",
-  "d3n": 2022,
-  "d5n": "15 a 17 anos"
-}
-```
-
-**Resposta de sucesso `201`:**
-```json
-{
-  "message": "Taxa de escolarização recebida e cadastrada com sucesso",
-  "dado": { ... }
-}
-```
+> **Retorno:** Formatado para integração direta com a biblioteca **ApexCharts**.
 
 ---
 
-### `POST /dados/receber-crescimento`
+### Consulta de Dados Brutos
 
-Recebe dados de crescimento populacional (IBGE).
-
-**Body (JSON):**
-
-| Campo  | Tipo   | Obrigatório | Descrição                          |
-|--------|--------|-------------|-------------------------------------|
-| `d1n`  | string | Sim         | Unidade da Federação               |
-| `d2n`  | string | Sim         | Tipo de taxa de crescimento        |
-| `v`    | number | Sim         | Valor da taxa                      |
-
-**Exemplo de requisição:**
-```json
-{
-  "d1n": "Minas Gerais",
-  "d2n": "Taxa de crescimento geométrico",
-  "v": 0.87
-}
-```
-
-**Resposta de sucesso `201`:**
-```json
-{
-  "message": "Crescimento populacional recebido e cadastrado com sucesso",
-  "dado": { ... }
-}
-```
+| Endpoint | Descrição |
+|----------|-----------|
+| `GET /data/credit-risk` | Lista dados brutos de risco com filtros de UF/Região. |
+| `GET /data/inclusion-expansion` | Lista dados brutos de inclusão com filtros. |
+| `GET /data/pix-structure` | Lista dados estruturais de transações PIX. |
+| `GET /data/ibge-structure` | Lista indicadores brutos do IBGE. |
 
 ---
 
-### `POST /dados/receber-populacao`
+## Módulo de Usuários e Administração — `/users`
 
-Recebe dados de população absoluta (IBGE).
-
-**Body (JSON):**
-
-| Campo  | Tipo    | Obrigatório | Descrição                        |
-|--------|---------|-------------|-----------------------------------|
-| `d1n`  | string  | Sim         | Unidade da Federação             |
-| `d2n`  | string  | Sim         | Tipo de população residente      |
-| `v`    | integer | Sim         | Valor absoluto da população      |
-
-**Exemplo de requisição:**
-```json
-{
-  "d1n": "Rio de Janeiro",
-  "d2n": "População residente",
-  "v": 17366189
-}
-```
-
-**Resposta de sucesso `201`:**
-```json
-{
-  "message": "População Absoluta recebida e cadastrada com sucesso",
-  "dado": { ... }
-}
-```
+Gerencia permissões, perfis e auditoria do sistema.
 
 ---
 
-### `POST /dados/receber-bonus`
+### Gestão de Perfil
 
-Recebe dados de bônus demográfico.
-
-**Body (JSON):**
-
-| Campo                  | Tipo    | Obrigatório | Descrição                                   |
-|------------------------|---------|-------------|----------------------------------------------|
-| `brasilGrandeRegiaoUf` | string  | Sim         | Localidade (Brasil, grande região ou UF)     |
-| `total`                | integer | Sim         | População total                              |
-| `xy_anos`              | integer | Sim         | População na faixa etária específica         |
-
-**Exemplo de requisição:**
-```json
-{
-  "brasilGrandeRegiaoUf": "Sudeste",
-  "total": 89012114,
-  "xy_anos": 14200000
-}
-```
-
-**Resposta de sucesso `201`:**
-```json
-{
-  "message": "Bônus Demográfico recebido e cadastrado com sucesso",
-  "dado": { ... }
-}
-```
+| Endpoint | Descrição |
+|----------|-----------|
+| `GET /users/me` | Retorna os dados do usuário autenticado. |
 
 ---
 
-### `POST /dados/receber-risco`
+### Administração de Contas — Apenas `ADMIN`
 
-Recebe dados de Risco de Crédito (scores do Eixo I). **Sem validação Zod** — a validação é feita manualmente no controller.
-
-**Body (JSON):**
-
-| Campo                  | Tipo   | Obrigatório | Descrição                                  |
-|------------------------|--------|-------------|---------------------------------------------|
-| `inadimplenciaReal`    | number | Sim         | Score de inadimplência                      |
-| `FragilidadeRenda`     | number | Sim         | Score de fragilidade de renda               |
-| `AgingDivida`          | number | Sim         | Score de aging da dívida                    |
-| `VulnerabilidadeSocial`| number | Sim         | Score de vulnerabilidade social (escolarização) |
-
-**Exemplo de requisição:**
-```json
-{
-  "inadimplenciaReal": 3,
-  "FragilidadeRenda": 2.7,
-  "AgingDivida": 1.8,
-  "VulnerabilidadeSocial": 3.5
-}
-```
-
-**Resposta de sucesso `201`:**
-```json
-{
-  "message": "Risco de Crédito cadastrado com sucesso",
-  "dado": { ... }
-}
-```
+| Endpoint | Descrição |
+|----------|-----------|
+| `GET /users/` | Lista todos os usuários cadastrados. |
+| `GET /users/search` | Busca usuários por nome (via query string). |
+| `GET /users/id/:id` | Busca detalhes de um usuário específico pelo ID. |
+| `GET /users/email/:email` | Busca usuário pelo endereço de e-mail. |
+| `GET /users/role/:role` | Filtra usuários por nível de acesso (`USER`, `ADMIN`, `DEV`). |
+| `POST /users/create` | Criação de novas contas com validação de senha e rate limit. |
+| `PUT /users/edit/:id` | Atualização completa dos dados do usuário. |
+| `PATCH /users/inactivate/:id` | Desativa o acesso de um usuário. |
+| `PATCH /users/activate/:id` | Reativa uma conta inativa. |
+| `PATCH /users/role/admin/:id` | Promove um usuário para o cargo `ADMIN`. |
+| `PATCH /users/role/user/:id` | Altera o cargo de um usuário para `USER`. |
 
 ---
 
-### `POST /dados/receber-inclusao`
+### Auditoria e Diagnóstico — Apenas `DEV`
 
-Recebe dados de Inclusão Demográfica (scores do Eixo II).
-
-**Body (JSON):**
-
-| Campo                    | Tipo    | Obrigatório | Descrição                            |
-|--------------------------|---------|-------------|---------------------------------------|
-| `MaturidadePix`          | number  | Sim         | Score de maturidade Pix               |
-| `CrescimentoPopulacional`| number  | Sim         | Score de crescimento populacional     |
-| `PopulacaoAbsoluta`      | integer | Sim         | Valor de população absoluta           |
-| `BonusDemografico`       | number  | Sim         | Score de bônus demográfico            |
-
-**Exemplo de requisição:**
-```json
-{
-  "MaturidadePix": 4.2,
-  "CrescimentoPopulacional": 3.1,
-  "PopulacaoAbsoluta": 45900000,
-  "BonusDemografico": 2.8
-}
-```
-
-**Resposta de sucesso `201`:**
-```json
-{
-  "message": "Inclusão Demográfica cadastrada com sucesso",
-  "dado": { ... }
-}
-```
+| Endpoint | Descrição |
+|----------|-----------|
+| `GET /users/sessions` | Lista todas as sessões ativas no sistema. |
+| `GET /users/sessions/:id` | Lista o histórico de sessões de um usuário específico. |
+| `GET /users/logs` | Exibe o log global de operações do sistema. |
+| `GET /users/logs/:id` | Exibe os logs de ações realizadas por um usuário específico. |
+| `PATCH /users/role/dev/:id` | Atribui nível de acesso `DEV` a um usuário. |
 
 ---
 
-## Rotas de Listagem — `GET /dados`
+## Ferramentas de Desenvolvedor — `/dev`
 
-Todas retornam `200` com um array de registros ou `500` em caso de erro interno.
+Exclusivo para o cargo `DEV`.
 
-| Rota                        | Retorna                        |
-|-----------------------------|--------------------------------|
-| `GET /dados/listar-dados`   | Todos os registros SCR         |
-| `GET /dados/listar-dados-pix` | Todos os registros Pix       |
-| `GET /dados/listar-taxa`    | Taxas de escolarização         |
-| `GET /dados/listar-crescimento` | Crescimento populacional   |
-| `GET /dados/listar-populacao` | Dados de população absoluta  |
-| `GET /dados/listar-bonus`   | Dados de bônus demográfico     |
-| `GET /dados/listar-risco`   | Dados de risco de crédito      |
-| `GET /dados/listar-inclusao` | Dados de inclusão demográfica |
-
-**Exemplo de resposta `200`:**
-```json
-[
-  { "id": 1, ... },
-  { "id": 2, ... }
-]
-```
-
-**Resposta de erro `500`:**
-```json
-{ "error": "Erro ao buscar dados" }
-```
+| Endpoint | Descrição |
+|----------|-----------|
+| `DELETE /dev/reset-database` | Limpa tabelas de Logs, Sessões e Usuários. |
+| `POST /dev/seed-admin` | Cria o usuário administrador padrão (`admin@teste.com`). |
+| `POST /dev/seed-dev` | Cria o usuário desenvolvedor padrão (`dev@teste.com`). |
 
 ---
 
-## Variáveis de Ambiente
+## Inteligência de Negócio — Score Service
 
-| Variável       | Descrição                                  |
-|----------------|--------------------------------------------|
-| `PORT`         | Porta do servidor (padrão: `3000`)         |
-| `DATABASE_URL` | URL de conexão com o banco SQLite          |
-| `JWT_SECRET`   | Chave secreta para assinatura dos tokens JWT |
+A API aplica automaticamente **Normalização Min-Max** e **Soma Ponderada** conforme o documento metodológico.
+
+### Eixo RC — Risco de Crédito
+
+| Indicador | Peso |
+|-----------|------|
+| Inadimplência | 35% |
+| Renda | 35% |
+| Aging | 20% |
+| Escolaridade | 10% |
+
+### Eixo IE — Inclusão e Expansão
+
+| Indicador | Peso |
+|-----------|------|
+| PIX | 35% |
+| Crescimento | 25% |
+| População | 25% |
+| Bônus | 15% |
+
+> O sistema prioriza **pesos personalizados** definidos pelo usuário; caso ausentes, aplica os pesos padrão acima.
 
 ---
 
-## Fluxo de Uso Típico
+## Respostas de Erro
 
-O fluxo padrão de integração com a API segue esta ordem:
-
-1. **Registrar** um usuário em `POST /auth/registrar`
-2. **Autenticar** em `POST /auth/login` e guardar o token retornado
-3. Usar o token no header `Authorization: Bearer <token>` para acessar rotas protegidas
-4. **Enviar dados** pelas rotas `POST /dados/receber-*` (normalmente feito pelo script Python `processadordedadosrealit.py`)
-5. **Consultar** os dados armazenados pelas rotas `GET /dados/listar-*`
-
----
+| Código | Descrição |
+|--------|-----------|
+| `400` | Erro de validação Zod (campos faltando ou formato inválido de UF/Região). |
+| `401` | Sessão encerrada ou token inválido. |
+| `403` | Acesso negado por nível de permissão. |
+| `404` | Dados não encontrados para o filtro solicitado. |
+| `500` | Erro interno no motor de cálculo ou banco de dados. |

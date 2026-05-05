@@ -5,6 +5,7 @@ import "./globals.css";
 const catamaran = Catamaran({
   subsets: ["latin"],
   variable: "--font-catamaran",
+  display: 'swap',
 });
 
 export const metadata: Metadata = {
@@ -20,9 +21,11 @@ export default function RootLayout({
   return (
     <html
       lang="pt-br"
-      className={`${catamaran.variable} h-full antialiased`}
+      className={`${catamaran.variable} h-full antialiased font-sans`}
     >
-      <body className="min-h-full flex flex-col">{children}</body>
+      <body className="min-h-full flex flex-col bg-background text-foreground">
+        {children}
+      </body>
     </html>
   );
 }

@@ -1,28 +1,84 @@
 @import "tailwindcss";
 
 :root {
-  --background: #F6F6F6;
-  --foreground: #171717;
+  /* Cores Principais */
   --primary: #202AD0;
-  --secondary: #FFE372;
-  --tertiary: #FFE372;
-
   --primary-dark: #161C8C;
   --primary-light: #5B64E8;
+  --secondary: #FFE372;
   --secondary-soft: #FFF1B8;
+  --tertiary: #4EDAD3;
+
+  /* Neutros (Brancos, Cinzas e Pretos) */
+  --background: #F6F6F6;
+  --foreground: #171717;
+  
+  --white: #FFFFFF;
+  --gray-50: #F9FAFB;
+  --gray-100: #F3F4F6;
+  --gray-200: #E5E7EB;
+  --gray-300: #D1D5DB;
+  --gray-400: #9CA3AF;
+  --gray-500: #6B7280;
+  --gray-600: #4B5563;
+  --gray-700: #374151;
+  --gray-800: #1F2937;
+  --gray-900: #111827;
+  --black: #000000;
+
+  /* Estados */
+  --error: #EF4444;
+  --success: #10B981;
+  --warning: #F59E0B;
 }
 
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
   --color-primary: var(--primary);
+  --color-primary-dark: var(--primary-dark);
+  --color-primary-light: var(--primary-light);
   --color-secondary: var(--secondary);
+  --color-secondary-soft: var(--secondary-soft);
   --color-tertiary: var(--tertiary);
   
+  /* Escala de Neutros */
+  --color-gray-50: var(--gray-50);
+  --color-gray-100: var(--gray-100);
+  --color-gray-200: var(--gray-200);
+  --color-gray-300: var(--gray-300);
+  --color-gray-400: var(--gray-400);
+  --color-gray-500: var(--gray-500);
+  --color-gray-600: var(--gray-600);
+  --color-gray-700: var(--gray-700);
+  --color-gray-800: var(--gray-800);
+  --color-gray-900: var(--gray-900);
+  
   --font-sans: var(--font-catamaran), ui-sans-serif, system-ui;
+
+  --breakpoint-sm: 40rem;   /* 640px */
+  --breakpoint-md: 48rem;   /* 768px */
+  --breakpoint-lg: 64rem;   /* 1024px */
+  --breakpoint-xl: 80rem;   /* 1280px */
+  --breakpoint-2xl: 96rem;  /* 1536px */
+
+  --radius-xl: 14px;
+  --radius-2xl: 20px;
+
+  --spacing-18: 4.5rem;
 }
 
 body {
   background: var(--background);
   color: var(--foreground);
+}
+
+@layer components {
+  .container-responsive {
+    @apply w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8;
+  }
+  
+  .card-base {
+    @apply bg-white rounded-[28px] shadow-[0_8px_30px_rgba(0,0,0,0.04)] p-6;
+  }
 }

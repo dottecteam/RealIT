@@ -1,13 +1,13 @@
 import {Router} from 'express'
-import {register, login, userData, listarUsuarios} from '../controllers/authController'
-import {authMiddleWare} from '../middlewares/authMiddleware'
+import { login, logout } from '../controllers/authController'
+import { sessionMiddleware } from '../middlewares/sessionMiddleware'
+import { authLimiter } from '../middlewares/rateLimiter';
+import { validateData } from '../middlewares/dataMiddleware';
+import { loginSchema } from '../schemas/authSchemas';
 
-const routerUser = Router()
+const routerAuth = Router()
 
-routerUser.post('/registrar', register)
-routerUser.post('/login', login)
+routerAuth.post('/login', authLimiter, validateData(loginSchema), login)
+routerAuth.post('/logout', sessionMiddleware, logout)
 
-routerUser.get('/me', authMiddleWare, userData)
-routerUser.get('/listar-usuarios', listarUsuarios)
-
-export default routerUser
+export default routerAuth

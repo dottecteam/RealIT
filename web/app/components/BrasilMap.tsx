@@ -1,107 +1,203 @@
-// "use client";
+"use client";
 
-// import { useEffect, useRef, useState } from "react";
-// import mapaBrasil from "mapa-brasil";
+import { useState, useCallback, memo } from "react";
+import { BRASIL_PATHS } from "../constants/BrasilMapPaths";
+import { EstadoPath, TooltipState, EstadoProps } from "../types/components/BrasilMap";
+import { useMapContext } from "../contexts/MapContext";
+import { getCategoria } from "../utils/mapUtils";
+import { REGIAO_COR, UF_COLORS, CATEGORIA_TEXTO, CATEGORIA_CORES } from "../constants/mapColors";
 
-// const REGIONS_COLORS = {
-//   norte: "#68E699",
-//   nordeste: "#FF9A98",
-//   centroOeste: "#FFE372",
-//   sudeste: "#202AD0",
-//   sul: "#4EDAD3",
-// };
+// Sub-componente (MEMOIZADO)
+const EstadoPath_ = memo(function EstadoPath_({
+  estado, fill, isHovered, anyHovered, onMouseEnter, onMouseLeave, onMouseMove,
+}: EstadoProps) {
+  const opacity = anyHovered ? (isHovered ? 1 : 0.38) : 0.88;
+  const stroke = isHovered ? "var(--primary)" : "var(--white)";
+  const strokeWidth = isHovered ? 1.5 : 0.8;
+  return (
+    <path
+      d={estado.d}
+      fill={fill}
+      stroke={stroke}
+      strokeWidth={strokeWidth}
+      opacity={opacity}
+      style={{ cursor: "pointer", transition: "opacity 0.18s ease, fill 0.3s ease" }}
+      onMouseEnter={(e) => onMouseEnter(e, estado)}
+      onMouseLeave={onMouseLeave}
+      onMouseMove={onMouseMove}
+    />
+  );
+});
 
-// const IBGE_TO_REGION: Record<number, string> = {
-//   11: "Norte", 12: "Norte", 13: "Norte", 14: "Norte", 15: "Norte", 16: "Norte", 17: "Norte",
-//   21: "Nordeste", 22: "Nordeste", 23: "Nordeste", 24: "Nordeste", 25: "Nordeste", 26: "Nordeste", 27: "Nordeste", 28: "Nordeste", 29: "Nordeste",
-//   31: "Sudeste", 32: "Sudeste", 33: "Sudeste", 35: "Sudeste",
-//   41: "Sul", 42: "Sul", 43: "Sul",
-//   50: "Centro-Oeste", 51: "Centro-Oeste", 52: "Centro-Oeste", 53: "Centro-Oeste",
-// };
+// Adicionamos a tipagem para receber os dados da API
+interface BrasilMapProps {
+  data?: any[];
+}
 
-// export function BrasilMap() {
-//   const mapRef = useRef<HTMLDivElement>(null);
-//   const [regiaoAtiva, setRegiaoAtiva] = useState<string | null>(null);
+export function BrasilMap({ data = [] }: BrasilMapProps) {
+  const { viewMode } = useMapContext();
+  const [heatmap, setHeatmap] = useState(false);
+  const [hoveredUf, setHoveredUf] = useState<string | null>(null);
+  const [tooltip, setTooltip] = useState<TooltipState>({
+    visible: false, x: 0, y: 0, lines: [],
+  });
 
-//   useEffect(() => {
-//     const timer = setTimeout(() => {
-//       if (!mapRef.current) return;
-      
-//       mapRef.current.innerHTML = "";
+  // Função auxiliar para calcular a média da região na hora
+  const getRegionAverages = useCallback((regiaoNome: string) => {
+    const searchName = regiaoNome === "C-Oeste" ? "Centro-Oeste" : regiaoNome;
+    const estadosDaRegiao = data.filter((d: any) => d.regiao === searchName);
+    
+    if (estadosDaRegiao.length === 0) return null;
+    
+    const avgI = estadosDaRegiao.reduce((acc, curr) => acc + curr.score_eixo_i, 0) / estadosDaRegiao.length;
+    const avgII = estadosDaRegiao.reduce((acc, curr) => acc + curr.score_eixo_ii, 0) / estadosDaRegiao.length;
+    
+    return {
+      score_eixo_i: Number(avgI.toFixed(2)),
+      score_eixo_ii: Number(avgII.toFixed(2)),
+      categoriaStr: getCategoria(avgI, avgII)
+    };
+  }, [data]);
 
-//       mapaBrasil(mapRef.current, {
-//         unidade: "br",
-//         regiao: "federacao",
-//         dataPath: "/data",
-//         defaultFillColor: "#E5E5E5",
-//         defaultStrokeColor: "#FFFFFF",
+  const getFill = useCallback(
+    (estado: EstadoPath): string => {
+      if (heatmap) {
+        if (viewMode === "uf") {
+          const ufData = data.find((d) => d.uf === estado.uf);
+          if (ufData) {
+            // Usamos a função getCategoria do frontend para garantir a chave correta no dicionário de cores
+            const catKey = getCategoria(ufData.score_eixo_i, ufData.score_eixo_ii);
+            return CATEGORIA_CORES[catKey];
+          }
+        } else {
+          const regData = getRegionAverages(estado.regiao);
+          if (regData) return CATEGORIA_CORES[regData.categoriaStr];
+        }
+        return "var(--gray-300)";
+      }
+      return viewMode === "uf"
+        ? (UF_COLORS[estado.uf] ?? "var(--gray-200)")
+        : (REGIAO_COR[estado.regiao] ?? "var(--gray-200)");
+    },
+    [heatmap, viewMode, data, getRegionAverages]
+  );
+
+  const buildTooltipLines = useCallback(
+    (estado: EstadoPath): string[] => {
+      const lines: string[] = [];
+      if (viewMode === "uf") {
+        const ufData = data.find((d) => d.uf === estado.uf);
+        lines.push(`${estado.nome} (${estado.uf})`);
         
-//         unidadeData: [
-//           { codIbge: 11, fillColor: REGIONS_COLORS.norte }, { codIbge: 12, fillColor: REGIONS_COLORS.norte }, { codIbge: 13, fillColor: REGIONS_COLORS.norte }, { codIbge: 14, fillColor: REGIONS_COLORS.norte }, { codIbge: 15, fillColor: REGIONS_COLORS.norte }, { codIbge: 16, fillColor: REGIONS_COLORS.norte }, { codIbge: 17, fillColor: REGIONS_COLORS.norte },
-//           { codIbge: 21, fillColor: REGIONS_COLORS.nordeste }, { codIbge: 22, fillColor: REGIONS_COLORS.nordeste }, { codIbge: 23, fillColor: REGIONS_COLORS.nordeste }, { codIbge: 24, fillColor: REGIONS_COLORS.nordeste }, { codIbge: 25, fillColor: REGIONS_COLORS.nordeste }, { codIbge: 26, fillColor: REGIONS_COLORS.nordeste }, { codIbge: 27, fillColor: REGIONS_COLORS.nordeste }, { codIbge: 28, fillColor: REGIONS_COLORS.nordeste }, { codIbge: 29, fillColor: REGIONS_COLORS.nordeste },
-//           { codIbge: 31, fillColor: REGIONS_COLORS.sudeste }, { codIbge: 32, fillColor: REGIONS_COLORS.sudeste }, { codIbge: 33, fillColor: REGIONS_COLORS.sudeste }, { codIbge: 35, fillColor: REGIONS_COLORS.sudeste },
-//           { codIbge: 41, fillColor: REGIONS_COLORS.sul }, { codIbge: 42, fillColor: REGIONS_COLORS.sul }, { codIbge: 43, fillColor: REGIONS_COLORS.sul },
-//           { codIbge: 50, fillColor: REGIONS_COLORS.centroOeste }, { codIbge: 51, fillColor: REGIONS_COLORS.centroOeste }, { codIbge: 52, fillColor: REGIONS_COLORS.centroOeste }, { codIbge: 53, fillColor: REGIONS_COLORS.centroOeste },
-//         ],
+        if (ufData) {
+          const catKey = getCategoria(ufData.score_eixo_i, ufData.score_eixo_ii);
+          lines.push(`Eixo I: ${ufData.score_eixo_i.toFixed(2)}`);
+          lines.push(`Eixo II: ${ufData.score_eixo_ii.toFixed(2)}`);
+          lines.push(`Categoria: ${CATEGORIA_TEXTO[catKey] || catKey}`);
+        } else {
+          lines.push(`Dados indisponíveis`);
+        }
+      } else {
+        const regData = getRegionAverages(estado.regiao);
+        lines.push(`Região ${estado.regiao}`);
+        
+        if (regData) {
+          lines.push(`Eixo I (média): ${regData.score_eixo_i.toFixed(2)}`);
+          lines.push(`Eixo II (média): ${regData.score_eixo_ii.toFixed(2)}`);
+          lines.push(`Categoria: ${CATEGORIA_TEXTO[regData.categoriaStr] || regData.categoriaStr}`);
+        } else {
+          lines.push(`Dados indisponíveis`);
+        }
+      }
+      return lines;
+    },
+    [viewMode, data, getRegionAverages]
+  );
 
-//         onClick: function (data: any) {
-//           const nomeDaRegiao = IBGE_TO_REGION[data.codIbge];
-//           setRegiaoAtiva(prev => prev === nomeDaRegiao ? null : nomeDaRegiao);
-//         }
-//       });
+  const handleMouseEnter = useCallback((e: React.MouseEvent, estado: EstadoPath) => {
+    setHoveredUf(estado.uf);
+    setTooltip({ visible: true, x: e.clientX, y: e.clientY, lines: buildTooltipLines(estado) });
+  }, [buildTooltipLines]);
 
-//       setTimeout(() => {
-//         if (mapRef.current) {
-//           const svgElement = mapRef.current.querySelector('svg');
-//           if (svgElement) {
-//             svgElement.removeAttribute('width');
-//             svgElement.removeAttribute('height');
-//             svgElement.setAttribute('width', '100%');
-//             svgElement.setAttribute('height', '100%');
-//             svgElement.setAttribute('viewBox', '0 0 800 800');
-//           }
-//         }
-//       }, 50);
+  const handleMouseMove = useCallback((e: React.MouseEvent) => {
+    setTooltip((prev) => (prev.visible ? { ...prev, x: e.clientX, y: e.clientY } : prev));
+  }, []);
 
-//     }, 100);
+  const handleMouseLeave = useCallback(() => {
+    setHoveredUf(null);
+    setTooltip((prev) => ({ ...prev, visible: false }));
+  }, []);
 
-//     return () => clearTimeout(timer);
-//   }, []);
+  function renderLegenda() {
+    if (heatmap) {
+      return (
+        <>
+          {Object.entries(CATEGORIA_TEXTO).map(([key, label]) => (
+            <div key={key} className="flex items-center gap-2">
+              <div className="w-4 h-4 rounded-sm flex-shrink-0" style={{ backgroundColor: CATEGORIA_CORES[key] }} />
+              <span className="text-gray-600 font-medium">{label}</span>
+            </div>
+          ))}
+        </>
+      );
+    }
+    if (viewMode === "uf") {
+      return <p className="text-xs text-gray-400 italic">Cada estado exibe sua própria cor identificadora.</p>;
+    }
+    return (
+      <>
+        {Object.entries(REGIAO_COR).map(([regiao, cor]) => (
+          <div key={regiao} className="flex items-center gap-2">
+            <div className="w-4 h-4 rounded-sm flex-shrink-0" style={{ backgroundColor: cor }} />
+            <span className="text-gray-600 font-medium">{regiao}</span>
+          </div>
+        ))}
+      </>
+    );
+  }
 
-//   return (
-//     <div className="w-full flex flex-col items-center justify-center p-4">
-      
-//       <div className="h-8 mb-4 z-10 text-center">
-//         {regiaoAtiva ? (
-//           <h3 className="text-xl font-bold text-[#202AD0]">Região Selecionada: <span className="text-gray-700">{regiaoAtiva}</span></h3>
-//         ) : (<h3 className="text-xl text-gray-400">Clique em um estado no mapa</h3>)}
-//       </div>
+  const anyHovered = hoveredUf !== null;
 
-//       <style>{`
-//         .mapa-interativo svg {
-//           display: block;
-//           max-width: 100%;
-//           max-height: 100%;
-//           overflow: visible !important;
-//         }
+  return (
+    <div className="card-base flex flex-col w-full h-fit min-h-[600px] relative overflow-hidden">
+      <div className="mb-6 text-center shrink-0">
+        <h3 className="text-xl font-black text-primary uppercase tracking-tight">
+          Mapa Brasil <span className="text-gray-400 font-medium">/ {viewMode == "uf" ? "UF" : "Região"}</span>
+        </h3>
+      </div>
+      <div className="mb-4 shrink-0 px-4">
+        <label className="flex items-center gap-2 cursor-pointer select-none w-fit">
+          <input type="checkbox" className="w-4 h-4 accent-primary" checked={heatmap} onChange={() => setHeatmap((prev) => !prev)} />
+          <span className="text-sm font-bold text-gray-600">Modo mapa de calor</span>
+        </label>
+      </div>
 
-//         .mapa-interativo svg path {
-//           transition: filter 0.2s ease-in-out, transform 0.2s ease;
-//           cursor: pointer;
-//           transform-origin: center;
-//         }
+      <div className="flex-1 flex justify-center items-center w-full relative px-4">
+        <svg viewBox="0 0 800 691" className="w-full h-full max-h-[500px] drop-shadow-2xl select-none" preserveAspectRatio="xMidYMid meet">
+          {BRASIL_PATHS.map((estado) => (
+            <EstadoPath_ key={estado.uf} estado={estado} fill={getFill(estado)} isHovered={hoveredUf === estado.uf} anyHovered={anyHovered} onMouseEnter={handleMouseEnter} onMouseLeave={handleMouseLeave} onMouseMove={handleMouseMove} />
+          ))}
+          {BRASIL_PATHS.map((estado) => (
+            <text key={`label-${estado.uf}`} x={estado.centroid[0]} y={estado.centroid[1]} textAnchor="middle" dominantBaseline="middle" className="fill-white font-black pointer-events-none select-none" style={{ fontSize: "11px", paintOrder: "stroke", stroke: "rgba(0,0,0,0.3)", strokeWidth: "2.5px" }}>
+              {estado.uf}
+            </text>
+          ))}
+        </svg>
+      </div>
 
-//         .mapa-interativo svg path:hover {
-//           filter: brightness(0.85);
-//           transform: scale(1.01);
-//         }
-//       `}</style>
+      <div className="w-full mt-6 py-4 flex flex-wrap gap-x-6 gap-y-2 text-[10px] sm:text-xs justify-center shrink-0 border-t border-gray-100">
+        {renderLegenda()}
+      </div>
 
-//       <div 
-//         ref={mapRef} 
-//         className="mapa-interativo w-full max-w-[500px] aspect-square flex items-center justify-center drop-shadow-2xl"
-//       />
-      
-//     </div>
-//   );
-// }
+      {tooltip.visible && (
+        <div style={{ position: "fixed", top: tooltip.y + 12, left: tooltip.x + 12, pointerEvents: "none", backgroundColor: "var(--primary)", zIndex: 9999 }} className="text-white text-xs px-4 py-3 rounded-xl shadow-2xl backdrop-blur-md border border-white/10">
+          {tooltip.lines.map((line, i) => (
+            <div key={i} className={i === 0 ? "font-black text-secondary border-b border-white/10 mb-1 pb-1 uppercase tracking-wider" : "opacity-90 py-0.5"}>
+              {line}
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}

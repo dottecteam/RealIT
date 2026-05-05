@@ -1,38 +1,31 @@
-import {Router} from 'express';
-import { criarDadosScore, criarDadosMediaRegiao, listarDados } from '../controllers/scoreController';
+import { Router } from 'express';
+import * as dataController from '../controllers/dataWriteController';
+import * as dataRead from '../controllers/dataReadController';
 import { validateData } from '../middlewares/dataMiddleware';
-import { scoreUfArray, mediaRegiaoArray } from '../schemas/validationSchemas';
+import { sessionMiddleware } from '../middlewares/sessionMiddleware';
+import { adminOnly } from '../middlewares/roleMiddleware';
+import * as schemas from '../schemas/dataSchemas';
+import { z } from 'zod';
 
-const routerDados = Router();
+const routerData = Router();
 
-// routerDados.post('/receber-dados', validateData(dadosSchema), criarDados);
-// routerDados.post('/receber-dados-pix', validateData(dadosPixSchema), criarDadosPIX);
-// routerDados.post('/receber-taxa', validateData(taxaEscolarizacaoSchema), criarDadosTaxaEscolarizacao);
-// routerDados.post('/receber-crescimento', validateData(crescimentoPopulacionalSchema), criarDadosCresPopulacional);
-// routerDados.post('/receber-populacao', validateData(populacaoAbsolutaSchema), criarDadosPopAbsoluta);
-// routerDados.post('/receber-bonus', validateData(bonusDemograficoSchema), criarDadosBonusDemografico);
-// routerDados.post('/receber-risco', criarDadosRiscoCredito);
-// routerDados.post('/receber-inclusao', validateData(inclusaoDemograficaSchema), criarDadosInclusaoDemografica);
-
-// routerDados.get('/listar-dados', listarDados);
-// routerDados.get('/listar-dados-pix', listarDadosPIX);
-// routerDados.get('/listar-taxa', listarTaxaEscolarizacao);
-// routerDados.get('/listar-crescimento', listarCrescimentoPopulacional);
-// routerDados.get('/listar-populacao', listarPopAbsoluta);
-// routerDados.get('/listar-bonus', listarBonusDemografico);
-// routerDados.get('/listar-risco', listarRiscoCredito);
-// routerDados.get('/listar-inclusao', listarInclusaoDemografica);
+routerData.post('/import-monthly',sessionMiddleware,adminOnly,validateData(schemas.masterDataSchema),dataController.importMonthlyData);
+routerData.post('/credit-risk',sessionMiddleware,adminOnly,validateData(z.object({ body: schemas.creditRiskArray })),dataController.createCreditRisk);
+routerData.post('/inclusion-expansion',sessionMiddleware,adminOnly,validateData(z.object({ body: schemas.inclusionExpansionArray })),dataController.createInclusionExpansion);
+routerData.post('/pix-structure',sessionMiddleware,adminOnly,validateData(z.object({ body: schemas.pixStructureArray })),dataController.createPixStructure);
+routerData.post('/ibge-structure',sessionMiddleware,adminOnly,validateData(z.object({ body: schemas.ibgeStructureArray })),dataController.createIBGEStructure);
 
 
-// Dados Score
-routerDados.post('/receber-scoreUf', validateData(scoreUfArray), criarDadosScore)
+routerData.get('/score', sessionMiddleware, validateData(schemas.calculateScoresQuerySchema), dataRead.calculateDashboardScores);
+routerData.get('/summary', sessionMiddleware, validateData(schemas.summaryQuerySchema), dataRead.getSummary);
+routerData.get('/ranking', sessionMiddleware, validateData(schemas.rankingQuerySchema), dataRead.getRanking);
+routerData.get('/history', sessionMiddleware, validateData(schemas.evolutionQuerySchema), dataRead.getEvolutionHistory);
 
-// Dados MediaRegiao
-routerDados.post('/receber-mediaRegiao', validateData(mediaRegiaoArray), criarDadosMediaRegiao)
+routerData.get('/credit-risk', sessionMiddleware, dataRead.getCreditRisk);
+routerData.get('/inclusion-expansion', sessionMiddleware, dataRead.getInclusionExpansion);
+routerData.get('/pix-structure', sessionMiddleware, dataRead.getPixStructure);
+routerData.get('/ibge-structure', sessionMiddleware, dataRead.getIBGEStructure);
 
-// Listar dados gerais
-routerDados.get('/listar-dados', listarDados)
+routerData.get('/dashboard-charts', sessionMiddleware, dataRead.getDashboardCharts);
 
-
-
-export default routerDados;
+export default routerData;
