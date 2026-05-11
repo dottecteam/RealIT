@@ -34,11 +34,11 @@ O sistema integra dados de fontes oficiais (como Banco Central e outras APIs pú
 
 O desenvolvimento do **Real IT** está estruturado em **3 sprints**, focando na evolução progressiva desde a fundação técnica até a entrega final ao usuário:
 
-| Sprint | Foco do MVP | Entregas Principais (Épicos) |
-| :--- | :--- | :--- |
-| **[Sprint 1](./docs/scrum/sprint-backlog/sprint-1.md)**<br>*(16/03 - 05/04)* | **Fundação e Score** | Estruturação da base técnica: Integração com APIs, Pipeline de dados, Backend e a primeira versão do Índice de Oportunidade (Score). |
-| **[Sprint 2](./docs/scrum/sprint-backlog/sprint-2.md)**<br>*(06/04 - 03/05)* | **Visualização Avançada** | Dashboards interativos: Mapa de calor, ranking regional, sistemas de filtros e navegação entre macro e microrregiões. |
-| **[Sprint 3](./docs/scrum/sprint-backlog/sprint-3.md)**<br>*(04/05 - 31/05)* | **Refinamento e Acesso** | Camada de segurança (Auth), comparação entre regiões, exportação de relatórios (PDF/CSV) e o site institucional do produto. |
+| Sprint | Foco do MVP | Entregas Principais (Épicos) | Vídeo da Sprint |
+| :--- | :--- | :--- | :--- |
+| **[Sprint 1](./docs/scrum/sprint-backlog/sprint-1.md)**<br>*(16/03 - 05/04)* | **Fundação e Score** | Estruturação da base técnica: integração com APIs, pipeline de dados, backend e a primeira versão do Índice de Oportunidade (Score). | https://youtu.be/WefxbxIcLJc |
+| **[Sprint 2](./docs/scrum/sprint-backlog/sprint-2.md)**<br>*(06/04 - 03/05)* | **Visualização Avançada** | Dashboards interativos: mapa de calor, ranking regional, sistemas de filtros e navegação entre macro e microrregiões. | https://youtu.be/ibo65U5EOGg |
+| **[Sprint 3](./docs/scrum/sprint-backlog/sprint-3.md)**<br>*(04/05 - 31/05)* | **Refinamento e Acesso** | Camada de segurança (Auth), comparação entre regiões, exportação de relatórios (PDF/CSV) e site institucional do produto. |  |
 
 > **MVP Detalhado:** [Consultar Backlog Completo](./docs/scrum/product-backlog.md)
 
