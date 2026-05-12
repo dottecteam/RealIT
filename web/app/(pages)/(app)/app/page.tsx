@@ -88,7 +88,7 @@ export default function DashboardHome() {
                 com o <strong>Eixo II (Inclusão e Expansão)</strong>, medindo a tração tecnológica (PIX) e o crescimento demográfico. 
                 Acesse os gráficos para visualizar os perfis resultantes (ex: Diamante, Orgânico, Maduro).
               </p>
-              <Button link="/app/graficos" className="bg-secondary text-primary px-10 py-4 font-black rounded-2xl hover:scale-105 w-fit">
+              <Button link="/app/graficos" className="bg-secondary text-primary px-10 py-4 font-black rounded-2xl duration-400 hover:scale-103 w-fit">
                 EXPLORAR O MAPA TÉRMICO <MapIcon className="ml-2 w-5 h-5" />
               </Button>
             </div>

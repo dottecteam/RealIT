@@ -66,6 +66,13 @@
   --radius-2xl: 20px;
 
   --spacing-18: 4.5rem;
+
+   --animate-marquee: marquee 18s linear infinite;
+
+  @keyframes marquee {
+    0% { transform: translateX(0%); }
+    100% { transform: translateX(-50%); }
+  }
 }
 
 body {
