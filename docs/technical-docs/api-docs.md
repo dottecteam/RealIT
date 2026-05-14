@@ -268,11 +268,43 @@ Calculado pelo Colab a partir dos dados Pix (BCB) e censo demográfico (IBGE), a
 
 Os dados no banco são **séries temporais** — cada registro representa um período (`mesAno`) para uma UF específica. A granularidade controla o agrupamento geográfico: a dimensão temporal é sempre colapsada pela média quando uma granularidade é aplicada.
 
-### Parâmetro
+### Parâmetros de query
 
-| Parâmetro       | Tipo   | Obrigatório | Valores aceitos    | Descrição                               |
-|-----------------|--------|-------------|--------------------|-----------------------------------------|
-| `granularidade` | string | Não         | `macro` ou `micro` | Define o nível de agrupamento geográfico |
+Todos os parâmetros são opcionais e podem ser combinados livremente.
+
+| Parâmetro       | Tipo   | Valores aceitos                                            | Descrição                                                                 |
+|-----------------|--------|------------------------------------------------------------|---------------------------------------------------------------------------|
+| `granularidade` | string | `macro` ou `micro`                                         | Define o nível de agrupamento geográfico                                  |
+| `indicador`     | string | Um ou mais nomes de indicador, separados por vírgula       | Restringe a resposta aos indicadores selecionados (ver tabela abaixo)     |
+| `regiao`        | string | Uma ou mais macrorregiões, separadas por vírgula           | Filtra por macrorregião (ex.: `Sul`, `Sudeste,Sul`)                       |
+| `uf`            | string | Uma ou mais UFs (2 caracteres), separadas por vírgula      | Filtra por estado (ex.: `SP`, `SP,MG,RJ`). Case-insensitive na entrada     |
+
+#### Valores aceitos para `indicador`
+
+| Eixo                          | Valores                                                                                                  |
+|-------------------------------|----------------------------------------------------------------------------------------------------------|
+| Risco de Crédito (Eixo I)     | `inadimplenciaReal`, `fragilidadeRenda`, `agingDivida`, `vulnerabilidadeSocial`                          |
+| Inclusão e Expansão (Eixo II) | `maturidadePix`, `crescimentoPopulacional`, `populacaoAbsoluta`, `bonusDemografico`                      |
+
+Quando `indicador` é informado contendo somente indicadores de um único eixo, o array do outro eixo virá vazio na resposta. Quando o parâmetro é omitido, todos os indicadores de ambos os eixos são retornados.
+
+Exemplos:
+
+- `GET /dados/listar-dados?indicador=inadimplenciaReal,agingDivida&regiao=Sudeste`
+- `GET /dados/listar-dados?granularidade=micro&uf=SP,MG`
+- `GET /dados/listar-dados?granularidade=macro&indicador=maturidadePix`
+
+Toda resposta de sucesso passa a incluir o objeto `filtros`, refletindo exatamente os parâmetros aplicados (ou `null` quando não informados).
+
+```json
+"filtros": {
+  "indicador": ["inadimplenciaReal", "agingDivida"],
+  "regiao": ["Sudeste"],
+  "uf": null
+}
+```
+
+> **Observação:** o nome do indicador na resposta é sempre `inadimplenciaReal` (com `m`). Em versões anteriores o campo bruto era `inadiplenciaReal` (refletindo o nome interno da coluna no banco) — agora a API normaliza para `inadimplenciaReal` em todas as granularidades.
 
 ---
 
@@ -285,13 +317,14 @@ Retorna a **série temporal completa** — todos os registros brutos de ambos os
 {
   "granularidade": null,
   "descricao": "Série temporal completa — todos os registros brutos por UF e período",
+  "filtros": { "indicador": null, "regiao": null, "uf": null },
   "riscoCredito": [
     {
       "id": 1,
       "mesAno": "202401",
       "uf": "SP",
       "regiao": "Sudeste",
-      "inadiplenciaReal": 0.045,
+      "inadimplenciaReal": 0.045,
       "fragilidadeRenda": 0.312,
       "agingDivida": 0.621,
       "vulnerabilidadeSocial": 0
@@ -323,11 +356,12 @@ Retorna os valores **agregados por macrorregião** (Norte, Nordeste, Centro-Oest
 {
   "granularidade": "macro",
   "descricao": "Médias agregadas por macrorregião (todos os estados e períodos)",
+  "filtros": { "indicador": null, "regiao": null, "uf": null },
   "riscoCredito": [
     {
       "regiao": "Sudeste",
       "_avg": {
-        "inadiplenciaReal": 0.041,
+        "inadimplenciaReal": 0.041,
         "fragilidadeRenda": 0.298,
         "agingDivida": 0.589,
         "vulnerabilidadeSocial": 0
@@ -359,12 +393,13 @@ Retorna os valores **agregados por UF** (estado), colapsando todos os períodos 
 {
   "granularidade": "micro",
   "descricao": "Médias agregadas por UF (todos os períodos disponíveis), com macrorregião de contexto",
+  "filtros": { "indicador": null, "regiao": null, "uf": null },
   "riscoCredito": [
     {
       "uf": "MG",
       "regiao": "Sudeste",
       "_avg": {
-        "inadiplenciaReal": 0.038,
+        "inadimplenciaReal": 0.038,
         "fragilidadeRenda": 0.271,
         "agingDivida": 0.554,
         "vulnerabilidadeSocial": 0
@@ -374,7 +409,7 @@ Retorna os valores **agregados por UF** (estado), colapsando todos os períodos 
       "uf": "SP",
       "regiao": "Sudeste",
       "_avg": {
-        "inadiplenciaReal": 0.045,
+        "inadimplenciaReal": 0.045,
         "fragilidadeRenda": 0.312,
         "agingDivida": 0.621,
         "vulnerabilidadeSocial": 0
@@ -393,6 +428,20 @@ Retorna os valores **agregados por UF** (estado), colapsando todos os períodos 
 ```json
 {
   "error": "Parâmetro 'granularidade' inválido: \"estado\". Valores aceitos: macro, micro."
+}
+```
+
+**Parâmetro `indicador` inválido `400`:**
+```json
+{
+  "error": "Indicador(es) inválido(s): foo. Valores aceitos: inadimplenciaReal, fragilidadeRenda, agingDivida, vulnerabilidadeSocial, maturidadePix, crescimentoPopulacional, populacaoAbsoluta, bonusDemografico."
+}
+```
+
+**Parâmetro `uf` inválido `400`:**
+```json
+{
+  "error": "UF inválido(s): SAO. Cada UF deve ter exatamente 2 caracteres."
 }
 ```
 

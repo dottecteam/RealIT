@@ -3,6 +3,39 @@ import { prisma } from '../lib/prisma'
  
 const GRANULARIDADES_VALIDAS = ['macro', 'micro'] as const
 type Granularidade = typeof GRANULARIDADES_VALIDAS[number]
+
+const INDICADORES_RISCO = [
+  'inadimplenciaReal',
+  'fragilidadeRenda',
+  'agingDivida',
+  'vulnerabilidadeSocial',
+] as const
+const INDICADORES_INCLUSAO = [
+  'maturidadePix',
+  'crescimentoPopulacional',
+  'populacaoAbsoluta',
+  'bonusDemografico',
+] as const
+const INDICADORES_VALIDOS = [...INDICADORES_RISCO, ...INDICADORES_INCLUSAO] as const
+type Indicador = typeof INDICADORES_VALIDOS[number]
+
+const INDICADOR_PARA_CAMPO_DB: Record<Indicador, string> = {
+  inadimplenciaReal:       'inadiplenciaReal',
+  fragilidadeRenda:        'fragilidadeRenda',
+  agingDivida:             'agingDivida',
+  vulnerabilidadeSocial:   'vulnerabilidadeSocial',
+  maturidadePix:           'maturidadePix',
+  crescimentoPopulacional: 'crescimentoPopulacional',
+  populacaoAbsoluta:       'populacaoAbsoluta',
+  bonusDemografico:        'bonusDemografico',
+}
+
+function parseListParam(value: unknown): string[] | null {
+  if (value === undefined || value === null || value === '') return null
+  const bruto = Array.isArray(value) ? value.map(String) : String(value).split(',')
+  const itens = bruto.map((s) => s.trim()).filter(Boolean)
+  return itens.length > 0 ? itens : null
+}
  
 export async function criarCreditRisk(request: Request, response: Response) {
   const d = request.body
@@ -111,122 +144,174 @@ export async function criarIbgeStructure(request: Request, response: Response) {
  
 export async function listarDados(request: Request, response: Response) {
   const { granularidade } = request.query
- 
+
   if (granularidade !== undefined && !GRANULARIDADES_VALIDAS.includes(granularidade as Granularidade)) {
     return response.status(400).json({
       error: `Parâmetro 'granularidade' inválido: "${granularidade}". Valores aceitos: ${GRANULARIDADES_VALIDAS.join(', ')}.`
     })
   }
- 
+
+  const indicadorParam = parseListParam(request.query.indicador)
+  const regiaoParam    = parseListParam(request.query.regiao)
+  const ufParam        = parseListParam(request.query.uf)
+
+  if (indicadorParam) {
+    const invalidos = indicadorParam.filter((i) => !INDICADORES_VALIDOS.includes(i as Indicador))
+    if (invalidos.length > 0) {
+      return response.status(400).json({
+        error: `Indicador(es) inválido(s): ${invalidos.join(', ')}. Valores aceitos: ${INDICADORES_VALIDOS.join(', ')}.`
+      })
+    }
+  }
+
+  if (ufParam) {
+    const invalidos = ufParam.filter((u) => u.length !== 2)
+    if (invalidos.length > 0) {
+      return response.status(400).json({
+        error: `UF inválido(s): ${invalidos.join(', ')}. Cada UF deve ter exatamente 2 caracteres.`
+      })
+    }
+  }
+
+  const indicadoresSelecionados = (indicadorParam ?? [...INDICADORES_VALIDOS]) as Indicador[]
+  const indicadoresRisco    = indicadoresSelecionados.filter((i) => (INDICADORES_RISCO as readonly string[]).includes(i))
+  const indicadoresInclusao = indicadoresSelecionados.filter((i) => (INDICADORES_INCLUSAO as readonly string[]).includes(i))
+
+  const ufNormalizado = ufParam?.map((u) => u.toUpperCase())
+
+  const whereFiltro: { regiao?: { in: string[] }; uf?: { in: string[] } } = {}
+  if (regiaoParam && regiaoParam.length > 0)         whereFiltro.regiao = { in: regiaoParam }
+  if (ufNormalizado && ufNormalizado.length > 0)     whereFiltro.uf     = { in: ufNormalizado }
+
+  const filtrosAplicados = {
+    indicador: indicadorParam,
+    regiao:    regiaoParam,
+    uf:        ufNormalizado ?? null,
+  }
+
   try {
- 
+
     if (granularidade === 'macro') {
       const [riscoCredito, inclusaoExpansao] = await Promise.all([
- 
-        prisma.riscoCredito.groupBy({
-          by: ['regiao'],
-          _avg: {
-            inadiplenciaReal:      true,
-            fragilidadeRenda:      true,
-            agingDivida:           true,
-            vulnerabilidadeSocial: true,
-          },
-          orderBy: { regiao: 'asc' }
-        }),
- 
-        prisma.inclusaoExpansao.groupBy({
-          by: ['regiao'],
-          _avg: {
-            maturidadePix:           true,
-            crescimentoPopulacional: true,
-            populacaoAbsoluta:       true,
-            bonusDemografico:        true,
-          },
-          orderBy: { regiao: 'asc' }
-        })
- 
+        indicadoresRisco.length > 0
+          ? prisma.riscoCredito.groupBy({
+              by: ['regiao'],
+              where: whereFiltro,
+              _avg: Object.fromEntries(
+                indicadoresRisco.map((i) => [INDICADOR_PARA_CAMPO_DB[i], true])
+              ) as any,
+              orderBy: { regiao: 'asc' }
+            })
+          : Promise.resolve([] as any[]),
+
+        indicadoresInclusao.length > 0
+          ? prisma.inclusaoExpansao.groupBy({
+              by: ['regiao'],
+              where: whereFiltro,
+              _avg: Object.fromEntries(
+                indicadoresInclusao.map((i) => [INDICADOR_PARA_CAMPO_DB[i], true])
+              ) as any,
+              orderBy: { regiao: 'asc' }
+            })
+          : Promise.resolve([] as any[])
       ])
- 
+
       const riscoFormatado = riscoCredito.map((r: any) => ({
         regiao: r.regiao,
-        _avg: {
-          inadimplenciaReal:     r._avg.inadiplenciaReal,
-          fragilidadeRenda:      r._avg.fragilidadeRenda,
-          agingDivida:           r._avg.agingDivida,
-          vulnerabilidadeSocial: r._avg.vulnerabilidadeSocial,
-        }
+        _avg: Object.fromEntries(
+          indicadoresRisco.map((i) => [i, r._avg?.[INDICADOR_PARA_CAMPO_DB[i]] ?? null])
+        )
       }))
- 
+
+      const inclusaoFormatado = inclusaoExpansao.map((r: any) => ({
+        regiao: r.regiao,
+        _avg: Object.fromEntries(
+          indicadoresInclusao.map((i) => [i, r._avg?.[INDICADOR_PARA_CAMPO_DB[i]] ?? null])
+        )
+      }))
+
       return response.json({
         granularidade: 'macro',
         descricao: 'Médias dos scores por macrorregião (escala 1–5)',
+        filtros: filtrosAplicados,
         riscoCredito: riscoFormatado,
-        inclusaoExpansao
+        inclusaoExpansao: inclusaoFormatado
       })
     }
- 
+
     if (granularidade === 'micro') {
       const [riscoCredito, inclusaoExpansao] = await Promise.all([
- 
-        prisma.riscoCredito.groupBy({
-          by: ['uf', 'regiao'],
-          _avg: {
-            inadiplenciaReal:      true,
-            fragilidadeRenda:      true,
-            agingDivida:           true,
-            vulnerabilidadeSocial: true,
-          },
-          orderBy: { uf: 'asc' }
-        }),
- 
-        prisma.inclusaoExpansao.groupBy({
-          by: ['uf', 'regiao'],
-          _avg: {
-            maturidadePix:           true,
-            crescimentoPopulacional: true,
-            populacaoAbsoluta:       true,
-            bonusDemografico:        true,
-          },
-          orderBy: { uf: 'asc' }
-        })
- 
+        indicadoresRisco.length > 0
+          ? prisma.riscoCredito.groupBy({
+              by: ['uf', 'regiao'],
+              where: whereFiltro,
+              _avg: Object.fromEntries(
+                indicadoresRisco.map((i) => [INDICADOR_PARA_CAMPO_DB[i], true])
+              ) as any,
+              orderBy: { uf: 'asc' }
+            })
+          : Promise.resolve([] as any[]),
+
+        indicadoresInclusao.length > 0
+          ? prisma.inclusaoExpansao.groupBy({
+              by: ['uf', 'regiao'],
+              where: whereFiltro,
+              _avg: Object.fromEntries(
+                indicadoresInclusao.map((i) => [INDICADOR_PARA_CAMPO_DB[i], true])
+              ) as any,
+              orderBy: { uf: 'asc' }
+            })
+          : Promise.resolve([] as any[])
       ])
- 
-      const riscoFormatado = riscoCredito.map((r: typeof riscoCredito[number]) => ({
+
+      const riscoFormatado = riscoCredito.map((r: any) => ({
         uf:     r.uf,
         regiao: r.regiao,
-        _avg: {
-          inadimplenciaReal:     r._avg.inadiplenciaReal,
-          fragilidadeRenda:      r._avg.fragilidadeRenda,
-          agingDivida:           r._avg.agingDivida,
-          vulnerabilidadeSocial: r._avg.vulnerabilidadeSocial,
-        }
+        _avg: Object.fromEntries(
+          indicadoresRisco.map((i) => [i, r._avg?.[INDICADOR_PARA_CAMPO_DB[i]] ?? null])
+        )
       }))
- 
+
+      const inclusaoFormatado = inclusaoExpansao.map((r: any) => ({
+        uf:     r.uf,
+        regiao: r.regiao,
+        _avg: Object.fromEntries(
+          indicadoresInclusao.map((i) => [i, r._avg?.[INDICADOR_PARA_CAMPO_DB[i]] ?? null])
+        )
+      }))
+
       return response.json({
         granularidade: 'micro',
         descricao: 'Médias dos scores por UF com macrorregião de contexto (escala 1–5)',
+        filtros: filtrosAplicados,
         riscoCredito: riscoFormatado,
-        inclusaoExpansao
+        inclusaoExpansao: inclusaoFormatado
       })
     }
- 
+
     const [riscoCredito, inclusaoExpansao] = await Promise.all([
-      prisma.riscoCredito.findMany({
-        orderBy: [{ regiao: 'asc' }, { uf: 'asc' }, { mesAno: 'asc' }]
-      }),
-      prisma.inclusaoExpansao.findMany({
-        orderBy: [{ regiao: 'asc' }, { uf: 'asc' }, { mesAno: 'asc' }]
-      })
+      indicadoresRisco.length > 0
+        ? prisma.riscoCredito.findMany({
+            where: whereFiltro,
+            orderBy: [{ regiao: 'asc' }, { uf: 'asc' }, { mesAno: 'asc' }]
+          })
+        : Promise.resolve([] as any[]),
+      indicadoresInclusao.length > 0
+        ? prisma.inclusaoExpansao.findMany({
+            where: whereFiltro,
+            orderBy: [{ regiao: 'asc' }, { uf: 'asc' }, { mesAno: 'asc' }]
+          })
+        : Promise.resolve([] as any[])
     ])
- 
+
     return response.json({
       granularidade: null,
       descricao: 'Série temporal completa — todos os registros brutos por UF e período',
+      filtros: filtrosAplicados,
       riscoCredito,
       inclusaoExpansao
     })
- 
+
   } catch (error) {
     console.error('Erro ao listar dados:', error)
     return response.status(500).json({ error: 'Erro ao buscar dados' })
