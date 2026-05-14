@@ -13,6 +13,8 @@ import { ChartCard } from "../../../../components/ChartCard";
 import { Loader2 } from "lucide-react";
 import { useApiData } from "../../../../hooks/useApiData"; 
 import { CATEGORIAS, REGIOES } from "../../../../constants/ChartOptions";
+import { NivelRegional } from "../../../../components/NivelRegional";
+import { BRASIL_PATHS } from "@/app/constants/BrasilMapPaths";
 
 export default function AnalyticsPage() {
   // Chamada única para o endpoint agregador da API
@@ -162,6 +164,13 @@ export default function AnalyticsPage() {
               </div>
             </ChartCard>
           </div>
+        </section>
+        <section className="space-y-6 pt-4">
+              <div>
+                <NivelRegional data={dashboardData?.ranking}>
+                  {/* Quando os gráficos regionais estiverem prontos, passe os ChartCards aqui, blz Kauan? */}
+                </NivelRegional>
+              </div>
         </section>
       </div>
     </MapProvider>
