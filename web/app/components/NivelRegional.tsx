@@ -59,7 +59,7 @@ export function NivelRegional({ data = [], children }: NivelRegionalProps) {
         {/* Mapa da Região*/}
         <div className="lg:col-span-4 card-base bg-white shadow-xl flex flex-col gap-3 p-4">
 
-          <div className="flex items-center justify-between min-h-[24px]">
+          <div className="flex items-center justify-between min-h-6">
             <span className="text-xs font-semibold text-gray-400 uppercase tracking-wide">
               {regiao.label} - {paths.length} estados
             </span>

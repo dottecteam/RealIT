@@ -134,7 +134,7 @@ export function BrasilMap({ data = [] }: BrasilMapProps) {
         <>
           {Object.entries(CATEGORIA_TEXTO).map(([key, label]) => (
             <div key={key} className="flex items-center gap-2">
-              <div className="w-4 h-4 rounded-sm flex-shrink-0" style={{ backgroundColor: CATEGORIA_CORES[key] }} />
+              <div className="w-4 h-4 rounded-sm shrink-0" style={{ backgroundColor: CATEGORIA_CORES[key] }} />
               <span className="text-gray-600 font-medium">{label}</span>
             </div>
           ))}
@@ -148,7 +148,7 @@ export function BrasilMap({ data = [] }: BrasilMapProps) {
       <>
         {Object.entries(REGIAO_COR).map(([regiao, cor]) => (
           <div key={regiao} className="flex items-center gap-2">
-            <div className="w-4 h-4 rounded-sm flex-shrink-0" style={{ backgroundColor: cor }} />
+            <div className="w-4 h-4 rounded-sm shrink-0" style={{ backgroundColor: cor }} />
             <span className="text-gray-600 font-medium">{regiao}</span>
           </div>
         ))}
@@ -159,7 +159,7 @@ export function BrasilMap({ data = [] }: BrasilMapProps) {
   const anyHovered = hoveredUf !== null;
 
   return (
-    <div className="flex flex-col w-full h-fit min-h-[600px] relative overflow-hidden">
+    <div className="flex flex-col w-full h-fit min-h-150 relative overflow-hidden">
       <div className="mb-6 text-center shrink-0">
         <h3 className="text-xl font-black text-primary uppercase tracking-tight">
           Mapa Brasil <span className="text-gray-400 font-medium">/ {viewMode == "uf" ? "UF" : "Região"}</span>
@@ -173,7 +173,7 @@ export function BrasilMap({ data = [] }: BrasilMapProps) {
       </div>
 
       <div className="flex-1 flex justify-center items-center w-full relative px-4">
-        <svg viewBox="0 0 800 691" className="w-full h-full max-h-[500px] drop-shadow-2xl select-none" preserveAspectRatio="xMidYMid meet">
+        <svg viewBox="0 0 800 691" className="w-full h-full max-h-125 drop-shadow-2xl select-none" preserveAspectRatio="xMidYMid meet">
           {BRASIL_PATHS.map((estado) => (
             <EstadoPath_ key={estado.uf} estado={estado} fill={getFill(estado)} isHovered={hoveredUf === estado.uf} anyHovered={anyHovered} onMouseEnter={handleMouseEnter} onMouseLeave={handleMouseLeave} onMouseMove={handleMouseMove} />
           ))}

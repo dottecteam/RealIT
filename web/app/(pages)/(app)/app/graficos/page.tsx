@@ -103,13 +103,13 @@ export default function AnalyticsPage() {
 
           <div className="lg:col-span-4 flex flex-col gap-6">
             <ChartCard title="Risco Regional (Eixo I)">
-              <div className="h-[250px] mt-4">
+              <div className="h-62.5 mt-4">
                 {isLoading ? <Loader2 className="animate-spin m-auto" /> : <RankingChart series={seriesRegiaoI} title="" />}
               </div>
             </ChartCard>
 
             <ChartCard title="Inclusão Regional (Eixo II)">
-              <div className="h-[250px] mt-4">
+              <div className="h-62.5 mt-4">
                 {isLoading ? <Loader2 className="animate-spin m-auto" /> : <RankingChart series={seriesRegiaoII} title="" />}
               </div>
             </ChartCard>
@@ -121,7 +121,7 @@ export default function AnalyticsPage() {
           <ChartCard title="Evolução Temporal dos Scores" info="Histórico das variáveis macroeconômicas.">
             <div className="p-2">
               {isLoading ? (
-                <div className="h-[280px] flex"><Loader2 className="animate-spin m-auto" /></div>
+                <div className="h-70 flex"><Loader2 className="animate-spin m-auto" /></div>
               ) : (
                 <EvolucaoScoresChart 
                   categorias={dashboardData?.history?.categories || []} 
