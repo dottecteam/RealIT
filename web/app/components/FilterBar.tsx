@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { LayoutGrid, Filter, Download, ChevronDown, ChevronUp, Check } from 'lucide-react';
 import { OPCOES_VISIBILIDADE, SECOES_FILTRO, OPCOES_DOWNLOAD } from "../constants/filterOptions";
+import { exportarPDF } from "../utils/exportPDF";
 
 function FilterSection({ title, children }: { title: string, children: React.ReactNode }) {
   const [isOpen, setIsOpen] = useState(false);
@@ -31,7 +32,7 @@ export default function FilterBar() {
   const fecharMenus = () => setMenuAberto(null);
 
   return (
-    <div className="relative w-full sm:w-auto">
+    <div className="relative w-full sm:w-auto" id="filter-bar">
       {/* Barra de Botões - Altura unificada h-14 com o RegionFilter */}
       <div className="bg-white rounded-full shadow-lg border border-gray-100 p-1.5 h-14 flex items-center justify-around gap-1.5 min-w-[180px]">
         <button 
@@ -124,7 +125,13 @@ export default function FilterBar() {
             {OPCOES_DOWNLOAD.map(opcao => (
               <button 
                 key={opcao.id} 
-                onClick={fecharMenus}
+                onClick={async () => {
+                  try {
+                    await exportarPDF();
+                  } catch (error) {
+                    console.error("Erro ao gerar PDF:", error);
+                  }
+                }}
                 className="w-full text-left bg-gray-50 hover:bg-primary hover:text-white p-4 rounded-xl text-xs font-black text-gray-600 transition-all flex items-center justify-between group uppercase tracking-widest active:scale-95"
               >
                 {opcao.texto}

@@ -165,7 +165,7 @@ export function BrasilMap({ data = [] }: BrasilMapProps) {
           Mapa Brasil <span className="text-gray-400 font-medium">/ {viewMode == "uf" ? "UF" : "Região"}</span>
         </h3>
       </div>
-      <div className="mb-4 shrink-0 px-4">
+      <div className="mb-4 shrink-0 px-4" id="mapa-calor">
         <label className="flex items-center gap-2 cursor-pointer select-none w-fit">
           <input type="checkbox" className="w-4 h-4 accent-primary" checked={heatmap} onChange={() => setHeatmap((prev) => !prev)} />
           <span className="text-sm font-bold text-gray-600">Modo mapa de calor</span>

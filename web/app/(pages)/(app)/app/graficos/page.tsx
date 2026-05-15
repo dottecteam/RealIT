@@ -72,7 +72,7 @@ export default function AnalyticsPage() {
 
   return (
     <MapProvider>
-      <div className="flex flex-col gap-8 sm:pb-15 animate-in fade-in duration-700">
+      <div className="flex flex-col gap-8 sm:pb-15 animate-in fade-in duration-700" id="export-pdf">
         
         <header className="flex flex-col xl:flex-row justify-between items-start xl:items-center gap-6 border-b border-gray-100">
           <div className="space-y-1">
