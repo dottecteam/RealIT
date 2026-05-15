@@ -134,23 +134,14 @@ export function NivelRegional({ data = [], children }: NivelRegionalProps) {
         </div>
 
         <div className="lg:col-span-8 grid grid-cols-1 sm:grid-cols-2 gap-4">
-          {/* aqui vão os <ChartCard> reais. Se não passar `children`, mostra placeholders com a cor da região.*/}
-          {children ?? <RegionalChartPlaceholders regiaoColor={regiao.color} regiaoFill={regiao.fill} />}
+          {children ?? <RegionalChartPlaceholders  />}
         </div>
       </div>
     </section>
   )
 }
 
-//Placeholder interno (tem que trocar pelos ChartCards reais)
-
-function RegionalChartPlaceholders({
-  regiaoColor,
-  regiaoFill,
-}: {
-  regiaoColor: string
-  regiaoFill: string
-}) {
+function RegionalChartPlaceholders() {
   const charts = [
     "Taxa de Escolarização (25+ anos)",
     "Aging da Dívida: Proporção Vencida Acima de 90 Dias",

@@ -107,3 +107,16 @@ export function getViewBoxByRegiao(regiao: Regiao, padding = 24): string {
 
   return `${minX - padding} ${minY - padding} ${maxX - minX + padding * 2} ${maxY - minY + padding * 2}`;
 }
+
+/** Calcula o viewBox ajustado para um único estado */
+export function getViewBoxByUF(uf: string, padding = 32): string {
+  const path = BRASIL_PATHS.find((p) => p.uf === uf);
+  if (!path) return "0 0 700 710";
+  let minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
+  const nums = path.d.match(/-?\d+\.?\d*/g)!.map(Number);
+  for (let i = 0; i < nums.length - 1; i += 2) {
+    minX = Math.min(minX, nums[i]);     maxX = Math.max(maxX, nums[i]);
+    minY = Math.min(minY, nums[i + 1]); maxY = Math.max(maxY, nums[i + 1]);
+  }
+  return `${minX - padding} ${minY - padding} ${maxX - minX + padding * 2} ${maxY - minY + padding * 2}`;
+}

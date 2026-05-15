@@ -159,7 +159,7 @@ export function BrasilMap({ data = [] }: BrasilMapProps) {
   const anyHovered = hoveredUf !== null;
 
   return (
-    <div className="card-base flex flex-col w-full h-fit min-h-[600px] relative overflow-hidden">
+    <div className="flex flex-col w-full h-fit min-h-[600px] relative overflow-hidden">
       <div className="mb-6 text-center shrink-0">
         <h3 className="text-xl font-black text-primary uppercase tracking-tight">
           Mapa Brasil <span className="text-gray-400 font-medium">/ {viewMode == "uf" ? "UF" : "Região"}</span>
