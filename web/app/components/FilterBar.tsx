@@ -4,6 +4,9 @@ import { useState } from "react";
 import { LayoutGrid, Filter, Download, ChevronDown, ChevronUp, Check } from 'lucide-react';
 import { OPCOES_VISIBILIDADE, SECOES_FILTRO, OPCOES_DOWNLOAD } from "../constants/filterOptions";
 import { exportarPDF } from "../utils/exportPDF";
+import { exportarXLSX } from "../utils/exportXLSX";
+import { exportarCSV } from "../utils/exportCSV";
+import { mockDadosScoreCompleto } from "../mocks/score";
 
 function FilterSection({ title, children }: { title: string, children: React.ReactNode }) {
   const [isOpen, setIsOpen] = useState(false);
@@ -118,26 +121,54 @@ export default function FilterBar() {
 
       {/* Dropdown: Exportação/Download */}
       {menuAberto === "download" && (
-        <div className="absolute top-full right-0 mt-3 w-full sm:w-[280px] bg-white shadow-2xl rounded-2xl p-6 z-[9999] border border-gray-100 animate-in fade-in zoom-in-95 duration-200">
+        <div className="absolute top-full right-0 mt-3 w-full sm:w-[280px] bg-white shadow-2xl rounded-2xl p-6 z-[9999] border border-gray-100 animate-in fade-in zoom-in-95 duration-200 esconder-no-pdf">
           <h2 className="text-primary font-black uppercase text-[10px] tracking-[0.2em] mb-2">Exportar Dados</h2>
           <p className="text-[11px] text-gray-400 mb-5 font-medium">Selecione o formato para baixar as métricas visualizadas atualmente.</p>
+          
           <div className="space-y-2">
-            {OPCOES_DOWNLOAD.map(opcao => (
-              <button 
-                key={opcao.id} 
-                onClick={async () => {
-                  try {
-                    await exportarPDF();
-                  } catch (error) {
-                    console.error("Erro ao gerar PDF:", error);
-                  }
-                }}
-                className="w-full text-left bg-gray-50 hover:bg-primary hover:text-white p-4 rounded-xl text-xs font-black text-gray-600 transition-all flex items-center justify-between group uppercase tracking-widest active:scale-95"
-              >
-                {opcao.texto}
-                <Download className="w-4 h-4 opacity-30 group-hover:opacity-100 transition-opacity" />
-              </button>
-            ))}
+            
+            {/* BOTÃO 1: PDF */}
+            <button 
+              onClick={async () => {
+                try {
+                  await exportarPDF();
+                } catch (error) {
+                  console.error("Erro ao gerar PDF:", error);
+                }
+              }}
+              className="w-full text-left bg-gray-50 hover:bg-primary hover:text-white p-4 rounded-xl text-xs font-black text-gray-600 transition-all flex items-center justify-between group uppercase tracking-widest active:scale-95"
+            >
+              DOWNLOAD EM PDF
+              <Download className="w-4 h-4 opacity-30 group-hover:opacity-100 transition-opacity" />
+            </button>
+
+            {/* BOTÃO 2: EXCEL COMPLETO */}
+            <button 
+              onClick={exportarXLSX}
+              className="w-full text-left bg-gray-50 hover:bg-green-600 hover:text-white p-4 rounded-xl text-xs font-black text-gray-600 transition-all flex items-center justify-between group uppercase tracking-widest active:scale-95"
+            >
+              DOWNLOAD EM EXCEL
+              <Download className="w-4 h-4 opacity-30 group-hover:opacity-100 transition-opacity" />
+            </button>
+
+            {/* BOTÃO 3: CSV - ESTADOS */}
+            <button 
+              onClick={() => exportarCSV(mockDadosScoreCompleto.dadosScore, "Relatorio_Estados")}
+              className="w-full text-left bg-gray-50 hover:bg-gray-800 hover:text-white p-4 rounded-xl text-xs font-black text-gray-600 transition-all flex items-center justify-between group uppercase tracking-widest active:scale-95"
+            >
+              CSV - POR ESTADO
+              <Download className="w-4 h-4 opacity-30 group-hover:opacity-100 transition-opacity" />
+            </button>
+
+            {/* BOTÃO 4: CSV - REGIÕES */}
+            <button 
+              onClick={() => exportarCSV(mockDadosScoreCompleto.dadosMediaRegiao, "Relatorio_Regioes")}
+              className="w-full text-left bg-gray-50 hover:bg-gray-800 hover:text-white p-4 rounded-xl text-xs font-black text-gray-600 transition-all flex items-center justify-between group uppercase tracking-widest active:scale-95"
+            >
+              CSV - POR REGIÃO
+              <Download className="w-4 h-4 opacity-30 group-hover:opacity-100 transition-opacity" />
+            </button>
+
           </div>
         </div>
       )}
