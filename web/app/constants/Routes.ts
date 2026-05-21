@@ -1,15 +1,9 @@
-export const NAV_ROUTES = [
-    { label: "Funcionalidades", route: "/funcionalidades" },
-    { label: "Sobre", route: "/sobre" },
-    { label: "Contato", route: "/contato" }
-];
-
 export const AUTH_ROUTES = {
     login: { label: "Entrar", route: "/login" },
     signup: { label: "Começar agora", route: "/cadastro" }
 };
 
-import { LayoutDashboard, BarChart3, FileText, Settings } from "lucide-react";
+import { LayoutDashboard, BarChart3, FileText, User } from "lucide-react";
 
 export const APP_ROUTES = [
   {
@@ -28,8 +22,8 @@ export const APP_ROUTES = [
     icon: FileText,
   },
   {
-    label: "Configurações",
-    href: "/configuracoes",
-    icon: Settings,
+    label: "Perfil",
+    href: "/perfil",
+    icon: User,
   },
 ];
