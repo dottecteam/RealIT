@@ -89,3 +89,19 @@ export async function inactivateUser(id:number) {
 
   return response.data;
 }
+
+export async function activateUser(id:number) {
+  const token = localStorage.getItem("@RealIT:token");
+
+  const response = await api.patch(
+    `/users/activate/${id}`,
+    {},
+    {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    }
+  );
+
+  return response.data;
+}

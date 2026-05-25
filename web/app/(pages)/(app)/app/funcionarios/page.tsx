@@ -2,12 +2,7 @@
 
 import { useEffect, useState } from "react";
 
-import {
-  getUsers,
-  createUser,
-  updateUser,
-  inactivateUser,
-} from "../../../../services/API/useService";
+import { getUsers, createUser, updateUser, inactivateUser, activateUser } from "../../../../services/API/useService";
 
 interface User {
   id: number;
@@ -65,42 +60,67 @@ export default function FuncionariosPage() {
   }, []);
 
   async function handleSubmit(e: React.FormEvent) {
-    e.preventDefault();
+  e.preventDefault();
 
-    try {
-      if (editingId) {
-        await updateUser(editingId, form);
-      } else {
-        await createUser(form);
+  try {
+    if (editingId) {
+      const payload:any = {
+        name: form.name,
+        email: form.email,
+        role: form.role,
+      };
+
+      if (form.password.trim() !== "") {
+        payload.password = form.password;
       }
 
-      setForm({
-        name: "",
-        email: "",
-        password: "",
-        role: "USER",
-        status: "ACTIVE",
+      await updateUser(editingId, payload);
+
+    } else {
+      await createUser({
+        name: form.name,
+        email: form.email,
+        password: form.password,
+        role: form.role,
       });
 
-      setEditingId(null);
-
-      setIsModalOpen(false);
-
-      loadUsers();
-    } catch (error:any) {
-      const detalhes = error?.response?.data?.detalhes;
-      if (detalhes) {
-        const mensagens = detalhes.map(
-          (item:any) => item.mensagem
-        );
-        setErrors(mensagens);
-      } else {
-        setErrors(["Erro ao salvar usuário"]);
-      }
-
-      console.error(error);
     }
+    setForm({
+      name: "",
+      email: "",
+      password: "",
+      status: "ACTIVE",
+      role: "USER",
+    });
+
+    setEditingId(null);
+    setIsModalOpen(false);
+    loadUsers();
+
+  } catch (error:any) {
+
+    const detalhes =
+      error?.response?.data?.detalhes;
+
+    if (detalhes) {
+
+      const mensagens = detalhes.map(
+        (item:any) => item.mensagem
+      );
+
+      setErrors(mensagens);
+
+    } else {
+
+      setErrors([
+        "Erro ao salvar usuário"
+      ]);
+
+    }
+
+    console.error(error);
   }
+}
 
   function handleEdit(user: User) {
     setEditingId(user.id);
@@ -117,13 +137,15 @@ export default function FuncionariosPage() {
   }
 
   async function handleDelete(id: number) {
-    const confirmDelete = confirm(
-      "Deseja inativar este usuário?"
-    );
-
+    const confirmDelete = confirm("Deseja inativar este usuário?");
     if (!confirmDelete) return;
-
     await inactivateUser(id);
+
+    loadUsers();
+  }
+
+  async function handleActivate(id:number) {
+    await activateUser(id);
 
     loadUsers();
   }
@@ -232,12 +254,24 @@ export default function FuncionariosPage() {
               Editar
             </button>
 
-            <button
-              className="bg-white hover:bg-gray-100 hover:text-primary shadow-sm transition text-gray-500 px-5 py-3 rounded-[15px] font-bold"
-              onClick={() => handleDelete(user.id)}
-            >
-              Inativar
-            </button>
+            {user.status === "ACTIVE" ? (
+              <button
+                className="bg-white hover:bg-gray-100 hover:text-primary shadow-sm transition text-gray-500 px-5 py-3 rounded-[15px] font-bold"
+                onClick={() => handleDelete(user.id)}
+              >
+                Inativar
+              </button>
+
+            ) : (
+
+              <button
+                className="bg-white hover:bg-gray-100 hover:text-primary shadow-sm transition text-gray-500 px-5 py-3 rounded-[15px] font-bold"
+                onClick={() => handleActivate(user.id)}
+              >
+                Ativar
+              </button>
+
+            )}
           </div>
         </div>
       </div>
