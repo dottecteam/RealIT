@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { X, User, Mail, Lock, ShieldCheck } from "lucide-react"
 import { getUsers, createUser, updateUser, inactivateUser, activateUser, getProfile } from "../../../../services/API/useService";
+import { useRouter } from "next/navigation";
 
 interface User {
   id: number;
@@ -19,6 +20,8 @@ export default function FuncionariosPage() {
   const [errors, setErrors] = useState<string[]>([]);
   const [currentUser, setCurrentUser] = useState<any>(null);
 
+  const router = useRouter();
+
   const [form, setForm] = useState({
     name: "",
     email: "",
@@ -30,6 +33,12 @@ export default function FuncionariosPage() {
   async function loadUsers() {
     try {
       const data = await getUsers();
+
+      if (data?.error) {
+        router.push("/app");
+        return;
+      }
+      
       setUsers(data);
     } catch (error) {
       console.error(error);
@@ -44,7 +53,16 @@ export default function FuncionariosPage() {
         if (!mounted) return;
         const data = await getUsers();
         const profile = await getProfile();
+
+        setCurrentUser(profile);
+
+        if (profile.role !== "ADMIN") {
+          router.push("/app");
+          return;
+        }
+
         if (!mounted) return;
+
         setUsers(data);
         setCurrentUser(profile);
       } catch (error:any) {
@@ -64,26 +82,59 @@ export default function FuncionariosPage() {
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
 
+    setErrors([]);
+
     try {
       if (editingId) {
-        const payload: any = {
+        const payload:any = {
           name: form.name,
           email: form.email,
           role: form.role,
         };
 
+        // Só envia senha se ela foi preenchida
         if (form.password.trim() !== "") {
           payload.password = form.password;
         }
 
-        await updateUser(editingId, payload);
+        const response = await updateUser( editingId, payload);
+
+        if (response?.error) {
+          const detalhes = response?.data?.detalhes;
+
+          if (detalhes) {
+            const mensagens = detalhes.map((item:any) => item.mensagem);
+            setErrors(mensagens);
+
+          } else {
+            setErrors([
+              "Erro ao atualizar usuário"
+            ]);
+          }
+          return;
+        }
       } else {
-        await createUser({
+        const response = await createUser({
           name: form.name,
           email: form.email,
           password: form.password,
           role: form.role,
         });
+
+        if (response?.error) {
+          const detalhes = response?.data?.detalhes;
+
+          if (detalhes) {
+            const mensagens = detalhes.map((item:any) => item.mensagem);
+            setErrors(mensagens);
+
+          } else {
+            setErrors([
+              "Erro ao cadastrar usuário"
+            ]);
+          }
+          return;
+        }
       }
       setForm({
         name: "",
@@ -96,18 +147,14 @@ export default function FuncionariosPage() {
       setEditingId(null);
       setIsModalOpen(false);
       loadUsers();
-    } catch (error: any) {
-      const detalhes = error?.response?.data?.detalhes;
-
-      if (detalhes) {
-        const mensagens = detalhes.map((item: any) => item.mensagem);
-
-        setErrors(mensagens);
-      } else {
-        setErrors(["Erro ao salvar usuário"]);
-      }
+    } catch (error) {
 
       console.error(error);
+
+      setErrors([
+        "Erro inesperado ao salvar usuário"
+      ]);
+
     }
   }
 

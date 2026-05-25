@@ -12,12 +12,12 @@ export async function getUsers() {
 
     return response.data;
   } catch (error:any) {
-    console.error(
-      "Erro ao buscar usuários:",
-      error?.response?.data || error
-    );
 
-    return [];
+    return {
+      error: true,
+      status: error?.response?.status,
+      data: error?.response?.data
+    };
   }
 }
 
@@ -39,13 +39,12 @@ export async function createUser(data:any) {
     return response.data;
 
   } catch (error:any) {
+    console.log("ERRO BACKEND:", error?.response?.data);
 
-    console.log(
-      "ERRO BACKEND:",
-      error?.response?.data
-    );
-
-    throw error;
+    return {
+      error: true,
+      data: error?.response?.data
+    };
   }
 }
 
@@ -70,7 +69,10 @@ export async function updateUser(id:number, data:any) {
       error?.response?.data
     );
 
-    throw error;
+    return {
+      error: true,
+      data: error?.response?.data
+    };
   }
 }
 
