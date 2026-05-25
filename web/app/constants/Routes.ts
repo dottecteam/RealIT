@@ -9,7 +9,7 @@ export const AUTH_ROUTES = {
     signup: { label: "Começar agora", route: "/cadastro" }
 };
 
-import { LayoutDashboard, BarChart3, FileText, Settings } from "lucide-react";
+import { LayoutDashboard, BarChart3, Users, Settings } from "lucide-react";
 
 export const APP_ROUTES = [
   {
@@ -23,9 +23,9 @@ export const APP_ROUTES = [
     icon: BarChart3,
   },
   {
-    label: "Relatórios",
-    href: "/app/relatorios",
-    icon: FileText,
+    label: "Funcionários",
+    href: "/app/funcionarios",
+    icon: Users,
   },
   {
     label: "Configurações",
