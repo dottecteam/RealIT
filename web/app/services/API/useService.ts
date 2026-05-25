@@ -105,3 +105,18 @@ export async function activateUser(id:number) {
 
   return response.data;
 }
+
+export async function getProfile() {
+  const token = localStorage.getItem("@RealIT:token");
+
+  const response = await api.get(
+    "/users/me",
+    {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    }
+  );
+
+  return response.data;
+}
