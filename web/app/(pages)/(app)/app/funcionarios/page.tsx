@@ -19,10 +19,9 @@ interface User {
 
 export default function FuncionariosPage() {
   const [users, setUsers] = useState<User[]>([]);
-
   const [editingId, setEditingId] = useState<number | null>(null);
-
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [errors, setErrors] = useState<string[]>([]);
 
   const [form, setForm] = useState({
     name: "",
@@ -88,7 +87,17 @@ export default function FuncionariosPage() {
       setIsModalOpen(false);
 
       loadUsers();
-    } catch (error) {
+    } catch (error:any) {
+      const detalhes = error?.response?.data?.detalhes;
+      if (detalhes) {
+        const mensagens = detalhes.map(
+          (item:any) => item.mensagem
+        );
+        setErrors(mensagens);
+      } else {
+        setErrors(["Erro ao salvar usuário"]);
+      }
+
       console.error(error);
     }
   }
@@ -259,6 +268,31 @@ export default function FuncionariosPage() {
                 ✕
               </button>
             </div>
+
+            {errors.length > 0 && (
+              <div className="px-6 pt-6">
+
+                <div className="bg-red-50 border border-red-200 rounded-2xl p-4">
+
+                  <h3 className="text-red-700 font-bold mb-2">
+                    Corrija os seguintes erros:
+                  </h3>
+
+                  <ul className="flex flex-col gap-1">
+                    {errors.map((error, index) => (
+                      <li
+                        key={index}
+                        className="text-sm text-red-600"
+                      >
+                        • {error}
+                      </li>
+                    ))}
+                  </ul>
+
+                </div>
+
+              </div>
+            )}
 
             <form
               onSubmit={handleSubmit}

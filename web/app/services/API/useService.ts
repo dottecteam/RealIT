@@ -52,17 +52,26 @@ export async function createUser(data:any) {
 export async function updateUser(id:number, data:any) {
   const token = localStorage.getItem("@RealIT:token");
 
-  const response = await api.put(
-    `/users/edit/${id}`,
-    data,
-    {
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
-    }
-  );
+  try {
+    const response = await api.put(
+      `/users/edit/${id}`,
+      data,
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      }
+    );
+    return response.data;
+  } catch (error:any) {
 
-  return response.data;
+    console.log(
+      "ERRO UPDATE:",
+      error?.response?.data
+    );
+
+    throw error;
+  }
 }
 
 export async function inactivateUser(id:number) {
