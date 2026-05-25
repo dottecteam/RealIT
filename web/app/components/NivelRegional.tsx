@@ -4,18 +4,23 @@ import { useState, useMemo } from "react"
 import { BRASIL_PATHS, REGIOES_CONFIG, Regiao, getPathsByRegiao, getViewBoxByRegiao } from "@/app/constants/BrasilMapPaths"
 
 type NivelRegionalProps = {
-  /** Opcional: passa dados reais para os gráficos quando estiverem prontos */
   data?: any[]
-  children?: React.ReactNode // slot para os ChartCards reais
+  children?: React.ReactNode
+  onRegiaoChange?: (regiao: Regiao) => void
 }
 
-export function NivelRegional({ data = [], children }: NivelRegionalProps) {
+export function NivelRegional({ data = [], children, onRegiaoChange }: NivelRegionalProps) {
   const [activeRegiao, setActiveRegiao] = useState<Regiao>("Norte")
   const [hoveredUF, setHoveredUF] = useState<string | null>(null)
   const regiao = REGIOES_CONFIG[activeRegiao]
   const paths = useMemo(() => getPathsByRegiao(activeRegiao), [activeRegiao])
   const viewBox = useMemo(() => getViewBoxByRegiao(activeRegiao), [activeRegiao])
   const fontSize = activeRegiao === "Norte" ? 18 : activeRegiao === "Nordeste" ? 9 : 10
+
+  const handleRegiaoChange = (key: Regiao) => {
+    setActiveRegiao(key)
+    onRegiaoChange?.(key)
+  }
 
   return (
     <section className="space-y-6 pt-4">
@@ -38,7 +43,7 @@ export function NivelRegional({ data = [], children }: NivelRegionalProps) {
           return (
             <button
               key={key}
-              onClick={() => setActiveRegiao(key)}
+              onClick={() => handleRegiaoChange(key)}
               className="transition-all duration-150 rounded-full px-4 py-1.5 text-xs font-semibold border"
               style={{
                 background: isActive ? r.color : "#fff",
@@ -55,10 +60,7 @@ export function NivelRegional({ data = [], children }: NivelRegionalProps) {
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
-
-        {/* Mapa da Região*/}
         <div className="lg:col-span-4 card-base bg-white shadow-xl flex flex-col gap-3 p-4">
-
           <div className="flex items-center justify-between min-h-6">
             <span className="text-xs font-semibold text-gray-400 uppercase tracking-wide">
               {regiao.label} - {paths.length} estados
@@ -74,7 +76,6 @@ export function NivelRegional({ data = [], children }: NivelRegionalProps) {
           </div>
 
           <svg viewBox={viewBox} className="w-full h-auto" preserveAspectRatio="xMidYMid meet">
-
             <defs>
               <filter id="nrShadow">
                 <feDropShadow dx="0" dy="2" stdDeviation="3"
@@ -134,7 +135,7 @@ export function NivelRegional({ data = [], children }: NivelRegionalProps) {
         </div>
 
         <div className="lg:col-span-8 grid grid-cols-1 sm:grid-cols-2 gap-4">
-          {children ?? <RegionalChartPlaceholders  />}
+          {children ?? <RegionalChartPlaceholders />}
         </div>
       </div>
     </section>
@@ -146,7 +147,6 @@ function RegionalChartPlaceholders() {
     "Taxa de Escolarização (25+ anos)",
     "Aging da Dívida: Proporção Vencida Acima de 90 Dias",
     "Ranking de Inadimplência Real",
-    "Radar Comparativo",
   ]
 
   return (
