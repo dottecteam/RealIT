@@ -23,12 +23,61 @@ export async function register(request: Request, response: Response) {
             }
         });
 
-
         if (sessionId) await logOperation(sessionId, 'CREATE_USER');
 
         return response.status(201).json({ message: 'Usuário criado com sucesso', user: { id: user.id, name: user.name, email: user.email } });
     } catch (error) {
         return response.status(500).json({ error: 'Erro ao cadastrar usuário' });
+    }
+}
+
+export async function updateSelf(request: Request, response: Response) {
+    const sessionId = (request as any).sessionId;
+    const userId    = (request as any).userId as number;
+    const { name, email, currentPassword, newPassword } = request.body;
+
+    try {
+        const user = await prisma.user.findUnique({ where: { id: userId } });
+        if (!user) return response.status(404).json({ error: 'Usuário não encontrado' });
+
+        // Valida senha atual se quiser trocar a senha
+        if (newPassword) {
+            if (!currentPassword) {
+                return response.status(400).json({ error: 'Informe a senha atual para alterá-la' });
+            }
+            const senhaCorreta = await bcrypt.compare(currentPassword, user.password);
+            if (!senhaCorreta) {
+                return response.status(401).json({ error: 'Senha atual incorreta' });
+            }
+        }
+
+        // Verifica duplicidade de e-mail se mudou
+        if (email && email !== user.email) {
+            const existe = await prisma.user.findUnique({ where: { email } });
+            if (existe) return response.status(409).json({ error: 'Este e-mail já está em uso' });
+        }
+
+        const updateData: any = {};
+        if (name)        updateData.name     = name;
+        if (email)       updateData.email    = email;
+        if (newPassword) updateData.password = await bcrypt.hash(newPassword, 10);
+
+        if (Object.keys(updateData).length === 0) {
+            return response.status(400).json({ error: 'Nenhum dado para atualizar' });
+        }
+
+        const updatedUser = await prisma.user.update({
+            where: { id: userId },
+            data: updateData,
+            select: { id: true, name: true, email: true, role: true, status: true, updatedAt: true }
+        });
+
+        await logOperation(sessionId, 'UPDATE_USER');
+
+        return response.json({ message: 'Perfil atualizado com sucesso', user: updatedUser });
+    } catch (error) {
+        console.error(error);
+        return response.status(500).json({ error: 'Erro interno ao atualizar perfil' });
     }
 }
 
@@ -38,7 +87,6 @@ export async function update(request: Request, response: Response) {
     const sessionId = (request as any).sessionId;
 
     try {
-        // Busca o usuário atual para comparar mudanças sensíveis
         const currentUser = await prisma.user.findUnique({
             where: { id: Number(id) }
         });
@@ -48,40 +96,28 @@ export async function update(request: Request, response: Response) {
         }
 
         const updateData: any = {};
-        if (name) updateData.name = name;
-        if (email) updateData.email = email;
-        if (status) updateData.status = status;
-        if (role) updateData.role = role;
-
-        if (password) {
-            updateData.password = await bcrypt.hash(password, 10);
-        }
+        if (name)     updateData.name   = name;
+        if (email)    updateData.email  = email;
+        if (status)   updateData.status = status;
+        if (role)     updateData.role   = role;
+        if (password) updateData.password = await bcrypt.hash(password, 10);
 
         if (Object.keys(updateData).length === 0) {
             return response.status(400).json({ error: 'Nenhum dado para atualizar' });
         }
 
-        // Executa a atualização
         const updatedUser = await prisma.user.update({
             where: { id: Number(id) },
             data: updateData
         });
 
-        // Lógica de Invalidação de Sessão
-        // Se o status mudou para INACTIVE ou se a ROLE mudou, derrubamos as sessões
         const statusChangedToInactive = status === 'INACTIVE' && currentUser.status !== 'INACTIVE';
         const roleChanged = role && role !== currentUser.role;
 
         if (statusChangedToInactive || roleChanged) {
             await prisma.session.updateMany({
-                where: {
-                    userId: updatedUser.id,
-                    isActive: true
-                },
-                data: {
-                    isActive: false,
-                    logoutAt: new Date()
-                }
+                where: { userId: updatedUser.id, isActive: true },
+                data: { isActive: false, logoutAt: new Date() }
             });
         }
 
@@ -97,7 +133,6 @@ export async function update(request: Request, response: Response) {
                 role: updatedUser.role
             }
         });
-
     } catch (error) {
         console.error(error);
         return response.status(500).json({ error: 'Erro interno ao atualizar usuário' });
@@ -113,7 +148,6 @@ export async function inactivate(request: Request, response: Response) {
             where: { id: Number(id) },
             data: { status: 'INACTIVE' }
         });
-
 
         await prisma.session.updateMany({
             where: { userId: Number(id), isActive: true },
@@ -137,7 +171,6 @@ export async function activate(request: Request, response: Response) {
             data: { status: 'ACTIVE' }
         });
 
-
         await prisma.session.updateMany({
             where: { userId: Number(id), isActive: true },
             data: { isActive: false, logoutAt: new Date() }
@@ -146,7 +179,7 @@ export async function activate(request: Request, response: Response) {
         await logOperation(sessionId, 'UPDATE_USER');
         return response.json({ message: 'Usuário ativado com sucesso' });
     } catch (error) {
-        return response.status(500).json({ error: 'Erro ao inativar usuário' });
+        return response.status(500).json({ error: 'Erro ao ativar usuário' });
     }
 }
 
@@ -209,7 +242,7 @@ export async function turnDev(request: Request, response: Response) {
             data: { isActive: false, logoutAt: new Date() }
         });
 
-        await logOperation(sessionId, 'UPDATE_USER'); //
+        await logOperation(sessionId, 'UPDATE_USER');
         return response.json({ message: 'Promovido a Desenvolvedor', role: updatedUser.role });
     } catch (error) {
         return response.status(500).json({ error: 'Erro ao atualizar cargo' });

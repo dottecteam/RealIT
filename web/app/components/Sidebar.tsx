@@ -1,6 +1,6 @@
 "use client";
 
-import { ChevronLeft, Menu } from "lucide-react";
+import { ChevronLeft, Menu, User } from "lucide-react";
 import { SidebarItem } from "./SidebarItem";
 import SidebarProps from "../types/components/Sidebar";
 import { APP_ROUTES } from "../constants/Routes";
@@ -66,27 +66,29 @@ export function Sidebar({ isOpen, onToggle }: SidebarProps) {
           );
         })}
 
-        {/* Mobile settings */}
+        {/* Mobile profile */}
         <div className="md:hidden flex items-center justify-center">
           {settingsRoute && (
             <SidebarItem
-              label={settingsRoute.label}
+              label="Perfil"
               isOpen={false}
               href={settingsRoute.href}
-              icon={<settingsRoute.icon size={24} />}
+              icon={<User size={24} />}
+              active={pathname === settingsRoute.href}
             />
           )}
         </div>
       </nav>
 
-      {/* Desktop settings */}
+      {/* Desktop profile */}
       {settingsRoute && (
         <div className="hidden md:block w-full p-3 border-t border-gray-100 mt-auto">
           <SidebarItem
-            label={settingsRoute.label}
+            label="Perfil"
             isOpen={isOpen}
             href={settingsRoute.href}
-            icon={<settingsRoute.icon size={24} />}
+            icon={<User size={24} />}
+            active={pathname === settingsRoute.href}
           />
         </div>
       )}

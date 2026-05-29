@@ -27,5 +27,7 @@ routerData.get('/pix-structure', sessionMiddleware, dataRead.getPixStructure);
 routerData.get('/ibge-structure', sessionMiddleware, dataRead.getIBGEStructure);
 
 routerData.get('/dashboard-charts', sessionMiddleware, dataRead.getDashboardCharts);
+routerData.get('/regional-charts', sessionMiddleware, dataRead.getRegionalCharts);
+routerData.get('/estadual-charts', sessionMiddleware, dataRead.getEstadualCharts);
 
 export default routerData;

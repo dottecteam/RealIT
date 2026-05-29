@@ -59,7 +59,7 @@ export default function DashboardHome() {
     <div className="flex flex-col gap-8 py-6 animate-in fade-in duration-700">
       <section>
         <h1 className="text-4xl font-black text-primary tracking-tighter uppercase">Painel Estratégico</h1>
-        <p className="text-gray-500 font-medium mt-1">Visão consolidada da metodologia cruzada <span className="text-primary font-bold">Risco vs. Inclusão</span>.</p>
+        <p className="text-gray-500 font-medium italic">Visão consolidada da metodologia cruzada <span className="text-primary font-bold">Risco vs. Inclusão</span>.</p>
       </section>
 
       {/* Renderização condicional para exibir o Loader enquanto a API trabalha */}
