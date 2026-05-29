@@ -7,7 +7,19 @@ import { APP_ROUTES } from "../constants/Routes";
 import { usePathname } from "next/navigation";
 
 export function Sidebar({ isOpen, onToggle }: SidebarProps) {
-  const mainRoutes = APP_ROUTES.slice(0, -1);
+  const user =
+  typeof window !== "undefined"
+    ? JSON.parse(localStorage.getItem("@RealIT:user") || "{}")
+    : null;
+  const mainRoutes = APP_ROUTES
+    .slice(0, -1)
+    .filter((route) => {
+      if (route.href === "/app/funcionarios") {
+        return user?.role === "ADMIN";
+      }
+
+      return true;
+    });
   const settingsRoute = APP_ROUTES.at(-1);
   const pathname = usePathname();
 
