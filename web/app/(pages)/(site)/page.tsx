@@ -1,5 +1,5 @@
 import { Button } from "../../components/Button"
-import { ChevronDown, ShieldCheck, TrendingUp, Zap, Database } from "lucide-react"
+import { ShieldCheck, TrendingUp, Zap, Database } from "lucide-react"
 import Image from "next/image"
 import MANOMASSA from "../../img/MANOMASSA.png"
 import background from "../../img/background.png"
@@ -16,18 +16,32 @@ export default function Home() {
     <div className="w-full flex flex-col bg-background">
 
       <section
-        className="text-white relative overflow-hidden pt-20 md:py-32 pb-0 px-6 bg-cover bg-center bg-no-repeat"
-        style={{ backgroundImage: `url(${background.src})` }}>
-        <div className="container-responsive flex flex-col md:flex-row items-center justify-between relative z-10 gap-16">
-          
-          {/* Tirei a imagem do massanori para telas menores*/}
-          <div className="hidden lg:flex flex-1 relative justify-start w-full">
-            <div className="relative w-full max-w-[700px] aspect-[4/3] rounded-[40px] overflow-hidden">
-              <Image src={MANOMASSA} alt="Real IT" fill className="object-cover" priority />
+        className="text-white relative overflow-hidden pt-20 md:py-32 pb-0 px-6 bg-cover bg-center bg-no-repeat min-h-[600px] lg:min-h-[650px] flex items-center"
+        style={{ backgroundImage: `url(${background.src})` }}
+      >
+        {/* CONTAINER DA IMAGEM
+  */}
+        <div className="hidden xl:block absolute inset-y-0 left-0 w-full z-0 pointer-events-none">
+          <div className="container-responsive h-full relative">
+            <div className="absolute left-0 bottom-0 top-0 h-full w-auto max-w-[50vw]">
+              <Image
+                src={MANOMASSA}
+                alt="Real IT"
+                className="h-full w-auto object-contain object-left-bottom"
+                priority
+              />
             </div>
           </div>
+        </div>
 
-          <div className="flex-1 flex flex-col items-center md:items-start text-center md:text-left pb-10 md:pb-0">
+        {/* CONTEÚDO DA HERO SECTION */}
+        <div className="container-responsive flex flex-col xl:flex-row items-center justify-end relative z-10 gap-16 w-full">
+
+          {/* Espaçador invisível para empurrar o texto para a direita em telas grandes */}
+          <div className="hidden xl:block flex-1" />
+
+          {/* Bloco de Texto (Lado Direito) */}
+          <div className="flex-1 flex flex-col items-center xl:items-start text-center xl:text-left pb-10 md:pb-0">
             <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-black leading-[1.1] tracking-tighter mb-6 md:mb-8">
               TRANSFORMANDO <br />
               DADOS PÚBLICOS{" "}
@@ -38,7 +52,7 @@ export default function Home() {
               A plataforma definitiva para análise de mercado e concessão de crédito baseada em dados demográficos e econômicos precisos.
             </p>
 
-            <div className="flex flex-col sm:flex-row gap-4 w-full justify-center md:justify-start font-bold">
+            <div className="flex flex-col sm:flex-row gap-4 w-full justify-center xl:justify-start font-bold">
               <Button
                 link="/login"
                 className="text-base md:text-lg px-8 md:px-10 py-3 md:py-4 shadow-xl shadow-black/10 hover:scale-105 duration-300"
@@ -49,6 +63,7 @@ export default function Home() {
           </div>
         </div>
 
+        {/* Círculo decorativo de fundo */}
         <div className="absolute top-0 right-0 w-[300px] md:w-[500px] h-[300px] md:h-[500px] bg-white/5 rounded-full -mr-32 md:-mr-64 -mt-32 md:-mt-64 blur-3xl" />
       </section>
 

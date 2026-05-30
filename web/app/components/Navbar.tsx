@@ -1,11 +1,10 @@
 "use client";
 
 import { useState } from "react";
-import { Menu, X, ChevronRight, LogIn } from "lucide-react";
+import { Menu, X, LogIn } from "lucide-react";
 import { Logo } from "./Logo";
-import { Button } from "./Button";
 import { Navlink } from "./Navlink";
-import { NAV_ROUTES, AUTH_ROUTES } from "../constants/Routes";
+import { AUTH_ROUTES } from "../constants/Routes";
 
 export function Navbar() {
     const [isMenuOpen, setIsMenuOpen] = useState(false);
