@@ -9,7 +9,7 @@ import { RankingStates } from "../../../../components/RankingStates";
 import { EvolucaoScoresChart } from "../../../../components/EvolucaoScoresChart";
 import { ProjecaoScoreChart } from "../../../../components/ProjecaoScoreChart";
 import { MapProvider } from "../../../../contexts/MapContext";
-import { ChartCard } from "../../../../components/ChartCard";
+import { ChartCard } from "../../../../components/app/ChartCard";
 import { Loader2 } from "lucide-react";
 import { useApiData } from "../../../../hooks/useApiData";
 import { CATEGORIAS, REGIOES } from "../../../../constants/ChartOptions";

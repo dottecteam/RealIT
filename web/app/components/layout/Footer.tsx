@@ -1,7 +1,4 @@
-import { Logo } from "./Logo";
-import { Sociallink } from "./Sociallink";
-import { SOCIAL_LINKS } from "../constants/SocialLinks";
-
+import { Logo } from "../basic/Logo";
 
 export function Footer() {
     return (

@@ -1,9 +1,13 @@
 "use client";
 
 import Link from "next/link";
-import NavlinkProps from "../types/components/Navlink";
 
-interface ExtendedNavlinkProps extends NavlinkProps {
+export default interface NavlinkProps {
+    children: React.ReactNode;
+    link: string;
+    color?: string;
+    hoverColor?: string;
+    className?: string;
     onClick?: () => void;
 }
 
@@ -14,7 +18,7 @@ export function Navlink({
     hoverColor,
     className,
     onClick
-}: ExtendedNavlinkProps) {
+}: NavlinkProps) {
     return (
         <Link
             href={link}

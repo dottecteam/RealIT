@@ -1,11 +1,11 @@
-import { Button } from "../../components/Button"
+import { Button } from "../../components/basic/Button"
 import { FeatureCard } from "../../components/home/FeatureCard"
 import { StepItem } from "../../components/home/StepItem"
 import { InfiniteMarquee } from "../../components/home/InfiniteMarquee"
 import Image from "next/image"
 import MANOMASSA from "../../assets/img/home/hero.png"
 import background from "../../assets/img/home/background.png"
-import { FEATURES_DATA, STATS_DATA, STEPS_DATA } from "../../constants/home/data"
+import { FEATURES_DATA, STATS_DATA, STEPS_DATA } from "../../constants/texts/home"
 
 export default function Home() {
   return (

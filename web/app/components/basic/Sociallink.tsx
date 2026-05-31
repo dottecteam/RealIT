@@ -1,6 +1,10 @@
-import SociallinkProps from "../types/components/Sociallink";
+interface SociallinkProps {
+    href: string;
+    icon: React.ComponentType<React.SVGProps<SVGSVGElement>>;
+    ariaLabel: string;
+}
 
-export function Sociallink({ href, icon: Icon, ariaLabel } : SociallinkProps) {
+export function Sociallink({ href, icon: Icon, ariaLabel }: SociallinkProps) {
     return (
         <a
             href={href}

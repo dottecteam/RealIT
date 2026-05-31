@@ -1,6 +1,6 @@
 "use client"
 import { useMemo } from "react"
-import { ChartCard } from "./ChartCard"
+import { ChartCard } from "./app/ChartCard"
 import { ReactApexChart } from "../hooks/useApexChart"
 import { createLineOptions } from "../services/ApexCharts/createLineOptions"
 import { CORES_DEFAULT_PRO, DASHES_PRO } from "../constants/ChartOptions"

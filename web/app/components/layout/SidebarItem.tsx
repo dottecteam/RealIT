@@ -1,7 +1,14 @@
 "use client";
 
 import Link from "next/link";
-import SidebarItemProps from "../types/components/SidebarItem";
+
+interface SidebarItemProps {
+    icon: React.ReactNode;
+    label: string;
+    isOpen: boolean;
+    href: string;
+    active?: boolean;
+}
 
 export function SidebarItem({ icon, label, isOpen, href, active }: SidebarItemProps) {
     return (
@@ -31,8 +38,8 @@ export function SidebarItem({ icon, label, isOpen, href, active }: SidebarItemPr
                     transition-all duration-300 ease-in-out
 
                     ${isOpen
-                                        ? "md:opacity-100 md:translate-x-0 md:max-w-[200px]"
-                                        : "md:opacity-0 md:-translate-x-2 md:max-w-0"}
+                        ? "md:opacity-100 md:translate-x-0 md:max-w-[200px]"
+                        : "md:opacity-0 md:-translate-x-2 md:max-w-0"}
                 `}
             >
                 {label}

@@ -1,10 +1,10 @@
 "use client";
 
 import { useMemo } from "react";
-import { Button } from "../../../components/Button";
+import { Button } from "../../../components/basic/Button";
 import { Map as MapIcon, TrendingDown, TrendingUp, AlertCircle, Map, Loader2, Info } from "lucide-react";
-import { KPICard } from "../../../components/KPICard";
-import { InsightCard } from "../../../components/InsightCard";
+import { KPICard } from "../../../components/app/KPICard";
+import { InsightCard } from "../../../components/app/InsightCard";
 
 // Importando nosso hook real
 import { useApiData } from "../../../hooks/useApiData";

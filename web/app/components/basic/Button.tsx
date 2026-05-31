@@ -1,16 +1,23 @@
 import Link from "next/link";
-import ButtonProps from "../types/components/Button";
 
-export function Button({ 
-    children, 
-    link, 
+interface ButtonProps {
+    children: React.ReactNode;
+    link: string;
+    bgColor?: string;
+    textColor?: string;
+    className?: string;
+}
+
+export function Button({
+    children,
+    link,
     bgColor,
     textColor,
     className
 }: ButtonProps) {
     return (
-        <Link 
-            href={link} 
+        <Link
+            href={link}
             className={`
                 w-full sm:w-auto
                 px-5 py-3 sm:px-6 sm:py-2.5

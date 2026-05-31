@@ -1,4 +1,12 @@
-import { KPICardProps } from "../types/components/KPICards";
+import { LucideIcon } from "lucide-react";
+
+interface KPICardProps {
+  label: string;
+  val: string;
+  change: string;
+  icon: LucideIcon;
+  color: string;
+}
 
 export function KPICard({ label, val, change, icon: Icon, color }: KPICardProps) {
   return (

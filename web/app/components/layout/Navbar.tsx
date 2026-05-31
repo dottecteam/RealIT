@@ -2,9 +2,9 @@
 
 import { useState } from "react";
 import { Menu, X, LogIn } from "lucide-react";
-import { Logo } from "./Logo";
+import { Logo } from "../basic/Logo";
 import { Navlink } from "./Navlink";
-import { AUTH_ROUTES } from "../constants/Routes";
+import { ROUTES } from "../../constants/routes";
 
 export function Navbar() {
     const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -16,8 +16,8 @@ export function Navbar() {
 
                 {/* DESKTOP ACTIONS */}
                 <div className="hidden md:flex items-center gap-4 text-2xl">
-                    <Navlink link={AUTH_ROUTES.login.route}>
-                        <LogIn size={20} /> {AUTH_ROUTES.login.label}
+                    <Navlink link={ROUTES.AUTH.LOGIN.href}>
+                        <LogIn size={20} /> {ROUTES.AUTH.LOGIN.label}
                     </Navlink>
                 </div>
 
@@ -37,11 +37,11 @@ export function Navbar() {
 
                     <div className="flex flex-col gap-4 pt-2">
                         <Navlink 
-                            link={AUTH_ROUTES.login.route} 
+                            link={ROUTES.AUTH.LOGIN.href} 
                             className="text-lg justify-center py-2"
                             onClick={() => setIsMenuOpen(false)}
                         >
-                            <LogIn size={20} /> {AUTH_ROUTES.login.label}
+                            <LogIn size={20} /> {ROUTES.AUTH.LOGIN.label}
                         </Navlink>
                     </div>
                 </div>

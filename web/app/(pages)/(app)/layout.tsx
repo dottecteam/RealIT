@@ -2,8 +2,8 @@
 
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { Sidebar } from "../../components/Sidebar";
-import { AppHeader } from "../../components/AppHeader";
+import { Sidebar } from "../../components/layout/Sidebar";
+import { AppHeader } from "../../components/layout/AppHeader";
 import { getRoleLabel } from "@/app/utils/stringUtils";
 
 export default function ProdutoLayout({ children }: { children: React.ReactNode }) {

@@ -2,16 +2,20 @@
 
 import { ChevronLeft, Menu, User } from "lucide-react";
 import { SidebarItem } from "./SidebarItem";
-import SidebarProps from "../types/components/Sidebar";
-import { APP_ROUTES } from "../constants/Routes";
+import { ROUTES } from "../../constants/routes";
 import { usePathname } from "next/navigation";
+
+interface SidebarProps {
+  isOpen: boolean;
+  onToggle: () => void;
+}
 
 export function Sidebar({ isOpen, onToggle }: SidebarProps) {
   const user =
   typeof window !== "undefined"
     ? JSON.parse(localStorage.getItem("@RealIT:user") || "{}")
     : null;
-  const mainRoutes = APP_ROUTES
+  const mainRoutes = ROUTES.appRoutesList
     .slice(0, -1)
     .filter((route) => {
       if (route.href === "/app/funcionarios") {
@@ -20,7 +24,7 @@ export function Sidebar({ isOpen, onToggle }: SidebarProps) {
 
       return true;
     });
-  const settingsRoute = APP_ROUTES.at(-1);
+  const settingsRoute = ROUTES.APP.PERFIL;
   const pathname = usePathname();
 
   return (

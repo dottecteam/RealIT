@@ -2,16 +2,21 @@
 
 import { useState, useRef, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { Logo } from "./Logo";
-import { getInitials } from "../utils/stringUtils";
-import AppHeaderProps from "../types/components/AppHeader";
+import { Logo } from "../basic/Logo";
+import { getInitials } from "../../utils/stringUtils";
 import { LogOut, ChevronDown } from "lucide-react";
-import { api } from "../services/API/api";
+import { api } from "../../services/API/api";
+
+
+export default interface AppHeaderProps {
+  userName?: string;
+  userRole?: string;
+}
 
 export function AppHeader({
-   userName = "Usuário",
-   userRole = "Membro"
- }: AppHeaderProps) {
+  userName = "Usuário",
+  userRole = "Membro"
+}: AppHeaderProps) {
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
   const router = useRouter();
@@ -27,7 +32,7 @@ export function AppHeader({
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
- const handleLogout = async () => {
+  const handleLogout = async () => {
     try {
       await api.post('/auth/logout');
     } catch (error) {
@@ -35,7 +40,7 @@ export function AppHeader({
     } finally {
       localStorage.removeItem('@RealIT:token');
       localStorage.removeItem('@RealIT:user');
-      
+
       sessionStorage.clear();
       window.location.href = '/';
     }
@@ -49,8 +54,8 @@ export function AppHeader({
 
       <div className="flex items-center gap-4 sm:gap-6">
         <div className="relative flex items-center pl-4 sm:pl-6 border-l border-gray-100" ref={dropdownRef}>
-          
-          <button 
+
+          <button
             onClick={() => setIsDropdownOpen(!isDropdownOpen)}
             className="flex items-center gap-3 p-1.5 pr-3 rounded-full hover:bg-gray-50 hover:shadow-sm transition-all duration-300 text-left cursor-pointer group outline-none focus:ring-2 focus:ring-primary/20"
           >
@@ -62,27 +67,27 @@ export function AppHeader({
                 {userRole}
               </p>
             </div>
-            
+
             <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-full bg-primary flex items-center justify-center text-white font-bold text-sm shadow-md shadow-primary/20 select-none group-active:scale-95 transition-transform">
               <span className="leading-none">{initials}</span>
             </div>
 
-            <ChevronDown 
-              size={16} 
-              className={`text-gray-400 transition-transform duration-300 ${isDropdownOpen ? "rotate-180" : "rotate-0"}`} 
+            <ChevronDown
+              size={16}
+              className={`text-gray-400 transition-transform duration-300 ${isDropdownOpen ? "rotate-180" : "rotate-0"}`}
             />
           </button>
 
           {isDropdownOpen && (
             <div className="absolute right-0 top-full mt-2 w-56 bg-white border border-gray-100 rounded-2xl shadow-2xl py-2 z-50 animate-in fade-in zoom-in-95 slide-in-from-top-4 duration-200 ease-out origin-top-right">
-              
+
               <div className="px-4 py-2 border-b border-gray-50 mb-2 sm:hidden">
                 <p className="text-sm font-bold text-gray-900 truncate">{userName}</p>
                 <p className="text-xs text-gray-500 truncate">{userRole}</p>
               </div>
 
               <div className="px-2">
-                <button 
+                <button
                   onClick={handleLogout}
                   className="w-full flex items-center gap-3 px-3 py-2.5 text-sm font-bold hover:text-primary bg-transparent rounded-xl transition-all duration-200 active:scale-[0.98]"
                 >

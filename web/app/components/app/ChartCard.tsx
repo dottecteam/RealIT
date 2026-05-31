@@ -1,6 +1,12 @@
 "use client"
 import { useState } from "react"
-import { ChartCardProps } from "../types/components/ChartCard"
+
+interface ChartCardProps {
+  title: string
+  info?: string
+  onClose?: () => void
+  children: React.ReactNode
+}
 
 export function ChartCard({ title, info, children }: ChartCardProps) {
   const [showInfo, setShowInfo] = useState(false)
