@@ -1,12 +1,77 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState, KeyboardEvent, FocusEvent } from "react";
 import { LayoutGrid, Filter, Download, ChevronDown, ChevronUp, Check } from 'lucide-react';
 import { OPCOES_VISIBILIDADE, SECOES_FILTRO, OPCOES_DOWNLOAD } from "../constants/filterOptions";
 import { exportarPDF } from "../utils/exportPDF";
 import { exportarXLSX } from "../utils/exportXLSX";
 import { exportarCSV } from "../utils/exportCSV";
 import { mockDadosScoreCompleto } from "../mocks/score";
+import { useFilters } from "../contexts/FilterContext";
+
+const MES_REGEX = /^\d{6}$/;
+
+function MesInput({
+  placeholder,
+  value,
+  onCommit,
+}: {
+  placeholder: string;
+  value: string | null;
+  onCommit: (val: string | null) => void;
+}) {
+  const [draft, setDraft] = useState(value ?? "");
+  const [invalid, setInvalid] = useState(false);
+
+  useEffect(() => {
+    setDraft(value ?? "");
+  }, [value]);
+
+  const commit = () => {
+    const limpo = draft.trim();
+    if (limpo === "") {
+      setInvalid(false);
+      onCommit(null);
+      return;
+    }
+    if (!MES_REGEX.test(limpo)) {
+      setInvalid(true);
+      return;
+    }
+    setInvalid(false);
+    onCommit(limpo);
+  };
+
+  const handleBlur = (_e: FocusEvent<HTMLInputElement>) => commit();
+  const handleKey = (e: KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === "Enter") {
+      e.currentTarget.blur();
+    } else if (e.key === "Escape") {
+      setDraft(value ?? "");
+      setInvalid(false);
+      e.currentTarget.blur();
+    }
+  };
+
+  return (
+    <input
+      type="text"
+      inputMode="numeric"
+      maxLength={6}
+      placeholder={placeholder}
+      value={draft}
+      onChange={(e) => setDraft(e.target.value)}
+      onBlur={handleBlur}
+      onKeyDown={handleKey}
+      className={`bg-white border rounded-lg px-3 py-2 text-xs w-full focus:ring-2 outline-none font-bold text-gray-600 ${
+        invalid
+          ? "border-red-400 focus:ring-red-200"
+          : "border-gray-200 focus:ring-primary/20"
+      }`}
+      title="Formato AAAAMM (ex.: 202401). Enter confirma, Esc cancela."
+    />
+  );
+}
 
 function FilterSection({ title, children }: { title: string, children: React.ReactNode }) {
   const [isOpen, setIsOpen] = useState(false);
@@ -31,6 +96,7 @@ function FilterSection({ title, children }: { title: string, children: React.Rea
 // ─── Componente Principal ────────────────────────────────────────────────
 export default function FilterBar() {
   const [menuAberto, setMenuAberto] = useState<"vis" | "filter" | "download" | null>(null);
+  const { server, setServerField } = useFilters();
 
   const fecharMenus = () => setMenuAberto(null);
 
@@ -97,10 +163,20 @@ export default function FilterBar() {
           <h2 className="text-primary font-black uppercase text-[10px] tracking-[0.2em] mb-5">Refinar Análise</h2>
           
           <div className="mb-6 space-y-3 bg-gray-50 p-4 rounded-xl">
-            <span className="text-[9px] font-black text-gray-400 uppercase tracking-widest">Período de Comparação</span>
+            <span className="text-[9px] font-black text-gray-400 uppercase tracking-widest">
+              Período de Comparação <span className="text-gray-300 font-medium normal-case tracking-normal">(AAAAMM · Enter confirma)</span>
+            </span>
             <div className="flex items-center gap-2">
-              <input type="text" placeholder="Início" className="bg-white border border-gray-200 rounded-lg px-3 py-2 text-xs w-full focus:ring-2 focus:ring-primary/20 outline-none font-bold text-gray-600" />
-              <input type="text" placeholder="Fim" className="bg-white border border-gray-200 rounded-lg px-3 py-2 text-xs w-full focus:ring-2 focus:ring-primary/20 outline-none font-bold text-gray-600" />
+              <MesInput
+                placeholder="Início"
+                value={server.mesInicio}
+                onCommit={(v) => setServerField("mesInicio", v)}
+              />
+              <MesInput
+                placeholder="Fim"
+                value={server.mesFim}
+                onCommit={(v) => setServerField("mesFim", v)}
+              />
             </div>
           </div>
 
