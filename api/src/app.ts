@@ -38,3 +38,9 @@ app.use('/dev', routerDev)
 app.get('/health', (_req, res) => {
   res.json({ status: 'ok' })
 })
+import routerSync from './routes/sync';
+import { iniciarCronDiario } from './controllers/syncController';
+
+app.use('/sync', routerSync);
+
+iniciarCronDiario();

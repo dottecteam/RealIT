@@ -71,7 +71,7 @@ model inclusaoExpansao{
   mesAno String
   uf String
   regiao String
-  maturidadePix Float 
+  maturidadePix Float?
   crescimentoPopulacional Float
   populacaoAbsoluta Float
   bonusDemografico Float
@@ -98,7 +98,7 @@ model EstruturaSrcPix{
   regiao String
   uf String
   tipo String
-  classe String
+  classe String?
   metrica String
   origem String
   valor Float
@@ -109,7 +109,7 @@ model EstruturaIBGE{
   ano String
   regiao String
   uf String
-  taxa_escolarizacao Float
+  taxa_escolarizacao Float?
   populacao_residente Int
   taxa_crescimento Float
   variacao_populacao Int
