@@ -21,7 +21,7 @@ services:
       dockerfile: Dockerfile
     container_name: real-it-web
     ports:
-      - "3001:3000" # Acessível em localhost:3001 na sua máquina
+      - "3001:3001"
     volumes:
       - ./web:/app
       - /app/node_modules
