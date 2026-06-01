@@ -52,7 +52,7 @@ export default function AnalyticsPage() {
           </div>
           <div className="flex flex-col sm:flex-row items-center gap-4 w-full md:w-auto">
             <RegionFilter />
-            <FilterBar />
+            <FilterBar dataToExport={dashboardData?.ranking || []} />
           </div>
         </header>
 
@@ -66,12 +66,12 @@ export default function AnalyticsPage() {
           <div className="lg:col-span-4 flex flex-col gap-6">
             <ChartCard title="Risco Regional (Eixo I)">
               <div className="h-62.5 mt-4">
-                <RankingChart series={seriesRegiaoI} />
+                <RankingChart title="Risco Regional (Eixo I)" series={seriesRegiaoI} />
               </div>
             </ChartCard>
             <ChartCard title="Inclusão Regional (Eixo II)">
               <div className="h-62.5 mt-4">
-                <RankingChart series={seriesRegiaoII} />
+                <RankingChart title="Inclusão Regional (Eixo II)" series={seriesRegiaoII} />
               </div>
             </ChartCard>
           </div>
