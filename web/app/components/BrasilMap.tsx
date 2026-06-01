@@ -7,7 +7,6 @@ import { useMapContext } from "../contexts/MapContext";
 import { getCategoria } from "../utils/mapUtils";
 import { REGIAO_COR, UF_COLORS, CATEGORIA_TEXTO, CATEGORIA_CORES } from "../constants/mapColors";
 
-// Sub-componente (MEMOIZADO)
 const EstadoPath_ = memo(function EstadoPath_({
   estado, fill, isHovered, anyHovered, isHidden, onMouseEnter, onMouseLeave, onMouseMove,
 }: EstadoProps & { isHidden?: boolean }) {
@@ -33,7 +32,6 @@ const EstadoPath_ = memo(function EstadoPath_({
   );
 });
 
-// Adicionamos a tipagem para receber os dados da API
 interface BrasilMapProps {
   data?: any[];
   ufsOcultas?: Set<string>;
@@ -47,7 +45,6 @@ export function BrasilMap({ data = [], ufsOcultas }: BrasilMapProps) {
     visible: false, x: 0, y: 0, lines: [],
   });
 
-  // Função auxiliar para calcular a média da região na hora
   const getRegionAverages = useCallback((regiaoNome: string) => {
     const searchName = regiaoNome === "C-Oeste" ? "Centro-Oeste" : regiaoNome;
     const estadosDaRegiao = data.filter((d: any) => d.regiao === searchName);
@@ -70,7 +67,7 @@ export function BrasilMap({ data = [], ufsOcultas }: BrasilMapProps) {
         if (viewMode === "uf") {
           const ufData = data.find((d) => d.uf === estado.uf);
           if (ufData) {
-            // Usamos a função getCategoria do frontend para garantir a chave correta no dicionário de cores
+            // getCategoria garante a chave correta para CATEGORIA_CORES (não usa ufData.categoria diretamente)
             const catKey = getCategoria(ufData.score_eixo_i, ufData.score_eixo_ii);
             return CATEGORIA_CORES[catKey];
           }

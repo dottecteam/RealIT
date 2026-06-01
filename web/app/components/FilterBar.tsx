@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import {
   LayoutGrid,
   Filter,
@@ -29,7 +29,6 @@ import { ESTADOS } from "../constants/ChartOptions";
 import type { Regiao as RegiaoMap } from "../constants/BrasilMapPaths";
 import { BRASIL_PATHS } from "../constants/BrasilMapPaths";
 
-// ─── Configuração de períodos disponíveis ────────────────────────────────
 const MESES = [
   { value: "01", label: "Jan" },
   { value: "02", label: "Fev" },
@@ -51,7 +50,6 @@ const ANOS = Array.from({ length: ANO_MAX - ANO_MIN + 1 }, (_, i) => String(ANO_
 
 const REGIOES_LIST: Regiao[] = ["Norte", "Nordeste", "Centro-Oeste", "Sudeste", "Sul"];
 
-// UFs agrupadas por região (vindas dos paths do mapa)
 const UFS_POR_REGIAO: Record<RegiaoMap, { uf: string; nome: string }[]> = (() => {
   const acc: Record<RegiaoMap, { uf: string; nome: string }[]> = {
     Norte: [],
@@ -69,7 +67,6 @@ const UFS_POR_REGIAO: Record<RegiaoMap, { uf: string; nome: string }[]> = (() =>
   return acc;
 })();
 
-// ─── Helpers de período (AAAAMM) ─────────────────────────────────────────
 function parseAaaaMm(value: string | null): { ano: string; mes: string } {
   if (!value || value.length !== 6) return { ano: "", mes: "" };
   return { ano: value.slice(0, 4), mes: value.slice(4, 6) };
@@ -80,7 +77,6 @@ function joinAaaaMm(ano: string, mes: string): string | null {
   return `${ano}${mes}`;
 }
 
-// ─── Sub-componentes ─────────────────────────────────────────────────────
 function SelectField({
   value,
   onChange,
@@ -188,23 +184,28 @@ function DualRangeSlider({
   onChange: (val: [number, number]) => void;
   accentLabel: string;
 }) {
-  const [lo, hi] = value;
+  const [local, setLocal] = useState<[number, number]>(value);
+  const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  // Sincroniza com o contexto ao resetar filtros.
+  useEffect(() => {
+    setLocal(value);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [value[0], value[1]]);
+
+  const commit = (next: [number, number]) => {
+    setLocal(next);
+    if (timerRef.current) clearTimeout(timerRef.current);
+    timerRef.current = setTimeout(() => onChange(next), 80);
+  };
+
+  const [lo, hi] = local;
   const range = max - min;
   const leftPct = ((lo - min) / range) * 100;
   const rightPct = ((hi - min) / range) * 100;
 
-  // Quando o thumb LOW está perto do MAX, ele precisa ficar acima
-  // do input HIGH para continuar sendo arrastável.
+  // thumb LOW precisa de z-index maior que HIGH quando ultrapassa o ponto médio
   const loOnTop = leftPct > 50;
-
-  const handleLo = (v: number) => {
-    const clamped = Math.min(v, hi);
-    onChange([clamped, hi]);
-  };
-  const handleHi = (v: number) => {
-    const clamped = Math.max(v, lo);
-    onChange([lo, clamped]);
-  };
 
   return (
     <div className="space-y-2">
@@ -218,9 +219,7 @@ function DualRangeSlider({
         </span>
       </div>
       <div className="relative h-6">
-        {/* Trilha base centralizada */}
         <div className="absolute left-0 right-0 top-1/2 -translate-y-1/2 h-1.5 bg-gray-200 rounded-full" />
-        {/* Trilha preenchida */}
         <div
           className="absolute top-1/2 -translate-y-1/2 h-1.5 bg-gradient-to-r from-primary to-primary-light rounded-full"
           style={{ left: `${leftPct}%`, right: `${100 - rightPct}%` }}
@@ -231,7 +230,7 @@ function DualRangeSlider({
           max={max}
           step={step}
           value={lo}
-          onChange={(e) => handleLo(Number(e.target.value))}
+          onChange={(e) => commit([Math.min(Number(e.target.value), hi), hi])}
           className="range-thumb"
           style={{ zIndex: loOnTop ? 4 : 3 }}
           aria-label={`${accentLabel} mínimo`}
@@ -242,7 +241,7 @@ function DualRangeSlider({
           max={max}
           step={step}
           value={hi}
-          onChange={(e) => handleHi(Number(e.target.value))}
+          onChange={(e) => commit([lo, Math.max(Number(e.target.value), lo)])}
           className="range-thumb"
           style={{ zIndex: loOnTop ? 3 : 4 }}
           aria-label={`${accentLabel} máximo`}
@@ -294,7 +293,6 @@ function FilterSection({
   );
 }
 
-// ─── Componente Principal ────────────────────────────────────────────────
 export default function FilterBar() {
   const [menuAberto, setMenuAberto] = useState<"vis" | "filter" | "download" | null>(null);
   const {
@@ -321,7 +319,6 @@ export default function FilterBar() {
     setServerField("indicador", atual.size === 0 ? null : Array.from(atual));
   };
 
-  // Contador de filtros ativos para badge
   const filtrosAtivos = useMemo(() => {
     let count = 0;
     if (server.mesInicio) count++;
@@ -336,7 +333,6 @@ export default function FilterBar() {
 
   return (
     <div className="relative w-full sm:w-auto" id="filter-bar">
-      {/* Barra de botões */}
       <div className="bg-white rounded-full shadow-lg border border-gray-100 p-1.5 h-14 flex items-center justify-around gap-1.5 min-w-[180px]">
         <button
           onClick={() => setMenuAberto(menuAberto === "vis" ? null : "vis")}
@@ -380,7 +376,6 @@ export default function FilterBar() {
         </button>
       </div>
 
-      {/* Dropdown: Visibilidade dos Gráficos */}
       {menuAberto === "vis" && (
         <div className="absolute top-full right-0 mt-3 w-[calc(100vw-2rem)] sm:w-[450px] max-w-[450px] bg-white shadow-2xl rounded-2xl p-6 z-[9999] border border-gray-100 animate-in fade-in zoom-in-95 duration-200">
           <p className="font-black text-primary uppercase text-[10px] tracking-[0.2em] mb-4">
@@ -406,7 +401,6 @@ export default function FilterBar() {
         </div>
       )}
 
-      {/* Dropdown: Filtros Avançados */}
       {menuAberto === "filter" && (
         <div className="absolute top-full right-0 mt-3 w-[calc(100vw-2rem)] sm:w-[380px] max-h-[80vh] overflow-y-auto bg-white rounded-2xl shadow-2xl p-6 z-[9999] border border-gray-100 animate-in fade-in zoom-in-95 duration-200 scrollbar-hide">
           <div className="flex items-center justify-between mb-4">
@@ -424,7 +418,6 @@ export default function FilterBar() {
             )}
           </div>
 
-          {/* ── Período ─────────────────────────────────────────── */}
           <FilterSection
             title="Período"
             icon={<CalendarRange className="w-3.5 h-3.5" />}
@@ -444,7 +437,6 @@ export default function FilterBar() {
             </div>
           </FilterSection>
 
-          {/* ── Sliders de score ────────────────────────────────── */}
           <FilterSection
             title="Faixa de Score"
             icon={<Sliders className="w-3.5 h-3.5" />}
@@ -469,8 +461,6 @@ export default function FilterBar() {
               />
             </div>
           </FilterSection>
-
-          {/* ── Regiões ─────────────────────────────────────────── */}
           <FilterSection title="Regiões" icon={<Map className="w-3.5 h-3.5" />}>
             <div className="flex flex-wrap gap-2 pt-2">
               {REGIOES_LIST.map((regiao) => {
@@ -493,7 +483,6 @@ export default function FilterBar() {
             </div>
           </FilterSection>
 
-          {/* ── Estados (UFs) ───────────────────────────────────── */}
           <FilterSection title="Estados" icon={<MapPin className="w-3.5 h-3.5" />}>
             <div className="space-y-3 pt-2">
               {REGIOES_LIST.map((regiao) => {
@@ -552,7 +541,7 @@ export default function FilterBar() {
             </div>
           </FilterSection>
 
-          {/* ── Indicadores ────────────────────────────────────── */}
+          {/*
           {SECOES_FILTRO.map((secao) => (
             <FilterSection
               key={secao.categoria}
@@ -582,10 +571,10 @@ export default function FilterBar() {
               </div>
             </FilterSection>
           ))}
+          */}
         </div>
       )}
 
-      {/* Dropdown: Exportação/Download */}
       {menuAberto === "download" && (
         <div className="absolute top-full right-0 mt-3 w-[calc(100vw-2rem)] sm:w-[280px] bg-white shadow-2xl rounded-2xl p-6 z-[9999] border border-gray-100 animate-in fade-in zoom-in-95 duration-200 esconder-no-pdf">
           <h2 className="text-primary font-black uppercase text-[10px] tracking-[0.2em] mb-2">

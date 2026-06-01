@@ -90,11 +90,11 @@ body {
   }
 }
 
-/* Slider duplo (range) usado nos filtros de score */
 .range-thumb {
   -webkit-appearance: none;
   appearance: none;
   pointer-events: none;
+  touch-action: none;
   position: absolute;
   top: 50%;
   left: 0;
@@ -129,15 +129,18 @@ body {
   border: 3px solid #fff;
   box-shadow: 0 2px 6px rgba(32, 42, 208, 0.35);
   cursor: grab;
-  transition: transform 0.15s ease;
+  will-change: transform;
+  transition: transform 0.12s ease, box-shadow 0.12s ease;
   margin-top: 0;
 }
 .range-thumb::-webkit-slider-thumb:hover {
-  transform: scale(1.15);
+  transform: scale(1.2);
+  box-shadow: 0 3px 10px rgba(32, 42, 208, 0.45);
 }
 .range-thumb::-webkit-slider-thumb:active {
   cursor: grabbing;
-  transform: scale(1.15);
+  transform: scale(1.25);
+  box-shadow: 0 4px 14px rgba(32, 42, 208, 0.55);
 }
 .range-thumb::-moz-range-thumb {
   pointer-events: auto;
@@ -148,9 +151,15 @@ body {
   border: 3px solid #fff;
   box-shadow: 0 2px 6px rgba(32, 42, 208, 0.35);
   cursor: grab;
+  will-change: transform;
+  transition: transform 0.12s ease;
+}
+.range-thumb::-moz-range-thumb:hover {
+  transform: scale(1.2);
 }
 .range-thumb::-moz-range-thumb:active {
   cursor: grabbing;
+  transform: scale(1.25);
 }
 .scrollbar-hide::-webkit-scrollbar { display: none; }
 .scrollbar-hide { scrollbar-width: none; }

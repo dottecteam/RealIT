@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { api } from "../services/API/api";
+import { resolveFallback } from "../mocks/fallback";
 
 const memoryCache: Record<string, any> = {};
 const CACHE_DURATION = 10 * 60 * 1000;
@@ -21,6 +22,7 @@ export function useApiData<T>(endpoint: string, params: Record<string, any> = {}
   const [data, setData] = useState<T | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState("");
+  const [isFallback, setIsFallback] = useState(false);
 
   const fetchKey = buildFetchKey(endpoint, params);
 
@@ -65,10 +67,19 @@ export function useApiData<T>(endpoint: string, params: Record<string, any> = {}
           }));
 
           setData(responseData);
+          setIsFallback(false);
         }
       } catch (err: any) {
         if (isMounted) {
-          setError(err.response?.data?.error || "Erro ao carregar os dados");
+          const fallback = resolveFallback(endpoint, params);
+          if (fallback !== null) {
+            memoryCache[fetchKey] = fallback;
+            setData(fallback);
+            setIsFallback(true);
+            setError("");
+          } else {
+            setError(err.response?.data?.error || "Erro ao carregar os dados");
+          }
         }
       } finally {
         if (isMounted) {
@@ -84,5 +95,5 @@ export function useApiData<T>(endpoint: string, params: Record<string, any> = {}
     };
   }, [fetchKey]);
 
-  return { data, isLoading, error };
+  return { data, isLoading, error, isFallback };
 }

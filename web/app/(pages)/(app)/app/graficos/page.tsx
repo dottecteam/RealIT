@@ -81,12 +81,6 @@ function AnalyticsPageInner() {
     [filteredRanking]
   );
 
-  // Conjunto de UFs ocultas derivado diretamente dos filtros, para que a
-  // visibilidade (mapa esmaecido / rankings ocultos) funcione mesmo sem dados
-  // da API. Combina:
-  //   1. UFs marcadas individualmente como ocultas;
-  //   2. UFs pertencentes a regiões ocultas;
-  //   3. UFs reprovadas no filtro de score (apenas quando há dados).
   const ufsOcultasSet = useMemo(() => {
     const set = new Set<string>();
     for (const uf of clientFilters.ufsOcultas) set.add(uf);

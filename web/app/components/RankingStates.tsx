@@ -66,7 +66,6 @@ export function RankingStates({
 
   return (
     <div className="w-full flex flex-col gap-2">
-      {/* Cabeçalho do eixo */}
       {meta.label && (
         <div className="px-4 pt-3 flex flex-col gap-0.5">
           <span
