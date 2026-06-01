@@ -1,5 +1,4 @@
 services:
-  # Serviço da API (Backend)
   api:
     build:
       context: ./api
@@ -12,9 +11,24 @@ services:
     volumes:
       - ./api:/app
       - /app/node_modules
+      - db_data:/app/db
     restart: always
 
-  # Serviço do Web (Frontend)
+  fastapi:
+    build:
+      context: ./fastapi
+      dockerfile: Dockerfile
+    container_name: real-it-fastapi
+    ports:
+      - "8000:8000"
+    env_file:
+      - ./api/.env
+    volumes:
+      - db_data:/app/db
+    depends_on:
+      - api
+    restart: always
+
   web:
     build:
       context: ./web
@@ -29,3 +43,6 @@ services:
     depends_on:
       - api
     restart: always
+
+volumes:
+  db_data:
