@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { LayoutGrid, Filter, Download, ChevronDown, ChevronUp, Check } from 'lucide-react';
-import { OPCOES_VISIBILIDADE, SECOES_FILTRO, OPCOES_DOWNLOAD } from "../constants/filterOptions";
+import { OPCOES_VISIBILIDADE, SECOES_FILTRO, OPCOES_DOWNLOAD } from "../constants/components/filterOptions";
 import { exportarPDF } from "../utils/exportPDF";
 import { exportarXLSX } from "../utils/exportXLSX";
 import { exportarCSV } from "../utils/exportCSV";

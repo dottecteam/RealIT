@@ -6,7 +6,7 @@ import { BrasilMap } from "../../../../components/BrasilMap";
 import FilterBar from "../../../../components/FilterBar";
 import RegionFilter from "../../../../components/RegionFilter";
 import { RankingStates } from "../../../../components/RankingStates";
-import { EvolucaoScoresChart } from "../../../../components/EvolucaoScoresChart";
+import { EvolucaoScoresChart } from "../../../../components/app/charts/EvolucaoScoresChart";
 import { ProjecaoScoreChart } from "../../../../components/ProjecaoScoreChart";
 import { MapProvider } from "../../../../contexts/MapContext";
 import { ChartCard } from "../../../../components/app/ChartCard";
