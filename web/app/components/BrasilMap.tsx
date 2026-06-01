@@ -1,11 +1,11 @@
 "use client";
 
 import { useState, useCallback, memo } from "react";
-import { BRASIL_PATHS } from "../constants/BrasilMapPaths";
+import { BRASIL_PATHS } from "../constants/map/brasilMapPaths";
 import { EstadoPath, TooltipState, EstadoProps } from "../types/components/BrasilMap";
 import { useMapContext } from "../contexts/MapContext";
 import { getCategoria } from "../utils/mapUtils";
-import { REGIAO_COR, UF_COLORS, CATEGORIA_TEXTO, CATEGORIA_CORES } from "../constants/mapColors";
+import { REGIAO_COR, UF_COLORS, CATEGORIA_TEXTO, CATEGORIA_CORES } from "../constants/map/mapColors";
 
 // Sub-componente (MEMOIZADO)
 const EstadoPath_ = memo(function EstadoPath_({

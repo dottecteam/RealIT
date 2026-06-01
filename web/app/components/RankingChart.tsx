@@ -3,7 +3,7 @@
 import { useMemo } from "react"
 import { ReactApexChart } from "../hooks/useApexChart"
 import { createBarOptions } from "../services/ApexCharts/createBarOptions"
-import { REGIOES } from "../constants/ChartOptions"
+import { REGIOES } from "../constants/charts/chartOptions"
 import { RankingChartProps } from "../types/components/RankingChart"
 
 const EIXO_META: Record<string, { label: string; descricao: string; cor: string }> = {

@@ -2,7 +2,7 @@
 import { useMemo } from "react"
 import { ReactApexChart } from "../hooks/useApexChart"
 import { createLineOptions } from "../services/ApexCharts/createLineOptions"
-import { CORES_DEFAULT_EVO, DASHES_DEFAULT_EVO } from "../constants/ChartOptions"
+import { CORES_DEFAULT_EVO, DASHES_DEFAULT_EVO } from "../constants/charts/chartOptions"
 import { EvolucaoScoresChartProps } from "../types/components/EvolucaoScoresChart"
 
 export function EvolucaoScoresChart({ categorias, series, cores, dashArray }: EvolucaoScoresChartProps) {

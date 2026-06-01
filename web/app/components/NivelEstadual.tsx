@@ -1,7 +1,7 @@
 "use client"
 
 import { useState, useMemo } from "react"
-import { BRASIL_PATHS, REGIOES_CONFIG, getViewBoxByUF } from "@/app/constants/BrasilMapPaths"
+import { BRASIL_PATHS, REGIOES_CONFIG, getViewBoxByUF } from "@/app/constants/map/brasilMapPaths"
 
 const ESTADOS_ORDENADOS = [...BRASIL_PATHS].sort((a, b) =>
   a.nome.localeCompare(b.nome, "pt-BR")

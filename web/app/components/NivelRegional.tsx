@@ -1,7 +1,7 @@
 "use client"
 
 import { useState, useMemo } from "react"
-import { BRASIL_PATHS, REGIOES_CONFIG, Regiao, getPathsByRegiao, getViewBoxByRegiao } from "@/app/constants/BrasilMapPaths"
+import { BRASIL_PATHS, REGIOES_CONFIG, Regiao, getPathsByRegiao, getViewBoxByRegiao } from "@/app/constants/map/brasilMapPaths"
 
 type NivelRegionalProps = {
   data?: any[]

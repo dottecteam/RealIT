@@ -4,7 +4,7 @@ import { useMemo } from "react"
 import { ReactApexChart } from "../hooks/useApexChart"
 import { createBarOptions } from "../services/ApexCharts/createBarOptions"
 import { SeriesData } from "../types/components/RankingChart"
-import { CATEGORIAS, ESTADOS } from "../constants/ChartOptions"
+import { CATEGORIAS, ESTADOS } from "../constants/charts/chartOptions"
 
 const EIXO_META: Record<string, { label: string; descricao: string; cores: string[] }> = {
   "Risco de Crédito (RC)": {

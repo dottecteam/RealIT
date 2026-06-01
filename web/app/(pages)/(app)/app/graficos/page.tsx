@@ -12,7 +12,7 @@ import { MapProvider } from "../../../../contexts/MapContext";
 import { ChartCard } from "../../../../components/app/ChartCard";
 import { Loader2 } from "lucide-react";
 import { useApiData } from "../../../../hooks/useApiData";
-import { CATEGORIAS, REGIOES } from "../../../../constants/ChartOptions";
+import { CATEGORIAS, REGIOES } from "../../../../constants/charts/chartOptions";
 import { NivelRegional } from "../../../../components/NivelRegional";
 import { NivelEstadual } from "../../../../components/NivelEstadual";
 import { EscolarizacaoChart } from "../../../../components/EscolarizacaoChart";
@@ -21,7 +21,7 @@ import { RankingInadimplenciaChart } from "../../../../components/RankingInadimp
 import { MaturidadePixChart } from "../../../../components/MaturidadePixChart";
 import { ComposicaoCarteiraChart } from "../../../../components/ComposicaoCarteiraChart";
 import { EvolucaoCarteiraChart } from "../../../../components/EvolucaoCarteiraChart";
-import type { Regiao } from "@/app/constants/BrasilMapPaths";
+import type { Regiao } from "@/app/constants/map/brasilMapPaths";
 
 export default function AnalyticsPage() {
   const [activeRegiao, setActiveRegiao] = useState<Regiao>("Norte");

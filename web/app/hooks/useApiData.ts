@@ -1,9 +1,12 @@
+"use client";
+
 import { useState, useEffect } from "react";
 import { api } from "../services/API/api";
+import { AxiosError } from "axios";
 
 export function useApiData<T>(url: string, params?: Record<string, any>) {
   const [data, setData] = useState<T | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
+  const [isLoading, setIsLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
 
   const serializedParams = JSON.stringify(params);
@@ -13,17 +16,26 @@ export function useApiData<T>(url: string, params?: Record<string, any>) {
 
     async function fetchData() {
       setIsLoading(true);
+      setError(null);
+
       try {
-        const response = await api.get(url, {
-          params,
-          signal: controller.signal
+        const currentParams = serializedParams ? JSON.parse(serializedParams) : undefined;
+
+        const response = await api.get<T>(url, {
+          params: currentParams,
+          signal: controller.signal,
         });
+
         setData(response.data);
-        setError(null);
-      } catch (err: any) {
-        if (err.name !== "CanceledError") {
-          setError(err.message || "Erro ao carregar dados.");
+      } catch (err: unknown) {
+        if (err instanceof AxiosError && err.name === "CanceledError") {
+          return;
         }
+
+        const axiosError = err as AxiosError<{ error?: string; mensagem?: string }>;
+        const apiErrorMessage = axiosError.response?.data?.error || axiosError.response?.data?.mensagem;
+
+        setError(apiErrorMessage || axiosError.message || "Erro ao carregar dados.");
       } finally {
         setIsLoading(false);
       }
@@ -31,7 +43,9 @@ export function useApiData<T>(url: string, params?: Record<string, any>) {
 
     fetchData();
 
-    return () => controller.abort();
+    return () => {
+      controller.abort();
+    };
   }, [url, serializedParams]);
 
   return { data, isLoading, error, setData };

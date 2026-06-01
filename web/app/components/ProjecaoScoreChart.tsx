@@ -3,7 +3,7 @@ import { useMemo } from "react"
 import { ChartCard } from "./app/ChartCard"
 import { ReactApexChart } from "../hooks/useApexChart"
 import { createLineOptions } from "../services/ApexCharts/createLineOptions"
-import { CORES_DEFAULT_PRO, DASHES_PRO } from "../constants/ChartOptions"
+import { CORES_DEFAULT_PRO, DASHES_PRO } from "../constants/charts/chartOptions"
 import { ProjecaoScoreChartProps } from "../types/components/ProjecaoScoreChart"
 
 export function ProjecaoScoreChart({ categorias, series, marcadorProjecao }: ProjecaoScoreChartProps) {
