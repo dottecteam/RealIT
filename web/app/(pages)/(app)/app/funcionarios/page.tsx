@@ -8,6 +8,7 @@ import { UserCard } from "@/app/components/app/users/UserCard";
 import { UserFormModal } from "@/app/components/app/users/UserFormModal";
 import { ConfirmModal } from "@/app/components/basic/ConfirmModal";
 import { User, UserRole, UserStatus } from "@/app/types/api/user";
+import { ROUTES } from "../../../../constants/routes";
 
 interface FormState {
   name: string;
@@ -43,7 +44,7 @@ export default function FuncionariosPage() {
     try {
       const data = await getUsers();
       if (!data || (data as any).error || !Array.isArray(data)) {
-        router.push("/app");
+        router.push(ROUTES.APP.HOME.href);
         return;
       }
       setUsers(data);
@@ -62,7 +63,7 @@ export default function FuncionariosPage() {
         const profile = profileData as User;
 
         if (profile.role !== "ADMIN") {
-          router.push("/app");
+          router.push(ROUTES.APP.HOME.href);
           return;
         }
 
@@ -233,7 +234,6 @@ export default function FuncionariosPage() {
         onSubmit={handleFormSubmit}
       />
 
-      {/* 💎 MODAL DE CONFIRMAÇÃO DE INATIVAÇÃO PERSONALIZADO */}
       <ConfirmModal
         isOpen={isConfirmOpen}
         title="Inativar Funcionário?"

@@ -1,10 +1,10 @@
 "use client"
 
 import { useMemo } from "react"
-import { ReactApexChart } from "../hooks/useApexChart"
-import { createLineOptions } from "../services/ApexCharts/createLineOptions"
-import { CORES_DEFAULT_PRO, DASHES_PRO } from "../constants/charts/chartOptions"
-import { SeriesData } from "../types/components/chart"
+import { ReactApexChart } from "../../../hooks/useApexChart"
+import { createLineOptions } from "../../../services/ApexCharts/createLineOptions"
+import { CORES_DEFAULT_PRO, DASHES_PRO } from "../../../constants/charts/chartOptions"
+import { SeriesData } from "../../../types/components/chart"
 
 interface ProjecaoScoreChartProps {
   categorias: string[]
@@ -70,7 +70,7 @@ export function ProjecaoScoreChart({
             options={options}
             series={series}
             type="line"
-            height="100%"
+height="100%"
             width="100%"
           />
         </div>
