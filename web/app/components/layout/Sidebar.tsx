@@ -1,9 +1,11 @@
 "use client";
 
-import { ChevronLeft, Menu, User } from "lucide-react";
+import { useState, useEffect } from "react";
+import { usePathname } from "next/navigation";
+import { ChevronLeft, Menu, User, HelpCircle } from "lucide-react";
 import { SidebarItem } from "./SidebarItem";
 import { ROUTES } from "../../constants/routes";
-import { usePathname } from "next/navigation";
+import { USER_DATA_KEY } from "../../constants/keys";
 
 interface SidebarProps {
   isOpen: boolean;
@@ -11,21 +13,34 @@ interface SidebarProps {
 }
 
 export function Sidebar({ isOpen, onToggle }: SidebarProps) {
-  const user =
-  typeof window !== "undefined"
-    ? JSON.parse(localStorage.getItem("@RealIT:user") || "{}")
-    : null;
+  const pathname = usePathname();
+
+  const [userRole, setUserRole] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      try {
+        const userDataStr = localStorage.getItem(USER_DATA_KEY);
+        if (userDataStr) {
+          const parsedUser = JSON.parse(userDataStr);
+          setUserRole(parsedUser?.role || null);
+        }
+      } catch (error) {
+        console.error("Erro ao ler dados do usuário na Sidebar:", error);
+      }
+    }
+  }, []);
+
   const mainRoutes = ROUTES.appRoutesList
     .slice(0, -1)
     .filter((route) => {
-      if (route.href === "/app/funcionarios") {
-        return user?.role === "ADMIN";
+      if (route.href === ROUTES.APP.FUNCIONARIOS.href) {
+        return userRole === "ADMIN";
       }
-
       return true;
     });
+
   const settingsRoute = ROUTES.APP.PERFIL;
-  const pathname = usePathname();
 
   return (
     <aside
@@ -50,7 +65,7 @@ export function Sidebar({ isOpen, onToggle }: SidebarProps) {
       >
         <button
           onClick={onToggle}
-          className="w-10 h-10 flex items-center justify-center hover:bg-gray-50 rounded-xl text-primary transition-all active:scale-90 cursor-pointer"
+          className="w-10 h-10 flex items-center justify-center hover:bg-gray-50 rounded-xl text-primary transition-all active:scale-90 cursor-pointer focus:outline-none"
         >
           {isOpen ? <ChevronLeft size={24} /> : <Menu size={24} />}
         </button>
@@ -67,7 +82,7 @@ export function Sidebar({ isOpen, onToggle }: SidebarProps) {
       {/* Main navigation */}
       <nav className="flex flex-row md:flex-col w-full flex-1 justify-evenly md:justify-start md:py-4 md:px-3 md:space-y-2">
         {mainRoutes.map((route, index) => {
-          const Icon = route.icon;
+          const IconComponent = route.icon || HelpCircle;
           const isActive = pathname === route.href;
 
           return (
@@ -76,7 +91,7 @@ export function Sidebar({ isOpen, onToggle }: SidebarProps) {
               label={route.label}
               isOpen={isOpen}
               href={route.href}
-              icon={<Icon size={24} />}
+              icon={<IconComponent size={24} />}
               active={isActive}
             />
           );
@@ -86,7 +101,7 @@ export function Sidebar({ isOpen, onToggle }: SidebarProps) {
         <div className="md:hidden flex items-center justify-center">
           {settingsRoute && (
             <SidebarItem
-              label="Perfil"
+              label={settingsRoute.label}
               isOpen={false}
               href={settingsRoute.href}
               icon={<User size={24} />}
@@ -100,7 +115,7 @@ export function Sidebar({ isOpen, onToggle }: SidebarProps) {
       {settingsRoute && (
         <div className="hidden md:block w-full p-3 border-t border-gray-100 mt-auto">
           <SidebarItem
-            label="Perfil"
+            label={settingsRoute.label}
             isOpen={isOpen}
             href={settingsRoute.href}
             icon={<User size={24} />}

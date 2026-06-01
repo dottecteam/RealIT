@@ -1,14 +1,13 @@
 "use client";
 
 import { useState, useRef, useEffect } from "react";
-import { useRouter } from "next/navigation";
 import { Logo } from "../basic/Logo";
 import { getInitials } from "../../utils/stringUtils";
 import { LogOut, ChevronDown } from "lucide-react";
-import { api } from "../../services/API/api";
+import { ROUTES } from "../../constants/routes";
+import { AUTH_TOKEN_KEY, USER_DATA_KEY } from "../../constants/keys";
 
-
-export default interface AppHeaderProps {
+interface AppHeaderProps {
   userName?: string;
   userRole?: string;
 }
@@ -19,7 +18,6 @@ export function AppHeader({
 }: AppHeaderProps) {
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
-  const router = useRouter();
   const initials = getInitials(userName);
 
   useEffect(() => {
@@ -33,17 +31,11 @@ export function AppHeader({
   }, []);
 
   const handleLogout = async () => {
-    try {
-      await api.post('/auth/logout');
-    } catch (error) {
-      console.error("Erro ao encerrar sessão no servidor:", error);
-    } finally {
-      localStorage.removeItem('@RealIT:token');
-      localStorage.removeItem('@RealIT:user');
+    localStorage.removeItem(AUTH_TOKEN_KEY);
+    localStorage.removeItem(USER_DATA_KEY);
 
-      sessionStorage.clear();
-      window.location.href = '/';
-    }
+    sessionStorage.clear();
+    window.location.href = ROUTES.AUTH.LOGIN.href;
   };
 
   return (
@@ -79,7 +71,7 @@ export function AppHeader({
           </button>
 
           {isDropdownOpen && (
-            <div className="absolute right-0 top-full mt-2 w-56 bg-white border border-gray-100 rounded-2xl shadow-2xl py-2 z-50 animate-in fade-in zoom-in-95 slide-in-from-top-4 duration-200 ease-out origin-top-right">
+            <div className="absolute right-0 top-full mt-2 w-56 bg-white border border-gray-100 rounded-2xl shadow-2xl py-2 z-50 origin-top-right transition-all duration-200 ease-out animate-[fadeIn_0.2s_ease-out]">
 
               <div className="px-4 py-2 border-b border-gray-50 mb-2 sm:hidden">
                 <p className="text-sm font-bold text-gray-900 truncate">{userName}</p>
@@ -89,9 +81,9 @@ export function AppHeader({
               <div className="px-2">
                 <button
                   onClick={handleLogout}
-                  className="w-full flex items-center gap-3 px-3 py-2.5 text-sm font-bold hover:text-primary bg-transparent rounded-xl transition-all duration-200 active:scale-[0.98]"
+                  className="w-full flex items-center gap-3 px-3 py-2.5 text-sm font-bold text-gray-600 hover:text-error hover:bg-error/5 rounded-xl transition-all duration-200 active:scale-[0.98] cursor-pointer"
                 >
-                  <LogOut size={18} />
+                  <LogOut size={18} className="text-gray-400" />
                   Sair da Conta
                 </button>
               </div>

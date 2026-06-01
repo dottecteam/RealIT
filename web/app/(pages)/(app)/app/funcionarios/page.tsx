@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { X, User, Mail, Lock, ShieldCheck } from "lucide-react"
-import { getUsers, createUser, updateUser, inactivateUser, activateUser, getProfile } from "../../../../services/API/useService";
+import { getUsers, createUser, updateUser, inactivateUser, activateUser, getProfile } from "../../../../services/API/userService";
 import { useRouter } from "next/navigation";
 
 interface User {
