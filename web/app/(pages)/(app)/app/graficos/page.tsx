@@ -27,6 +27,7 @@ import { MaturidadePixChart } from "../../../../components/MaturidadePixChart";
 import { ComposicaoCarteiraChart } from "../../../../components/ComposicaoCarteiraChart";
 import { EvolucaoCarteiraChart } from "../../../../components/EvolucaoCarteiraChart";
 import type { Regiao } from "@/app/constants/BrasilMapPaths";
+import { BRASIL_PATHS } from "@/app/constants/BrasilMapPaths";
 
 export default function AnalyticsPage() {
   return (
@@ -65,17 +66,40 @@ function AnalyticsPageInner() {
     { ...serverParams, uf: activeUF }
   );
 
-  const filteredRanking = useMemo(() => {
-    if (!dashboardData?.ranking) return [];
-    return (dashboardData.ranking as any[]).filter((r) =>
-      isRankingRowVisible(r, clientFilters)
-    );
-  }, [dashboardData, clientFilters]);
+  const fullRanking = useMemo(
+    () => (dashboardData?.ranking as any[]) ?? [],
+    [dashboardData]
+  );
+
+  const filteredRanking = useMemo(
+    () => fullRanking.filter((r) => isRankingRowVisible(r, clientFilters)),
+    [fullRanking, clientFilters]
+  );
 
   const visibleUfSet = useMemo(
     () => new Set(filteredRanking.map((r: any) => r.uf)),
     [filteredRanking]
   );
+
+  // Conjunto de UFs ocultas derivado diretamente dos filtros, para que a
+  // visibilidade (mapa esmaecido / rankings ocultos) funcione mesmo sem dados
+  // da API. Combina:
+  //   1. UFs marcadas individualmente como ocultas;
+  //   2. UFs pertencentes a regiões ocultas;
+  //   3. UFs reprovadas no filtro de score (apenas quando há dados).
+  const ufsOcultasSet = useMemo(() => {
+    const set = new Set<string>();
+    for (const uf of clientFilters.ufsOcultas) set.add(uf);
+    for (const estado of BRASIL_PATHS) {
+      if (clientFilters.regioesOcultas.includes(estado.regiao as Regiao)) {
+        set.add(estado.uf);
+      }
+    }
+    for (const row of fullRanking) {
+      if (!isRankingRowVisible(row, clientFilters)) set.add(row.uf);
+    }
+    return set;
+  }, [fullRanking, clientFilters]);
 
   const filteredRegionalData = useMemo(() => {
     if (!regionalData) return null;
@@ -89,27 +113,41 @@ function AnalyticsPageInner() {
     };
   }, [regionalData, visibleUfSet]);
 
+  const ufsVisiveis = useMemo(
+    () => CATEGORIAS.filter((uf) => !ufsOcultasSet.has(uf)),
+    [ufsOcultasSet]
+  );
+
   const seriesEixoI = useMemo(() => {
     if (filteredRanking.length === 0) return [];
-    const scores = CATEGORIAS.map((ufSigla) => {
+    const scores = ufsVisiveis.map((ufSigla) => {
       const item = filteredRanking.find((d: any) => d.uf === ufSigla);
       return item ? item.score_eixo_i : 0;
     });
     return [{ name: "Risco de Crédito (RC)", data: scores }];
-  }, [filteredRanking]);
+  }, [filteredRanking, ufsVisiveis]);
 
   const seriesEixoII = useMemo(() => {
     if (filteredRanking.length === 0) return [];
-    const scores = CATEGORIAS.map((ufSigla) => {
+    const scores = ufsVisiveis.map((ufSigla) => {
       const item = filteredRanking.find((d: any) => d.uf === ufSigla);
       return item ? item.score_eixo_ii : 0;
     });
     return [{ name: "Inclusão e Expansão (IE)", data: scores }];
-  }, [filteredRanking]);
+  }, [filteredRanking, ufsVisiveis]);
+
+  const regioesVisiveis = useMemo(
+    () =>
+      REGIOES.filter((regiaoNome) => {
+        const searchName = regiaoNome === "C-Oeste" ? "Centro-Oeste" : regiaoNome;
+        return !clientFilters.regioesOcultas.includes(searchName as any);
+      }),
+    [clientFilters.regioesOcultas]
+  );
 
   const { seriesRegiaoI, seriesRegiaoII } = useMemo(() => {
     if (filteredRanking.length === 0) return { seriesRegiaoI: [], seriesRegiaoII: [] };
-    const calcMedias = REGIOES.map((regiaoNome) => {
+    const calcMedias = regioesVisiveis.map((regiaoNome) => {
       const searchName = regiaoNome === "C-Oeste" ? "Centro-Oeste" : regiaoNome;
       const estados = filteredRanking.filter((d: any) => d.regiao === searchName);
       if (estados.length === 0) return { r: 0, i: 0 };
@@ -124,7 +162,7 @@ function AnalyticsPageInner() {
       seriesRegiaoI: [{ name: "RC Médio Regional", data: calcMedias.map((m) => m.r) }],
       seriesRegiaoII: [{ name: "IE Médio Regional", data: calcMedias.map((m) => m.i) }],
     };
-  }, [filteredRanking]);
+  }, [filteredRanking, regioesVisiveis]);
 
   const mockProjecao = [
     { name: "Histórico", data: [0, 0, 0, 0, 0, 0] },
@@ -163,18 +201,18 @@ function AnalyticsPageInner() {
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
         <div className="lg:col-span-8 group">
           <div className="card-base bg-white h-full border border-transparent hover:border-primary/10 transition-all duration-500 shadow-xl">
-            <BrasilMap data={filteredRanking} />
+            <BrasilMap data={fullRanking} ufsOcultas={ufsOcultasSet} />
           </div>
         </div>
         <div className="lg:col-span-4 flex flex-col gap-6">
           <ChartCard title="Risco Regional (Eixo I)">
             <div className="h-62.5 mt-4">
-              {isLoading ? <Loader2 className="animate-spin m-auto" /> : <RankingChart series={seriesRegiaoI} title="" />}
+              {isLoading ? <Loader2 className="animate-spin m-auto" /> : <RankingChart series={seriesRegiaoI} categories={regioesVisiveis} title="" />}
             </div>
           </ChartCard>
           <ChartCard title="Inclusão Regional (Eixo II)">
             <div className="h-62.5 mt-4">
-              {isLoading ? <Loader2 className="animate-spin m-auto" /> : <RankingChart series={seriesRegiaoII} title="" />}
+              {isLoading ? <Loader2 className="animate-spin m-auto" /> : <RankingChart series={seriesRegiaoII} categories={regioesVisiveis} title="" />}
             </div>
           </ChartCard>
         </div>
@@ -215,12 +253,12 @@ function AnalyticsPageInner() {
         <div className="grid grid-cols-1 gap-8">
           <ChartCard title="Performance de Crédito por UF (Eixo I)">
             <div className="mt-4 overflow-hidden rounded-xl border border-gray-50">
-              {isLoading ? <Loader2 className="animate-spin m-auto" /> : <RankingStates series={seriesEixoI} />}
+              {isLoading ? <Loader2 className="animate-spin m-auto" /> : <RankingStates series={seriesEixoI} categories={ufsVisiveis} />}
             </div>
           </ChartCard>
           <ChartCard title="Maturidade de Mercado por UF (Eixo II)">
             <div className="mt-4 overflow-hidden rounded-xl border border-gray-100">
-              {isLoading ? <Loader2 className="animate-spin m-auto" /> : <RankingStates series={seriesEixoII} />}
+              {isLoading ? <Loader2 className="animate-spin m-auto" /> : <RankingStates series={seriesEixoII} categories={ufsVisiveis} />}
             </div>
           </ChartCard>
         </div>

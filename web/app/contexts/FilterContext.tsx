@@ -25,6 +25,7 @@ export interface ClientFilters {
   scoreRC: [number, number];
   scoreIE: [number, number];
   regioesOcultas: Regiao[];
+  ufsOcultas: string[];
 }
 
 export const SCORE_MIN = 1;
@@ -40,6 +41,7 @@ const DEFAULT_CLIENT: ClientFilters = {
   scoreRC: [SCORE_MIN, SCORE_MAX],
   scoreIE: [SCORE_MIN, SCORE_MAX],
   regioesOcultas: [],
+  ufsOcultas: [],
 };
 
 interface FilterContextValue {
@@ -49,6 +51,7 @@ interface FilterContextValue {
   setServerField: <K extends keyof ServerFilters>(key: K, value: ServerFilters[K]) => void;
   setClientField: <K extends keyof ClientFilters>(key: K, value: ClientFilters[K]) => void;
   toggleRegiaoOculta: (regiao: Regiao) => void;
+  toggleUfOculta: (uf: string) => void;
   resetFilters: () => void;
 }
 
@@ -100,6 +103,15 @@ export function FilterProvider({
     }));
   }, []);
 
+  const toggleUfOculta = useCallback((uf: string) => {
+    setClient((prev) => ({
+      ...prev,
+      ufsOcultas: prev.ufsOcultas.includes(uf)
+        ? prev.ufsOcultas.filter((u) => u !== uf)
+        : [...prev.ufsOcultas, uf],
+    }));
+  }, []);
+
   const resetFilters = useCallback(() => {
     setServer(DEFAULT_SERVER);
     setClient(DEFAULT_CLIENT);
@@ -113,9 +125,10 @@ export function FilterProvider({
       setServerField,
       setClientField,
       toggleRegiaoOculta,
+      toggleUfOculta,
       resetFilters,
     }),
-    [server, client, serverParams, setServerField, setClientField, toggleRegiaoOculta, resetFilters]
+    [server, client, serverParams, setServerField, setClientField, toggleRegiaoOculta, toggleUfOculta, resetFilters]
   );
 
   return <FilterContext.Provider value={value}>{children}</FilterContext.Provider>;
@@ -132,6 +145,7 @@ export function isRankingRowVisible(
   client: ClientFilters
 ): boolean {
   if (client.regioesOcultas.includes(row.regiao as Regiao)) return false;
+  if (client.ufsOcultas.includes(row.uf)) return false;
   if (row.score_eixo_i < client.scoreRC[0] || row.score_eixo_i > client.scoreRC[1]) return false;
   if (row.score_eixo_ii < client.scoreIE[0] || row.score_eixo_ii > client.scoreIE[1]) return false;
   return true;

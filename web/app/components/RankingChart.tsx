@@ -18,14 +18,14 @@ function getMeta(series: RankingChartProps["series"]) {
   return EIXO_META[nome] ?? { label: nome, descricao: "", cor: "#908f8f" }
 }
 
-export function RankingChart({ series }: RankingChartProps) {
+export function RankingChart({ series, categories }: RankingChartProps) {
   const meta = useMemo(() => getMeta(series), [series])
 
   const options = createBarOptions({
     colors: [meta.cor],
     plotOptions: { bar: { columnWidth: "45%" } },
     xaxis: {
-      categories: REGIOES,
+      categories: categories ?? REGIOES,
       axisBorder: { show: false },
       axisTicks:  { show: false },
       labels: { style: { colors: "#908f8f", fontSize: "12px", fontWeight: 500 } },

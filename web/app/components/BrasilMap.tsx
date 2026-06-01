@@ -9,22 +9,26 @@ import { REGIAO_COR, UF_COLORS, CATEGORIA_TEXTO, CATEGORIA_CORES } from "../cons
 
 // Sub-componente (MEMOIZADO)
 const EstadoPath_ = memo(function EstadoPath_({
-  estado, fill, isHovered, anyHovered, onMouseEnter, onMouseLeave, onMouseMove,
-}: EstadoProps) {
-  const opacity = anyHovered ? (isHovered ? 1 : 0.38) : 0.88;
+  estado, fill, isHovered, anyHovered, isHidden, onMouseEnter, onMouseLeave, onMouseMove,
+}: EstadoProps & { isHidden?: boolean }) {
+  const baseOpacity = anyHovered ? (isHovered ? 1 : 0.38) : 0.88;
+  const opacity = isHidden ? 0.15 : baseOpacity;
   const stroke = isHovered ? "var(--primary)" : "var(--white)";
   const strokeWidth = isHovered ? 1.5 : 0.8;
   return (
     <path
       d={estado.d}
-      fill={fill}
+      fill={isHidden ? "var(--gray-300)" : fill}
       stroke={stroke}
       strokeWidth={strokeWidth}
       opacity={opacity}
-      style={{ cursor: "pointer", transition: "opacity 0.18s ease, fill 0.3s ease" }}
-      onMouseEnter={(e) => onMouseEnter(e, estado)}
-      onMouseLeave={onMouseLeave}
-      onMouseMove={onMouseMove}
+      style={{
+        cursor: isHidden ? "not-allowed" : "pointer",
+        transition: "opacity 0.18s ease, fill 0.3s ease",
+      }}
+      onMouseEnter={isHidden ? undefined : (e) => onMouseEnter(e, estado)}
+      onMouseLeave={isHidden ? undefined : onMouseLeave}
+      onMouseMove={isHidden ? undefined : onMouseMove}
     />
   );
 });
@@ -32,9 +36,10 @@ const EstadoPath_ = memo(function EstadoPath_({
 // Adicionamos a tipagem para receber os dados da API
 interface BrasilMapProps {
   data?: any[];
+  ufsOcultas?: Set<string>;
 }
 
-export function BrasilMap({ data = [] }: BrasilMapProps) {
+export function BrasilMap({ data = [], ufsOcultas }: BrasilMapProps) {
   const { viewMode } = useMapContext();
   const [heatmap, setHeatmap] = useState(false);
   const [hoveredUf, setHoveredUf] = useState<string | null>(null);
@@ -174,14 +179,44 @@ export function BrasilMap({ data = [] }: BrasilMapProps) {
 
       <div className="flex-1 flex justify-center items-center w-full relative px-4">
         <svg viewBox="0 0 800 691" className="w-full h-full max-h-125 drop-shadow-2xl select-none" preserveAspectRatio="xMidYMid meet">
-          {BRASIL_PATHS.map((estado) => (
-            <EstadoPath_ key={estado.uf} estado={estado} fill={getFill(estado)} isHovered={hoveredUf === estado.uf} anyHovered={anyHovered} onMouseEnter={handleMouseEnter} onMouseLeave={handleMouseLeave} onMouseMove={handleMouseMove} />
-          ))}
-          {BRASIL_PATHS.map((estado) => (
-            <text key={`label-${estado.uf}`} x={estado.centroid[0]} y={estado.centroid[1]} textAnchor="middle" dominantBaseline="middle" className="fill-white font-black pointer-events-none select-none" style={{ fontSize: "11px", paintOrder: "stroke", stroke: "rgba(0,0,0,0.3)", strokeWidth: "2.5px" }}>
-              {estado.uf}
-            </text>
-          ))}
+          {BRASIL_PATHS.map((estado) => {
+            const isHidden = ufsOcultas?.has(estado.uf) ?? false;
+            return (
+              <EstadoPath_
+                key={estado.uf}
+                estado={estado}
+                fill={getFill(estado)}
+                isHovered={hoveredUf === estado.uf}
+                anyHovered={anyHovered}
+                isHidden={isHidden}
+                onMouseEnter={handleMouseEnter}
+                onMouseLeave={handleMouseLeave}
+                onMouseMove={handleMouseMove}
+              />
+            );
+          })}
+          {BRASIL_PATHS.map((estado) => {
+            const isHidden = ufsOcultas?.has(estado.uf) ?? false;
+            return (
+              <text
+                key={`label-${estado.uf}`}
+                x={estado.centroid[0]}
+                y={estado.centroid[1]}
+                textAnchor="middle"
+                dominantBaseline="middle"
+                className="fill-white font-black pointer-events-none select-none"
+                style={{
+                  fontSize: "11px",
+                  paintOrder: "stroke",
+                  stroke: "rgba(0,0,0,0.3)",
+                  strokeWidth: "2.5px",
+                  opacity: isHidden ? 0.3 : 1,
+                }}
+              >
+                {estado.uf}
+              </text>
+            );
+          })}
         </svg>
       </div>
 

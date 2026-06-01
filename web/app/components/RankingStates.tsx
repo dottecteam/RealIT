@@ -24,14 +24,20 @@ function getMeta(series: SeriesData[]) {
   return EIXO_META[nome] ?? { label: nome, descricao: "", cores: ["#908f8f"] }
 }
 
-export function RankingStates({ series }: { series: SeriesData[] }) {
+export function RankingStates({
+  series,
+  categories,
+}: {
+  series: SeriesData[];
+  categories?: string[];
+}) {
   const meta = useMemo(() => getMeta(series), [series])
 
   const options = createBarOptions({
     colors: meta.cores,
     plotOptions: { bar: { columnWidth: 20 } },
     xaxis: {
-      categories: CATEGORIAS,
+      categories: categories ?? CATEGORIAS,
       axisBorder: { show: false },
       axisTicks:  { show: false },
       labels: { style: { colors: "#908f8f", fontSize: "11px", fontWeight: 600 } },
