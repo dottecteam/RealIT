@@ -30,7 +30,7 @@ export function RankingStates({ series }: { series: SeriesData[] }) {
     xaxis: { categories: CATEGORIAS },
     tooltip: {
       x: { formatter: (val: string) => ESTADOS[val] ?? val },
-      y: { formatter: (val: number) => `${val.toFixed(2)}` }
+      y: { formatter: (val: number | undefined) => val !== undefined ? `${val.toFixed(2)}` : "0.00" }
     }
   }), [meta]);
 
