@@ -2,76 +2,51 @@
 
 import { useState, useEffect } from "react";
 import { api } from "../services/API/api";
+import { AxiosError } from "axios";
 
-const memoryCache: Record<string, any> = {};
-const CACHE_DURATION = 10 * 60 * 1000; 
-
-export function useApiData<T>(endpoint: string, params: Record<string, any> = {}) {
+export function useApiData<T>(url: string, params?: Record<string, any>) {
   const [data, setData] = useState<T | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState("");
+  const [isLoading, setIsLoading] = useState<boolean>(true);
+  const [error, setError] = useState<string | null>(null);
 
-  const fetchKey = `${endpoint}?${new URLSearchParams(params).toString()}`;
+  const serializedParams = JSON.stringify(params);
 
   useEffect(() => {
-    let isMounted = true;
+    const controller = new AbortController();
 
-    const fetchData = async () => {
-      if (memoryCache[fetchKey]) {
-        setData(memoryCache[fetchKey]);
-        setIsLoading(false);
-        return;
-      }
-
-      const storedData = sessionStorage.getItem(fetchKey);
-      if (storedData) {
-        const parsed = JSON.parse(storedData);
-        const now = Date.now();
-        
-        if (now - parsed.timestamp < CACHE_DURATION) {
-          memoryCache[fetchKey] = parsed.data;
-          setData(parsed.data);
-          setIsLoading(false);
-          return;
-        } else {
-          sessionStorage.removeItem(fetchKey);
-        }
-      }
-
+    async function fetchData() {
       setIsLoading(true);
-      setError("");
+      setError(null);
 
       try {
-        const response = await api.get(endpoint, { params });
-        
-        if (isMounted) {
-          const responseData = response.data;
-          
-          memoryCache[fetchKey] = responseData;
-          sessionStorage.setItem(fetchKey, JSON.stringify({
-            data: responseData,
-            timestamp: Date.now()
-          }));
+        const currentParams = serializedParams ? JSON.parse(serializedParams) : undefined;
 
-          setData(responseData);
+        const response = await api.get<T>(url, {
+          params: currentParams,
+          signal: controller.signal,
+        });
+
+        setData(response.data);
+      } catch (err: unknown) {
+        if (err instanceof AxiosError && err.name === "CanceledError") {
+          return;
         }
-      } catch (err: any) {
-        if (isMounted) {
-          setError(err.response?.data?.error || "Erro ao carregar os dados");
-        }
+
+        const axiosError = err as AxiosError<{ error?: string; mensagem?: string }>;
+        const apiErrorMessage = axiosError.response?.data?.error || axiosError.response?.data?.mensagem;
+
+        setError(apiErrorMessage || axiosError.message || "Erro ao carregar dados.");
       } finally {
-        if (isMounted) {
-          setIsLoading(false);
-        }
+        setIsLoading(false);
       }
-    };
+    }
 
     fetchData();
 
     return () => {
-      isMounted = false;
+      controller.abort();
     };
-  }, [fetchKey]);
+  }, [url, serializedParams]);
 
-  return { data, isLoading, error };
+  return { data, isLoading, error, setData };
 }

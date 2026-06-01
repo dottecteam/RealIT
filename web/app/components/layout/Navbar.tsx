@@ -1,0 +1,51 @@
+"use client";
+
+import { useState } from "react";
+import { Menu, X, LogIn } from "lucide-react";
+import { Logo } from "../basic/Logo";
+import { Navlink } from "./Navlink";
+import { ROUTES } from "../../constants/routes";
+
+export function Navbar() {
+    const [isMenuOpen, setIsMenuOpen] = useState(false);
+
+    return (
+        <header className="w-full bg-primary text-white shadow-md z-50 sticky top-0 transition-all">
+            <div className="container-responsive h-20 flex items-center justify-between">
+                <Logo color="white" size={40}/>
+
+                {/* DESKTOP ACTIONS */}
+                <div className="hidden md:flex items-center gap-4 text-2xl">
+                    <Navlink link={ROUTES.AUTH.LOGIN.href}>
+                        <LogIn size={20} /> {ROUTES.AUTH.LOGIN.label}
+                    </Navlink>
+                </div>
+
+                {/* MOBILE MENU BUTTON */}
+                <button
+                    className="md:hidden p-2 text-secondary hover:bg-white/10 rounded-lg transition-colors cursor-pointer"
+                    onClick={() => setIsMenuOpen(!isMenuOpen)}
+                    aria-label="Toggle Menu"
+                >
+                    {isMenuOpen ? <X size={32} /> : <Menu size={32} />}
+                </button>
+            </div>
+
+            {/* MOBILE NAV DROPDOWN */}
+            {isMenuOpen && (
+                <div className="md:hidden bg-primary-dark border-t border-white/10 p-6 space-y-4 flex flex-col animate-in slide-in-from-top duration-300">
+
+                    <div className="flex flex-col gap-4 pt-2">
+                        <Navlink 
+                            link={ROUTES.AUTH.LOGIN.href} 
+                            className="text-lg justify-center py-2"
+                            onClick={() => setIsMenuOpen(false)}
+                        >
+                            <LogIn size={20} /> {ROUTES.AUTH.LOGIN.label}
+                        </Navlink>
+                    </div>
+                </div>
+            )}
+        </header>
+    );
+}
