@@ -1,14 +1,15 @@
 
-export type UserRole = "ADMIN" | "MEMBER" | "VIEWER";
+export type UserRole = "DEV" | "ADMIN" | "USER";
+export type UserStatus = "ACTIVE" | "INACTIVE";
 
 export interface User {
     id: number;
     name: string;
     email: string;
     role: UserRole;
-    isActive: boolean;
+    status: UserStatus;
     createdAt: string;
-    updatedAt?: string;
+    updatedAt: string;
 }
 
 export interface CreateUserDTO {

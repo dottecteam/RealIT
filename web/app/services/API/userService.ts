@@ -1,5 +1,3 @@
-// app/services/API/userService.ts
-
 import { api } from "./api";
 import { API_ENDPOINTS } from "../../constants/routes";
 import {
