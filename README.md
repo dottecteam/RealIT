@@ -70,10 +70,15 @@ Abaixo, as principais funcionalidades priorizadas para o sucesso do projeto:
 
 ### Coleta e Processamento de Dados
 ![Python](https://img.shields.io/badge/Python-3776AB?style=for-the-badge&logo=python&logoColor=white)
-![Google Colab](https://img.shields.io/badge/Google%20Colab-F9AB00?style=for-the-badge&logo=googlecolab&logoColor=black)
+![FastAPI](https://img.shields.io/badge/FastAPI-009688?style=for-the-badge&logo=fastapi&logoColor=white)
+![Pandas](https://img.shields.io/badge/Pandas-150458?style=for-the-badge&logo=pandas&logoColor=white)
+![Google Colab](https://img.shields.io/badge/Google%20Colab-F9AB00?style=for-the-badge&logo=googlecolab&logoColor=white)
+- FastAPI para processamento e ingestão automática de dados mensais
+- Pandas e NumPy para ETL e cálculo dos scores
+- Dados públicos do BCB (SCR e PIX) e IBGE processados automaticamente
+- Notebook Google Colab disponível para execução manual e exploração dos dados
 
-- Python para coleta e tratamento de dados
-- Google Colab para execução dos pipelines
+📓 **Notebook:** [Abrir no Google Colab](https://colab.research.google.com/drive/1zK3rZBd1XM-zZryB8X5ikEszxlddlndh?usp=sharing)
 
 ---
 
