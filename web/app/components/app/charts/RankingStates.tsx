@@ -8,7 +8,7 @@ import { EIXO_META } from "../../../constants/charts/rankingConfig";
 import { ESTADOS, CATEGORIAS } from "../../../constants/charts/chartOptions";
 import { ChartHeader } from "./ChartHeader";
 
-export function RankingStates({ series }: { series: SeriesData[] }) {
+export function RankingStates({ series, categories }: { series: SeriesData[]; categories?: string[] }) {
   const meta = useMemo(() => {
     const name = series[0]?.name ?? "";
 
@@ -27,12 +27,12 @@ export function RankingStates({ series }: { series: SeriesData[] }) {
   const options = useMemo(() => createBarOptions({
     colors: meta.cores,
     plotOptions: { bar: { columnWidth: 20 } },
-    xaxis: { categories: CATEGORIAS },
+    xaxis: { categories: categories ?? CATEGORIAS },
     tooltip: {
       x: { formatter: (val: string) => ESTADOS[val] ?? val },
       y: { formatter: (val: number) => `${val.toFixed(2)}` }
     }
-  }), [meta]);
+  }), [meta, categories]);
 
   return (
     <div className="w-full flex flex-col gap-2">

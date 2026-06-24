@@ -7,9 +7,9 @@ import { REGIOES } from "../../../constants/charts/chartOptions";
 import { EIXO_META_II } from "../../../constants/charts/rankingConfig";
 import { SeriesData } from "../../../types/components/chart";
 
-interface RankingChartProps { title: string; info?: string; series: SeriesData[] }
+interface RankingChartProps { title: string; info?: string; series: SeriesData[]; categories?: string[] }
 
-export function RankingChart({ series }: RankingChartProps) {
+export function RankingChart({ series, categories }: RankingChartProps) {
   const meta = useMemo(() => {
     const name = series[0]?.name ?? "";
 
@@ -28,14 +28,14 @@ export function RankingChart({ series }: RankingChartProps) {
   const options = useMemo(() => createBarOptions({
     colors: [meta.cor],
     plotOptions: { bar: { columnWidth: "45%" } },
-    xaxis: { categories: REGIOES },
+    xaxis: { categories: categories ?? REGIOES },
     tooltip: {
       y: {
         formatter: (val: number) => `${val.toFixed(2)} (escala 1–5)`,
         title: { formatter: () => `${meta.label}: ` },
       },
     },
-  }), [meta]);
+  }), [meta, categories]);
 
   return (
     <div className="w-full flex flex-col gap-1">

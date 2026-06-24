@@ -1,4 +1,5 @@
 import { prisma } from '../lib/prisma';
+import type { FiltrosParseados } from '../utils/filterParser';
 
 export function normalize(x: number, min: number, max: number): number {
     if (max === min) return 1.0;
@@ -20,7 +21,23 @@ export function getStrategicCategory(scoreRC: number, scoreIE: number): string {
     return "INTERMEDIÁRIO";
 }
 
-export async function processAllScores(userId: number, filters: { uf?: string, mesAno?: string }) {
+export type ScoreFilters = Partial<FiltrosParseados> & {
+    uf?: string | string[] | null
+    regiao?: string | string[] | null
+    mesAno?: string | null
+    scoreRCMin?: number | null
+    scoreRCMax?: number | null
+    scoreIEMin?: number | null
+    scoreIEMax?: number | null
+}
+
+function asLista(v: string | string[] | null | undefined): string[] | null {
+    if (v == null) return null
+    if (Array.isArray(v)) return v.length > 0 ? v : null
+    return [v]
+}
+
+export async function processAllScores(userId: number, filters: ScoreFilters) {
     const userWeights = await prisma.filtroScore.findFirst({ where: { idUsuario: userId } });
     const weights = userWeights || {
         inadiplenciaRealPeso: 0.35, fragilidadeRendaPeso: 0.35, agingDividaPeso: 0.20, vulnerabilidadeSocialPeso: 0.10,
@@ -51,11 +68,22 @@ export async function processAllScores(userId: number, filters: { uf?: string, m
             maisRecentePorUf.set(r.uf, r);
         }
     }
-    const base = filters.uf
-        ? [...maisRecentePorUf.values()].filter(r => r.uf === filters.uf)
-        : [...maisRecentePorUf.values()];
+    const ufList     = asLista(filters.uf)
+    const regiaoList = asLista(filters.regiao)
+    const base = [...maisRecentePorUf.values()].filter((r) => {
+        if (ufList     && !ufList.includes(r.uf))         return false
+        if (regiaoList && !regiaoList.includes(r.regiao)) return false
+        return true
+    });
 
-    return base.map(r => {
+    const rcMin = filters.scoreRCMin ?? null
+    const rcMax = filters.scoreRCMax ?? null
+    const ieMin = filters.scoreIEMin ?? null
+    const ieMax = filters.scoreIEMax ?? null
+    const dentroDoRange = (v: number, min: number | null, max: number | null) =>
+        (min == null || v >= min) && (max == null || v <= max)
+
+    const resultados = base.map(r => {
         const inc = inclusaoTotal.find(i => i.uf === r.uf && i.mesAno === r.mesAno);
         const z = {
             inad: normalize(r.inadiplenciaReal, limits.inad.min, limits.inad.max),
@@ -77,4 +105,9 @@ export async function processAllScores(userId: number, filters: { uf?: string, m
             categoria: getStrategicCategory(scoreRC, scoreIE)
         };
     });
+
+    return resultados.filter(x =>
+        dentroDoRange(x.score_eixo_i, rcMin, rcMax) &&
+        dentroDoRange(x.score_eixo_ii, ieMin, ieMax)
+    );
 }
