@@ -8,6 +8,7 @@ export function useApiData<T>(url: string, params?: Record<string, any>) {
   const [data, setData] = useState<T | null>(null);
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
+  const [isFallback, setIsFallback] = useState<boolean>(false);
 
   const serializedParams = JSON.stringify(params);
 
@@ -17,10 +18,11 @@ export function useApiData<T>(url: string, params?: Record<string, any>) {
     async function fetchData() {
       setIsLoading(true);
       setError(null);
+      setIsFallback(false);
+
+      const currentParams = serializedParams ? JSON.parse(serializedParams) : undefined;
 
       try {
-        const currentParams = serializedParams ? JSON.parse(serializedParams) : undefined;
-
         const response = await api.get<T>(url, {
           params: currentParams,
           signal: controller.signal,
@@ -30,6 +32,21 @@ export function useApiData<T>(url: string, params?: Record<string, any>) {
       } catch (err: unknown) {
         if (err instanceof AxiosError && err.name === "CanceledError") {
           return;
+        }
+
+        // Falha na API: tenta servir os dados de fallback estáticos antes de
+        // exibir erro, para que os dashboards continuem com conteúdo.
+        try {
+          const { resolveFallback } = await import("../mocks/fallback");
+          const fallback = resolveFallback(url, currentParams);
+          if (fallback !== null) {
+            setData(fallback as T);
+            setIsFallback(true);
+            setError(null);
+            return;
+          }
+        } catch {
+          // ignora erro ao carregar o módulo de fallback e cai no erro normal
         }
 
         const axiosError = err as AxiosError<{ error?: string; mensagem?: string }>;
@@ -48,5 +65,5 @@ export function useApiData<T>(url: string, params?: Record<string, any>) {
     };
   }, [url, serializedParams]);
 
-  return { data, isLoading, error, setData };
+  return { data, isLoading, error, isFallback, setData };
 }
