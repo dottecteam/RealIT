@@ -10,10 +10,30 @@ export const OPCOES_VISIBILIDADE = [
     {id: "evolucao", texto: "Evolução da Carteira"}
 ];
 
-export const SECOES_FILTRO = [
-    {categoria: "Endividamento", opcoes: ["% da renda", "Comprometimento da renda", "Endividamento por tipo de crédito"]},
-    {categoria: "Dados PIX", opcoes: ["Valor total movimentado", "Valor médio transação", "Percentual de crescimento"]},
-    {categoria: "Credituário", opcoes: ["Crédito pessoal", "Consignado", "Financiamento imobiliário"]},
+export interface SecaoIndicador {
+    categoria: string;
+    opcoes: { id: string; texto: string }[];
+}
+
+export const SECOES_FILTRO: SecaoIndicador[] = [
+    {
+        categoria: "Risco de Crédito (Eixo I)",
+        opcoes: [
+            { id: "inadimplenciaReal",     texto: "Inadimplência Real" },
+            { id: "fragilidadeRenda",      texto: "Fragilidade de Renda" },
+            { id: "agingDivida",           texto: "Aging da Dívida" },
+            { id: "vulnerabilidadeSocial", texto: "Vulnerabilidade Social" },
+        ],
+    },
+    {
+        categoria: "Inclusão e Expansão (Eixo II)",
+        opcoes: [
+            { id: "maturidadePix",           texto: "Maturidade do PIX" },
+            { id: "crescimentoPopulacional", texto: "Crescimento Populacional" },
+            { id: "populacaoAbsoluta",       texto: "População Absoluta" },
+            { id: "bonusDemografico",        texto: "Bônus Demográfico" },
+        ],
+    },
 ];
 
 export const OPCOES_DOWNLOAD = [
