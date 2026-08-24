@@ -30,9 +30,8 @@ export function RankingStates({ series, categories }: { series: SeriesData[]; ca
     xaxis: { categories: categories ?? CATEGORIAS },
     tooltip: {
       x: { formatter: (val: string) => ESTADOS[val] ?? val },
-      y: { formatter: (val: number) => `${val.toFixed(2)}` }
-    }
-  }), [meta, categories]);
+      y: { formatter: (val: number | undefined) => val !== undefined ? `${val.toFixed(2)}` : "0.00" }
+    }), [meta, categories]);
 
   return (
     <div className="w-full flex flex-col gap-2">

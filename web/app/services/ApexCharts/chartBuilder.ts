@@ -352,6 +352,7 @@ export const getComposicaoCarteiraOptions = (categories: string[]): ApexCharts.A
     tooltip: {
         theme: "light",
         shared: true,
+        intersect: false,
         y: { formatter: (val: number) => `${val.toFixed(1)}%` },
     },
     legend: { position: "bottom", fontSize: "11px", labels: { colors: "#374151" } },
