@@ -2,9 +2,15 @@
 
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { Logo } from "../../../components/Logo";
-import { Mail, Lock, ArrowRight, Loader2, AlertCircle } from "lucide-react";
+import { Logo } from "../../../components/basic/Logo";
+import { InputField } from "../../../components/basic/InputField";
+import { FormError } from "../../../components/basic/FormError";
+import { Mail, Lock, ArrowRight, Loader2 } from "lucide-react";
 import { signIn } from "../../../services/API/authService";
+import { ROUTES } from "../../../constants/routes";
+import { AUTH_TOKEN_KEY } from "../../../constants/keys";
+import { validateLogin } from "../../../utils/validateFields";
+import { ArrowLeft } from "lucide-react";
 
 export default function LoginPage() {
   const [email, setEmail] = useState("");
@@ -15,38 +21,25 @@ export default function LoginPage() {
   const router = useRouter();
 
   useEffect(() => {
-    const token = localStorage.getItem('@RealIT:token');
+    const token = localStorage.getItem(AUTH_TOKEN_KEY);
     if (token) {
-      router.push('/app');
+      router.push(ROUTES.APP.HOME.href);
     } else {
       setIsCheckingAuth(false);
     }
   }, [router]);
 
-  const validateFrontend = () => {
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!emailRegex.test(email)) {
-      setError("E-mail inválido (deve conter @ e domínio)");
-      return false;
-    }
-    if (password.length < 8) {
-      setError("A senha deve ter no mínimo 8 caracteres");
-      return false;
-    }
-    return true;
-  };
-
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     setError("");
 
-    if (!validateFrontend()) return;
+    if (!validateLogin({ email, password, setError })) return;
 
     setIsLoading(true);
 
     try {
       await signIn(email, password);
-      router.push("/app");
+      router.push(ROUTES.APP.HOME.href);
     } catch (err: any) {
       const apiError = err.response?.data;
 
@@ -62,8 +55,25 @@ export default function LoginPage() {
     }
   }
 
+  if (isCheckingAuth) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-background">
+        <Loader2 className="w-8 h-8 animate-spin text-primary" />
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen flex items-center justify-center bg-background p-6">
+
+      <button
+        onClick={() => router.push("/")}
+        className="absolute top-8 left-8 flex items-center gap-2 text-sm font-black uppercase tracking-widest text-gray-400 hover:text-primary transition-colors focus:outline-none group"
+      >
+        <ArrowLeft className="w-4 h-4 transition-transform group-hover:-translate-x-1" />
+        Voltar para o início
+      </button>
+
       <div className="w-full max-w-[440px]">
         <div className="flex justify-center mb-10">
           <Logo size={40} color="var(--primary)" />
@@ -80,44 +90,29 @@ export default function LoginPage() {
           </header>
 
           <form onSubmit={handleSubmit} className="space-y-6">
-            {error && (
-              <div className="bg-error/10 border border-error/20 text-error text-xs font-bold p-4 rounded-xl flex items-center gap-3 animate-in fade-in zoom-in duration-200">
-                <AlertCircle className="w-4 h-4 shrink-0" />
-                <span>{error}</span>
-              </div>
-            )}
+            <FormError message={error} />
 
-            <div className="space-y-2">
-              <label className="text-[10px] font-black uppercase text-gray-400 tracking-widest ml-1">
-                E-mail Corporativo
-              </label>
-              <div className="relative group">
-                <Mail className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-300 group-focus-within:text-primary transition-colors" />
-                <input
-                  type="email"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  className="w-full bg-gray-50 border-2 border-gray-50 rounded-2xl py-4 pl-12 pr-4 outline-none focus:bg-white focus:border-primary/20 transition-all font-medium text-gray-700"
-                  placeholder="exemplo@email.com"
-                />
-              </div>
-            </div>
+            <InputField
+              label="E-mail Corporativo"
+              icon={Mail}
+              type="email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              placeholder="exemplo@email.com"
+              disabled={isLoading}
+              required
+            />
 
-            <div className="space-y-2">
-              <label className="text-[10px] font-black uppercase text-gray-400 tracking-widest ml-1">
-                Senha
-              </label>
-              <div className="relative group">
-                <Lock className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-300 group-focus-within:text-primary transition-colors" />
-                <input
-                  type="password"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  className="w-full bg-gray-50 border-2 border-gray-50 rounded-2xl py-4 pl-12 pr-4 outline-none focus:bg-white focus:border-primary/20 transition-all font-medium text-gray-700"
-                  placeholder="••••••••"
-                />
-              </div>
-            </div>
+            <InputField
+              label="Senha"
+              icon={Lock}
+              type="password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              placeholder="••••••••"
+              disabled={isLoading}
+              required
+            />
 
             <button
               type="submit"
@@ -138,7 +133,7 @@ export default function LoginPage() {
           <footer className="mt-8 pt-6 border-t border-gray-50 text-center">
             <p className="text-sm text-gray-400 font-medium">
               Não tem acesso?{" "}
-              <a className="text-primary font-black hover:underline" href="/solicite">
+              <a className="text-primary font-black hover:underline" href={ROUTES.AUTH.REQUEST.href}>
                 Solicite ao administrador
               </a>
             </p>

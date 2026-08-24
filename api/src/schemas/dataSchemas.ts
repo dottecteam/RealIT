@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import { baseFiltroQuerySchema } from './filtroSchemas';
 
 export const creditRiskSchema = z.object({
   mesAno: z.string(),
@@ -56,34 +57,30 @@ export const pixStructureArray = z.array(pixStructureSchema);
 export const ibgeStructureArray = z.array(ibgeStructureSchema);
 
 export const summaryQuerySchema = z.object({
-  query: z.object({
-    uf: z.string().length(2, "A UF deve ter 2 caracteres").optional(),
-    regiao: z.string().min(1, "A região não pode estar vazia").optional(),
-    mesAno: z.string().optional(),
-  }).refine(data => data.uf || data.regiao, {
-    message: "Você deve fornecer ao menos a 'uf' ou a 'regiao' para o resumo.",
-    path: ["uf"]
-  })
+  query: baseFiltroQuerySchema
+    .extend({})
+    .refine(data => data.uf || data.regiao, {
+      message: "Você deve fornecer ao menos a 'uf' ou a 'regiao' para o resumo.",
+      path: ["uf"]
+    })
 });
 
 export const calculateScoresQuerySchema = z.object({
-  query: z.object({
-    uf: z.string().length(2, "A UF deve ter exatamente 2 caracteres (ex: SP)").optional(),
-    regiao: z.string().optional()
-  })
+  query: baseFiltroQuerySchema.extend({})
 });
 
 export const evolutionQuerySchema = z.object({
-  query: z.object({
-    uf: z.string().length(2).optional(),
-    regiao: z.string().optional(),
+  query: baseFiltroQuerySchema.extend({
     limit: z.string().regex(/^\d+$/).optional().default("12"),
   })
 });
 
 export const rankingQuerySchema = z.object({
-  query: z.object({
+  query: baseFiltroQuerySchema.extend({
     orderBy: z.enum(['RC', 'IE']).optional().default('RC'),
-    mesAno: z.string().optional(),
   })
+});
+
+export const filtroQuerySchema = z.object({
+  query: baseFiltroQuerySchema
 });

@@ -70,10 +70,15 @@ Abaixo, as principais funcionalidades priorizadas para o sucesso do projeto:
 
 ### Coleta e Processamento de Dados
 ![Python](https://img.shields.io/badge/Python-3776AB?style=for-the-badge&logo=python&logoColor=white)
-![Google Colab](https://img.shields.io/badge/Google%20Colab-F9AB00?style=for-the-badge&logo=googlecolab&logoColor=black)
+![FastAPI](https://img.shields.io/badge/FastAPI-009688?style=for-the-badge&logo=fastapi&logoColor=white)
+![Pandas](https://img.shields.io/badge/Pandas-150458?style=for-the-badge&logo=pandas&logoColor=white)
+![Google Colab](https://img.shields.io/badge/Google%20Colab-F9AB00?style=for-the-badge&logo=googlecolab&logoColor=white)
+- FastAPI para processamento e ingestão automática de dados mensais
+- Pandas e NumPy para ETL e cálculo dos scores
+- Dados públicos do BCB (SCR e PIX) e IBGE processados automaticamente
+- Notebook Google Colab disponível para execução manual e exploração dos dados
 
-- Python para coleta e tratamento de dados
-- Google Colab para execução dos pipelines
+📓 **Notebook:** [Abrir no Google Colab](https://colab.research.google.com/drive/1zK3rZBd1XM-zZryB8X5ikEszxlddlndh?usp=sharing)
 
 ---
 
@@ -129,7 +134,6 @@ Nome | Função | LinkedIn | GitHub
 Davi Andrade | Scrum Master | [![LinkedIn](https://img.shields.io/badge/linkedin-blue?style=for-the-badge)](https://www.linkedin.com/in/daviandrade007) | <a href="https://github.com/aandrade007"> <img src="https://img.shields.io/badge/github-black?style=for-the-badge&logo=github"/> </a>
 João Paulo | Product Owner | [![LinkedIn](https://img.shields.io/badge/linkedin-blue?style=for-the-badge)](https://www.linkedin.com/in/joaosantos02) | <a href="https://github.com/jopaul0"> <img src="https://img.shields.io/badge/github-black?style=for-the-badge&logo=github"/> </a>
 Kauan Domingues | Developer | [![LinkedIn](https://img.shields.io/badge/linkedin-blue?style=for-the-badge)](https://linkedin.com/in/kauandomingues) | <a href="https://github.com/KauanDomingues"> <img src="https://img.shields.io/badge/github-black?style=for-the-badge&logo=github"/> </a>
-Breno Reis | Developer | [![LinkedIn](https://img.shields.io/badge/linkedin-blue?style=for-the-badge)](https://www.linkedin.com/in/breno-reis-893009321) | <a href="https://github.com/brenoviske"> <img src="https://img.shields.io/badge/github-black?style=for-the-badge&logo=github"/> </a>
 Cauã Mehiel | Developer | [![LinkedIn](https://img.shields.io/badge/linkedin-blue?style=for-the-badge)](https://www.linkedin.com/in/cau%C3%A3-cursino-748485235) | <a href="https://github.com/CauaCurisno1446"> <img src="https://img.shields.io/badge/github-black?style=for-the-badge&logo=github"/> </a>
 Gabriel Borges | Developer | [![LinkedIn](https://img.shields.io/badge/linkedin-blue?style=for-the-badge)](https://www.linkedin.com/in/gabriel-borges-toledo) | <a href="https://github.com/Gabe-Borges"> <img src="https://img.shields.io/badge/github-black?style=for-the-badge&logo=github"/> </a>
 Jessica Katayama | Developer | [![LinkedIn](https://img.shields.io/badge/linkedin-blue?style=for-the-badge)](https://www.linkedin.com/in/jessicakatayama) | <a href="https://github.com/JessicaKatayama"> <img src="https://img.shields.io/badge/github-black?style=for-the-badge&logo=github"/> </a>

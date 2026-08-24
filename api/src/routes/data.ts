@@ -21,11 +21,13 @@ routerData.get('/summary', sessionMiddleware, validateData(schemas.summaryQueryS
 routerData.get('/ranking', sessionMiddleware, validateData(schemas.rankingQuerySchema), dataRead.getRanking);
 routerData.get('/history', sessionMiddleware, validateData(schemas.evolutionQuerySchema), dataRead.getEvolutionHistory);
 
-routerData.get('/credit-risk', sessionMiddleware, dataRead.getCreditRisk);
-routerData.get('/inclusion-expansion', sessionMiddleware, dataRead.getInclusionExpansion);
-routerData.get('/pix-structure', sessionMiddleware, dataRead.getPixStructure);
-routerData.get('/ibge-structure', sessionMiddleware, dataRead.getIBGEStructure);
+routerData.get('/credit-risk', sessionMiddleware, validateData(schemas.filtroQuerySchema), dataRead.getCreditRisk);
+routerData.get('/inclusion-expansion', sessionMiddleware, validateData(schemas.filtroQuerySchema), dataRead.getInclusionExpansion);
+routerData.get('/pix-structure', sessionMiddleware, validateData(schemas.filtroQuerySchema), dataRead.getPixStructure);
+routerData.get('/ibge-structure', sessionMiddleware, validateData(schemas.filtroQuerySchema), dataRead.getIBGEStructure);
 
-routerData.get('/dashboard-charts', sessionMiddleware, dataRead.getDashboardCharts);
+routerData.get('/dashboard-charts', sessionMiddleware, validateData(schemas.filtroQuerySchema), dataRead.getDashboardCharts);
+routerData.get('/regional-charts', sessionMiddleware, validateData(schemas.filtroQuerySchema), dataRead.getRegionalCharts);
+routerData.get('/estadual-charts', sessionMiddleware, validateData(schemas.filtroQuerySchema), dataRead.getEstadualCharts);
 
 export default routerData;
